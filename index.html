@@ -7,10 +7,40 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Firebase SDK -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.7.1/firebase-app-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.7.1/firebase-firestore-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.7.1/firebase-analytics-compat.min.js"></script>
+    <!-- Firebase SDK v9 (Modular) -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, query, where, orderBy, limit, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAEyZF2Ib10UD7vv8l3nclb-KfChIczIz4",
+            authDomain: "pinewater-393fe.firebaseapp.com",
+            projectId: "pinewater-393fe",
+            storageBucket: "pinewater-393fe.firebasestorage.app",
+            messagingSenderId: "1039943692827",
+            appId: "1:1039943692827:web:014dd0b891143a8a95febe",
+            measurementId: "G-931M74XQQK"
+        };
+
+        // Initialize Firebase
+        let db = null;
+        let firebaseEnabled = false;
+        
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            firebaseEnabled = true;
+            console.log('✅ Firebase connected successfully');
+            window.firebaseDb = db;
+            window.firebaseEnabled = true;
+            window.firebaseModules = { collection, doc, setDoc, getDoc, updateDoc, query, where, orderBy, limit, getDocs, serverTimestamp };
+        } catch (error) {
+            console.error('❌ Firebase connection failed:', error);
+            console.log('📦 Using localStorage as fallback');
+            window.firebaseEnabled = false;
+        }
+    </script>
     
     <style>
         :root {
@@ -580,22 +610,6 @@
     <div id="absensiContainer" class="page-section"></div>
 
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAEyZF2Ib10UD7vv8l3nclb-KfChIczIz4",
-            authDomain: "pinewater-393fe.firebaseapp.com",
-            projectId: "pinewater-393fe",
-            storageBucket: "pinewater-393fe.firebasestorage.app",
-            messagingSenderId: "1039943692827",
-            appId: "1:1039943692827:web:014dd0b891143a8a95febe",
-            measurementId: "G-931M74XQQK"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const analytics = firebase.analytics();
-
         // Global Variables
         let currentUser = null;
         let currentApp = null;
@@ -835,7 +849,7 @@
         }
 
         // Load Absensi App
-        function loadAbsensiApp(user) {
+        async function loadAbsensiApp(user) {
             document.getElementById('appSelectionPage').classList.remove('active');
             const container = document.getElementById('absensiContainer');
             container.classList.add('active');
@@ -844,10 +858,303 @@
             const today = new Date();
             const dateStr = today.toISOString().split('T')[0];
             
-            // Load attendance data from Firebase
-            loadAttendanceFromFirebase(user.username, dateStr).then(todayAttendance => {
-                const isCheckedIn = todayAttendance && todayAttendance.checkIn && !todayAttendance.checkOut;
-                const isCompleted = todayAttendance && todayAttendance.checkOut;
+            // Load attendance data
+            const todayAttendance = await loadAttendanceData(user.username, dateStr);
+            const isCheckedIn = todayAttendance && todayAttendance.checkIn && !todayAttendance.checkOut;
+            const isCompleted = todayAttendance && todayAttendance.checkOut;
+            
+            // Connection status badge
+            const connectionBadge = window.firebaseEnabled ? 
+                '<span style="background: rgba(16, 185, 129, 0.15); color: #059669; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem;"><i class="fas fa-cloud me-1"></i>Cloud Storage</span>' :
+                '<span style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem;"><i class="fas fa-hdd me-1"></i>Local Storage</span>';
+            
+            container.innerHTML = `
+                <style>
+                    .absensi-container {
+                        min-height: 100vh;
+                        background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%);
+                        padding: 2rem;
+                    }
+                    .absensi-header {
+                        background: white;
+                        border-radius: 15px;
+                        padding: 1.5rem;
+                        margin-bottom: 2rem;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        max-width: 1200px;
+                        margin: 0 auto 2rem;
+                    }
+                    .absensi-main {
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 2rem;
+                    }
+                    .absensi-card {
+                        background: white;
+                        border-radius: 20px;
+                        padding: 2rem;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                    }
+                    .clock-display {
+                        text-align: center;
+                        font-size: 3rem;
+                        font-weight: bold;
+                        color: var(--forest);
+                        margin: 2rem 0;
+                        font-family: 'Courier New', monospace;
+                    }
+                    .date-display {
+                        text-align: center;
+                        font-size: 1.2rem;
+                        color: var(--tan);
+                        margin-bottom: 2rem;
+                    }
+                    .check-btn {
+                        width: 100%;
+                        padding: 1.5rem;
+                        border: none;
+                        border-radius: 15px;
+                        font-size: 1.3rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        margin-bottom: 1rem;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 1rem;
+                    }
+                    .check-in-btn {
+                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                        color: white;
+                    }
+                    .check-in-btn:hover:not(:disabled) {
+                        transform: translateY(-3px);
+                        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+                    }
+                    .check-out-btn {
+                        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                        color: white;
+                    }
+                    .check-out-btn:hover:not(:disabled) {
+                        transform: translateY(-3px);
+                        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+                    }
+                    .check-btn:disabled {
+                        opacity: 0.5;
+                        cursor: not-allowed;
+                    }
+                    .status-badge {
+                        display: inline-block;
+                        padding: 0.5rem 1rem;
+                        border-radius: 20px;
+                        font-size: 0.9rem;
+                        font-weight: 600;
+                        margin: 1rem 0;
+                    }
+                    .status-in {
+                        background: rgba(16, 185, 129, 0.15);
+                        color: #059669;
+                    }
+                    .status-out {
+                        background: rgba(239, 68, 68, 0.15);
+                        color: #dc2626;
+                    }
+                    .status-complete {
+                        background: rgba(168, 85, 247, 0.15);
+                        color: #a855f7;
+                    }
+                    .history-item {
+                        padding: 1rem;
+                        border-bottom: 1px solid var(--beige);
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    .history-item:last-child {
+                        border-bottom: none;
+                    }
+                    .history-date {
+                        font-weight: 600;
+                        color: var(--forest);
+                    }
+                    .history-times {
+                        display: flex;
+                        gap: 1rem;
+                        font-size: 0.9rem;
+                        color: #666;
+                    }
+                    @media (max-width: 768px) {
+                        .absensi-main {
+                            grid-template-columns: 1fr;
+                        }
+                    }
+                </style>
+                
+                <div class="absensi-container">
+                    <div class="absensi-header">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                                <i class="fas fa-fingerprint"></i>
+                            </div>
+                            <div>
+                                <h2 style="color: var(--forest); margin: 0; font-size: 1.5rem;">Sistem Absensi</h2>
+                                <p style="color: var(--tan); margin: 0; font-size: 0.9rem;">${user.fullName} • ${connectionBadge}</p>
+                            </div>
+                        </div>
+                        <button onclick="backToSelection()" style="padding: 0.8rem 1.5rem; background: var(--tan); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 500;">
+                            <i class="fas fa-arrow-left me-2"></i>Kembali
+                        </button>
+                    </div>
+                    
+                    <div class="absensi-main">
+                        <!-- Check In/Out Card -->
+                        <div class="absensi-card">
+                            <h3 style="color: var(--forest); font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">
+                                <i class="fas fa-clock me-2"></i>Absensi Hari Ini
+                            </h3>
+                            
+                            <div class="clock-display" id="clockDisplay">00:00:00</div>
+                            <div class="date-display" id="dateDisplay"></div>
+                            
+                            <div style="text-align: center; margin-bottom: 2rem;">
+                                ${isCompleted ? 
+                                    '<span class="status-badge status-complete"><i class="fas fa-check-circle me-2"></i>Absensi Selesai</span>' :
+                                    isCheckedIn ? 
+                                    '<span class="status-badge status-in"><i class="fas fa-sign-in-alt me-2"></i>Sudah Check In</span>' :
+                                    '<span class="status-badge status-out"><i class="fas fa-clock me-2"></i>Belum Check In</span>'
+                                }
+                            </div>
+                            
+                            ${todayAttendance ? `
+                                <div style="background: var(--cream); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                        <span style="color: #666;"><i class="fas fa-sign-in-alt me-2" style="color: #10b981;"></i>Check In:</span>
+                                        <strong style="color: var(--forest);">${todayAttendance.checkIn || '-'}</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                        <span style="color: #666;"><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span>
+                                        <strong style="color: var(--forest);">${todayAttendance.checkOut || '-'}</strong>
+                                    </div>
+                                    ${!todayAttendance.checkOut && todayAttendance.checkIn ? `
+                                        <div style="padding-top: 1rem; border-top: 1px solid var(--beige); margin-top: 0.5rem;">
+                                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #666;">
+                                                <span><i class="fas fa-clock me-2" style="color: #f59e0b;"></i>Estimasi Check Out (8 jam kerja):</span>
+                                                <strong style="color: #f59e0b;">${calculateEstimatedCheckOut(todayAttendance.checkIn)}</strong>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    ${todayAttendance.checkOut ? `
+                                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;">
+                                            <span style="color: #666;">Total Jam Kerja:</span>
+                                            <strong style="color: var(--forest); font-size: 1.2rem; display: block; margin-top: 0.5rem;">
+                                                ${calculateWorkHours(todayAttendance.checkIn, todayAttendance.checkOut)}
+                                            </strong>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
+                            
+                            <button class="check-btn check-in-btn" onclick="checkIn()" ${isCheckedIn || isCompleted ? 'disabled' : ''}>
+                                <i class="fas fa-sign-in-alt" style="font-size: 1.5rem;"></i>
+                                <span>Check In</span>
+                            </button>
+                            
+                            <button class="check-btn check-out-btn" onclick="checkOut()" ${!isCheckedIn || isCompleted ? 'disabled' : ''}>
+                                <i class="fas fa-sign-out-alt" style="font-size: 1.5rem;"></i>
+                                <span>Check Out</span>
+                            </button>
+                        </div>
+                        
+                        <!-- History Card -->
+                        <div class="absensi-card">
+                            <h3 style="color: var(--forest); font-size: 1.5rem; margin-bottom: 1.5rem;">
+                                <i class="fas fa-history me-2"></i>Riwayat Absensi
+                            </h3>
+                            
+                            <div id="historyContainer" style="max-height: 500px; overflow-y: auto;">
+                                <p style="text-align: center; color: #999; padding: 2rem;">Memuat riwayat...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Start clock
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            // Load history
+            loadHistoryData(user.username);
+        }
+
+        // Load attendance data (Firebase or localStorage fallback)
+        async function loadAttendanceData(username, date) {
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
+                    const { doc, getDoc } = window.firebaseModules;
+                    const docRef = doc(window.firebaseDb, 'attendance', `${username}_${date}`);
+                    const docSnap = await getDoc(docRef);
+                    
+                    if (docSnap.exists()) {
+                        return docSnap.data();
+                    }
+                    return null;
+                } catch (error) {
+                    console.error('Firebase error, using localStorage:', error);
+                }
+            }
+            
+            // Fallback to localStorage
+            const data = JSON.parse(localStorage.getItem('attendance_data') || '{}');
+            if (data[username] && data[username][date]) {
+                return data[username][date];
+            }
+            return null;
+        }
+
+        // Load history data (Firebase or localStorage fallback)
+        async function loadHistoryData(username) {
+            const historyContainer = document.getElementById('historyContainer');
+            
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
+                    const { collection, query, where, orderBy, limit, getDocs } = window.firebaseModules;
+                    const q = query(
+                        collection(window.firebaseDb, 'attendance'),
+                        where('username', '==', username),
+                        orderBy('date', 'desc'),
+                        limit(30)
+                    );
+                    
+                    const querySnapshot = await getDocs(q);
+                    const historyData = {};
+                    
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        historyData[data.date] = data;
+                    });
+                    
+                    if (historyContainer) {
+                        historyContainer.innerHTML = generateHistoryHTML(historyData);
+                    }
+                    return;
+                } catch (error) {
+                    console.error('Firebase error, using localStorage:', error);
+                }
+            }
+            
+            // Fallback to localStorage
+            const data = JSON.parse(localStorage.getItem('attendance_data') || '{}');
+            if (historyContainer) {
+                historyContainer.innerHTML = generateHistoryHTML(data[username] || {});
+            }
+        }
                 
                 container.innerHTML = `
                     <style>
@@ -1358,23 +1665,43 @@
             const dateStr = now.toISOString().split('T')[0];
             const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             
+            const attendanceData = {
+                username: currentUser.username,
+                fullName: currentUser.fullName,
+                date: dateStr,
+                checkIn: timeStr,
+                checkOut: null
+            };
+            
             try {
-                const docId = `${currentUser.username}_${dateStr}`;
-                await db.collection('attendance').doc(docId).set({
-                    username: currentUser.username,
-                    fullName: currentUser.fullName,
-                    date: dateStr,
-                    checkIn: timeStr,
-                    checkOut: null,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                showAlert('Check In berhasil! Waktu: ' + timeStr, 'success');
-                loadAbsensiApp(currentUser);
+                if (window.firebaseEnabled && window.firebaseDb) {
+                    const { doc, setDoc, serverTimestamp } = window.firebaseModules;
+                    const docRef = doc(window.firebaseDb, 'attendance', `${currentUser.username}_${dateStr}`);
+                    
+                    await setDoc(docRef, {
+                        ...attendanceData,
+                        timestamp: serverTimestamp()
+                    });
+                    
+                    showAlert('✅ Check In berhasil! (Cloud) ' + timeStr, 'success');
+                } else {
+                    throw new Error('Firebase not available');
+                }
             } catch (error) {
-                console.error('Error checking in:', error);
-                showAlert('Gagal melakukan check in. Silakan coba lagi.', 'danger');
+                console.log('Using localStorage fallback');
+                
+                // Fallback to localStorage
+                const data = JSON.parse(localStorage.getItem('attendance_data') || '{}');
+                if (!data[currentUser.username]) {
+                    data[currentUser.username] = {};
+                }
+                data[currentUser.username][dateStr] = attendanceData;
+                localStorage.setItem('attendance_data', JSON.stringify(data));
+                
+                showAlert('✅ Check In berhasil! (Local) ' + timeStr, 'success');
             }
+            
+            setTimeout(() => loadAbsensiApp(currentUser), 1000);
         }
 
         // Check Out
@@ -1384,18 +1711,33 @@
             const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             
             try {
-                const docId = `${currentUser.username}_${dateStr}`;
-                await db.collection('attendance').doc(docId).update({
-                    checkOut: timeStr,
-                    checkOutTimestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                showAlert('Check Out berhasil! Waktu: ' + timeStr, 'success');
-                loadAbsensiApp(currentUser);
+                if (window.firebaseEnabled && window.firebaseDb) {
+                    const { doc, updateDoc, serverTimestamp } = window.firebaseModules;
+                    const docRef = doc(window.firebaseDb, 'attendance', `${currentUser.username}_${dateStr}`);
+                    
+                    await updateDoc(docRef, {
+                        checkOut: timeStr,
+                        checkOutTimestamp: serverTimestamp()
+                    });
+                    
+                    showAlert('✅ Check Out berhasil! (Cloud) ' + timeStr, 'success');
+                } else {
+                    throw new Error('Firebase not available');
+                }
             } catch (error) {
-                console.error('Error checking out:', error);
-                showAlert('Gagal melakukan check out. Silakan coba lagi.', 'danger');
+                console.log('Using localStorage fallback');
+                
+                // Fallback to localStorage
+                const data = JSON.parse(localStorage.getItem('attendance_data') || '{}');
+                if (data[currentUser.username] && data[currentUser.username][dateStr]) {
+                    data[currentUser.username][dateStr].checkOut = timeStr;
+                    localStorage.setItem('attendance_data', JSON.stringify(data));
+                    
+                    showAlert('✅ Check Out berhasil! (Local) ' + timeStr, 'success');
+                }
             }
+            
+            setTimeout(() => loadAbsensiApp(currentUser), 1000);
         }
 
         // Calculate work hours
@@ -1546,7 +1888,17 @@
             }
             
             console.log('🚀 Pinuslo Apps - Unified System loaded');
-            console.log('🔥 Firebase Connected - Data disimpan di Cloud');
+            
+            // Check Firebase connection status
+            setTimeout(() => {
+                if (window.firebaseEnabled) {
+                    console.log('✅ Firebase Connected - Data tersimpan di Cloud');
+                } else {
+                    console.log('⚠️ Firebase Offline - Menggunakan Local Storage');
+                    console.log('💡 Data absensi tersimpan lokal di browser ini');
+                }
+            }, 1000);
+            
             console.log('📋 Akun tersedia:');
             console.log('   Super Admin: yuzar/yuzar123, iqbal/iqbal123 (akses semua aplikasi)');
             console.log('   Staff Absensi: agus, selfi, fadel, farel, ikki, sadiq, sirad, bate, boncel, pian, juned (password: [nama]123)');
