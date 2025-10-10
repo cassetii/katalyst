@@ -989,10 +989,18 @@
                                         <span style="color: #666;"><i class="fas fa-sign-in-alt me-2" style="color: #10b981;"></i>Check In:</span>
                                         <strong style="color: var(--forest);">${todayAttendance.checkIn || '-'}</strong>
                                     </div>
-                                    <div style="display: flex; justify-content: space-between;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
                                         <span style="color: #666;"><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span>
                                         <strong style="color: var(--forest);">${todayAttendance.checkOut || '-'}</strong>
                                     </div>
+                                    ${!todayAttendance.checkOut && todayAttendance.checkIn ? `
+                                        <div style="padding-top: 1rem; border-top: 1px solid var(--beige); margin-top: 0.5rem;">
+                                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #666;">
+                                                <span><i class="fas fa-clock me-2" style="color: #f59e0b;"></i>Estimasi Check Out (8 jam kerja):</span>
+                                                <strong style="color: #f59e0b;">${calculateEstimatedCheckOut(todayAttendance.checkIn)}</strong>
+                                            </div>
+                                        </div>
+                                    ` : ''}
                                     ${todayAttendance.checkOut ? `
                                         <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;">
                                             <span style="color: #666;">Total Jam Kerja:</span>
@@ -1091,17 +1099,65 @@
         function calculateWorkHours(checkIn, checkOut) {
             if (!checkIn || !checkOut) return '-';
             
-            const [h1, m1, s1] = checkIn.split(':').map(Number);
-            const [h2, m2, s2] = checkOut.split(':').map(Number);
+            try {
+                // Parse time strings (format: HH:MM:SS)
+                const [h1, m1, s1] = checkIn.split(':').map(num => parseInt(num, 10));
+                const [h2, m2, s2] = checkOut.split(':').map(num => parseInt(num, 10));
+                
+                // Check if parsing was successful
+                if (isNaN(h1) || isNaN(m1) || isNaN(s1) || isNaN(h2) || isNaN(m2) || isNaN(s2)) {
+                    return '-';
+                }
+                
+                // Convert to seconds
+                const start = h1 * 3600 + m1 * 60 + s1;
+                const end = h2 * 3600 + m2 * 60 + s2;
+                
+                // Calculate difference
+                let diff = end - start;
+                
+                // Handle case where checkout is next day
+                if (diff < 0) {
+                    diff += 24 * 3600; // Add 24 hours
+                }
+                
+                const hours = Math.floor(diff / 3600);
+                const minutes = Math.floor((diff % 3600) / 60);
+                
+                return `${hours} jam ${minutes} menit`;
+            } catch (error) {
+                console.error('Error calculating work hours:', error);
+                return '-';
+            }
+        }
+
+        // Calculate estimated check out time (8 working hours from check in)
+        function calculateEstimatedCheckOut(checkIn) {
+            if (!checkIn) return '-';
             
-            const start = h1 * 3600 + m1 * 60 + s1;
-            const end = h2 * 3600 + m2 * 60 + s2;
-            
-            const diff = end - start;
-            const hours = Math.floor(diff / 3600);
-            const minutes = Math.floor((diff % 3600) / 60);
-            
-            return `${hours} jam ${minutes} menit`;
+            try {
+                const [h, m, s] = checkIn.split(':').map(num => parseInt(num, 10));
+                
+                if (isNaN(h) || isNaN(m) || isNaN(s)) {
+                    return '-';
+                }
+                
+                // Add 8 hours (28800 seconds)
+                let totalSeconds = h * 3600 + m * 60 + s + (8 * 3600);
+                
+                // Calculate new time
+                let newH = Math.floor(totalSeconds / 3600) % 24;
+                let newM = Math.floor((totalSeconds % 3600) / 60);
+                let newS = totalSeconds % 60;
+                
+                // Format with leading zeros
+                const formatTime = (num) => String(num).padStart(2, '0');
+                
+                return `${formatTime(newH)}:${formatTime(newM)}:${formatTime(newS)}`;
+            } catch (error) {
+                console.error('Error calculating estimated checkout:', error);
+                return '-';
+            }
         }
 
         // Generate history HTML
@@ -1114,22 +1170,24 @@
             
             return dates.map(date => {
                 const attendance = userData[date];
-                const dateObj = new Date(date);
+                const dateObj = new Date(date + 'T00:00:00'); // Add time to avoid timezone issues
                 const formattedDate = dateObj.toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+                
+                const duration = attendance.checkOut ? calculateWorkHours(attendance.checkIn, attendance.checkOut) : '-';
                 
                 return `
                     <div class="history-item">
                         <div>
                             <div class="history-date">${formattedDate}</div>
-                            ${attendance.checkOut ? 
-                                `<span style="font-size: 0.85rem; color: #666;">Durasi: ${calculateWorkHours(attendance.checkIn, attendance.checkOut)}</span>` :
+                            ${attendance.checkOut && duration !== '-' ? 
+                                `<span style="font-size: 0.85rem; color: #666;">Durasi: ${duration}</span>` :
                                 '<span style="font-size: 0.85rem; color: #ef4444;">Belum Check Out</span>'
                             }
                         </div>
                         <div class="history-times">
                             <div>
                                 <i class="fas fa-sign-in-alt" style="color: #10b981;"></i>
-                                ${attendance.checkIn}
+                                ${attendance.checkIn || '-'}
                             </div>
                             <div>
                                 <i class="fas fa-sign-out-alt" style="color: #ef4444;"></i>
