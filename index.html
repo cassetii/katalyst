@@ -519,7 +519,7 @@
 
             <div class="apps-grid">
                 <!-- Pinuslo Register -->
-                <div class="app-card pinus" onclick="selectApp('pinus')">
+                <div class="app-card pinus" data-app="pinus">
                     <div class="app-icon">
                         <i class="fas fa-tree"></i>
                     </div>
@@ -538,7 +538,7 @@
                 </div>
 
                 <!-- Pinewater -->
-                <div class="app-card pinewater" onclick="selectApp('pinewater')">
+                <div class="app-card pinewater" data-app="pinewater">
                     <div class="app-icon">
                         <i class="fas fa-water"></i>
                     </div>
@@ -557,7 +557,7 @@
                 </div>
 
                 <!-- BBM -->
-                <div class="app-card bbm" onclick="selectApp('bbm')">
+                <div class="app-card bbm" data-app="bbm">
                     <div class="app-icon">
                         <i class="fas fa-gas-pump"></i>
                     </div>
@@ -576,7 +576,7 @@
                 </div>
 
                 <!-- Absensi -->
-                <div class="app-card absensi" onclick="selectApp('absensi')">
+                <div class="app-card absensi" data-app="absensi">
                     <div class="app-icon">
                         <i class="fas fa-fingerprint"></i>
                     </div>
@@ -701,27 +701,37 @@
             document.getElementById('userName').textContent = user.fullName;
             document.getElementById('userRole').textContent = getRoleLabel(user.role);
             
-            // Filter apps based on user access
-            const appCards = document.querySelectorAll('.app-card');
-            appCards.forEach(card => {
-                const appType = card.classList.contains('pinus') ? 'pinus' : 
-                               card.classList.contains('pinewater') ? 'pinewater' : 
-                               card.classList.contains('bbm') ? 'bbm' :
-                               card.classList.contains('absensi') ? 'absensi' : '';
-                
-                if (!user.apps.includes(appType)) {
-                    card.style.opacity = '0.5';
-                    card.style.cursor = 'not-allowed';
-                    card.onclick = () => showAlert('Anda tidak memiliki akses ke aplikasi ini', 'danger');
-                }
-            });
+            // Add event listeners to app cards
+            setTimeout(() => {
+                const appCards = document.querySelectorAll('.app-card');
+                appCards.forEach(card => {
+                    const appType = card.getAttribute('data-app');
+                    
+                    if (!user.apps.includes(appType)) {
+                        card.style.opacity = '0.5';
+                        card.style.cursor = 'not-allowed';
+                        card.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            showAlert('Anda tidak memiliki akses ke aplikasi ini', 'danger');
+                        });
+                    } else {
+                        card.style.cursor = 'pointer';
+                        card.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            selectApp(appType);
+                        });
+                    }
+                });
+            }, 100);
         }
 
         // Select app
         function selectApp(appType) {
             if (!currentUser.apps.includes(appType)) {
                 showAlert('Anda tidak memiliki akses ke aplikasi ini', 'danger');
-                return;
+                return false;
             }
 
             currentApp = appType;
@@ -737,7 +747,9 @@
                 } else if (appType === 'absensi') {
                     loadAbsensiApp(currentUser);
                 }
-            }, 1000);
+            }, 500);
+            
+            return false;
         }
 
         // Get app name
@@ -1817,32 +1829,33 @@
 
         // Check authentication on load
         window.addEventListener('load', function() {
-            const savedUser = localStorage.getItem('pinuslo_current_user');
-            if (savedUser) {
-                const user = JSON.parse(savedUser);
-                currentUser = user;
-                showAppSelection(user);
-            }
-            
-            console.log('🚀 Pinuslo Apps - Unified System loaded');
-            
-            // Check Firebase connection status
+            // Wait for Firebase to initialize
             setTimeout(() => {
+                const savedUser = localStorage.getItem('pinuslo_current_user');
+                if (savedUser) {
+                    const user = JSON.parse(savedUser);
+                    currentUser = user;
+                    showAppSelection(user);
+                }
+                
+                console.log('🚀 Pinuslo Apps - Unified System loaded');
+                
+                // Check Firebase connection status
                 if (window.firebaseEnabled) {
                     console.log('✅ Firebase Connected - Data tersimpan di Cloud');
                 } else {
                     console.log('⚠️ Firebase Offline - Menggunakan Local Storage');
                     console.log('💡 Data absensi tersimpan lokal di browser ini');
                 }
-            }, 1000);
-            
-            console.log('📋 Akun tersedia:');
-            console.log('   Super Admin: yuzar/yuzar123, iqbal/iqbal123 (akses semua aplikasi)');
-            console.log('   Staff Absensi: agus, selfi, fadel, farel, ikki, sadiq, sirad, bate, boncel, pian, juned (password: [nama]123)');
-            console.log('   Pinuslo: selow1/selow1234, selow2/selow1234');
-            console.log('   Pinewater: water1/water123, water2/water123');
-            console.log('   BBM: bbm1/bbm123, bbm2/bbm123');
-            console.log('✅ Semua user memiliki akses ke Absensi');
+                
+                console.log('📋 Akun tersedia:');
+                console.log('   Super Admin: yuzar/yuzar123, iqbal/iqbal123 (akses semua aplikasi)');
+                console.log('   Staff Absensi: agus, selfi, fadel, farel, ikki, sadiq, sirad, bate, boncel, pian, juned (password: [nama]123)');
+                console.log('   Pinuslo: selow1/selow1234, selow2/selow1234');
+                console.log('   Pinewater: water1/water123, water2/water123');
+                console.log('   BBM: bbm1/bbm123, bbm2/bbm123');
+                console.log('✅ Semua user memiliki akses ke Absensi');
+            }, 500);
         });
     </script>
 </body>
