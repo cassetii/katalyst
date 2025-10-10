@@ -68,6 +68,10 @@
         .app-icon { width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem; color: white; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .app-card.pinus { background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); }
         .app-card.pinus .app-icon { background: linear-gradient(135deg, var(--forest) 0%, #3b7a5e 100%); }
+        .app-card.pinewater { background: linear-gradient(135deg, #ffffff 0%, #ecfeff 100%); }
+        .app-card.pinewater .app-icon { background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%); }
+        .app-card.bbm { background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%); }
+        .app-card.bbm .app-icon { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
         .app-card.absensi { background: linear-gradient(135deg, #ffffff 0%, #f3e8ff 100%); }
         .app-card.absensi .app-icon { background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); }
         .page-section { display: none; }
@@ -120,8 +124,18 @@
             <div class="apps-grid">
                 <div class="app-card pinus" data-app="pinus">
                     <div class="app-icon"><i class="fas fa-tree"></i></div>
-                    <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinuslo Register</h3>
+                    <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinus Selow Regist</h3>
                     <p style="color: var(--tan); text-align: center; font-size: 0.95rem;">Sistem Pendaftaran & Manajemen Pinus</p>
+                </div>
+                <div class="app-card pinewater" data-app="pinewater">
+                    <div class="app-icon"><i class="fas fa-water"></i></div>
+                    <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinewater</h3>
+                    <p style="color: var(--tan); text-align: center; font-size: 0.95rem;">Sistem Manajemen Air & Distribusi</p>
+                </div>
+                <div class="app-card bbm" data-app="bbm">
+                    <div class="app-icon"><i class="fas fa-gas-pump"></i></div>
+                    <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">BBM Management</h3>
+                    <p style="color: var(--tan); text-align: center; font-size: 0.95rem;">Sistem Manajemen Bahan Bakar Minyak</p>
                 </div>
                 <div class="app-card absensi" data-app="absensi">
                     <div class="app-icon"><i class="fas fa-fingerprint"></i></div>
@@ -137,8 +151,8 @@
     <script>
         let currentUser = null;
         const allUsers = [
-            { username: 'yuzar', password: 'yuzar123', role: 'super-admin', fullName: 'Yuzar', apps: ['pinus', 'absensi'] },
-            { username: 'iqbal', password: 'iqbal123', role: 'super-admin', fullName: 'Iqbal', apps: ['pinus', 'absensi'] },
+            { username: 'yuzar', password: 'yuzar123', role: 'super-admin', fullName: 'Yuzar', apps: ['pinus', 'pinewater', 'bbm', 'absensi'] },
+            { username: 'iqbal', password: 'iqbal123', role: 'super-admin', fullName: 'Iqbal', apps: ['pinus', 'pinewater', 'bbm', 'absensi'] },
             { username: 'agus', password: 'agus123', role: 'staff', fullName: 'Agus', apps: ['absensi'] },
             { username: 'selfi', password: 'selfi123', role: 'staff', fullName: 'Selfi', apps: ['absensi'] },
             { username: 'fadel', password: 'fadel123', role: 'staff', fullName: 'Fadel', apps: ['absensi'] },
@@ -149,9 +163,15 @@
             { username: 'bate', password: 'bate123', role: 'staff', fullName: 'Bate', apps: ['absensi'] },
             { username: 'boncel', password: 'boncel123', role: 'staff', fullName: 'Boncel', apps: ['absensi'] },
             { username: 'pian', password: 'pian123', role: 'staff', fullName: 'Pian', apps: ['absensi'] },
-            { username: 'jendra', password: 'jendra123', role: 'staff', fullName: 'Jendra', apps: ['absensi'] },
             { username: 'juned', password: 'juned123', role: 'staff', fullName: 'Juned', apps: ['absensi'] }
         ];
+
+        // External app URLs
+        const appUrls = {
+            'pinus': 'https://pinusselowregist.netlify.app',
+            'pinewater': 'https://pinewater.netlify.app',
+            'bbm': 'https://bbm-management.netlify.app' // Ganti dengan URL yang sesuai
+        };
 
         function togglePassword() {
             const input = document.getElementById('password');
@@ -198,7 +218,16 @@
                         card.onclick = () => showAlert('Anda tidak memiliki akses', 'danger');
                     } else {
                         card.onclick = () => {
-                            if (appType === 'absensi') loadAbsensi(user);
+                            if (appType === 'absensi') {
+                                // Open internal absensi app
+                                loadAbsensi(user);
+                            } else if (appUrls[appType]) {
+                                // Redirect to external app
+                                showAlert('Membuka ' + (appType === 'pinus' ? 'Pinus Selow Regist' : appType === 'pinewater' ? 'Pinewater' : 'BBM Management') + '...', 'success');
+                                setTimeout(() => {
+                                    window.open(appUrls[appType], '_blank');
+                                }, 500);
+                            }
                         };
                     }
                 });
@@ -416,9 +445,23 @@
                     currentUser = user;
                     showAppSelection(user);
                 }
-                console.log('🚀 Pinuslo Apps ready');
-                console.log(window.firebaseEnabled ? '✅ Firebase Connected' : '⚠️ Firebase Offline - Local Storage');
-                console.log('📋 Akun: agus/agus123, selfi/selfi123, fadel/fadel123, dll');
+                console.log('🚀 Pinuslo Apps - Unified Management System');
+                console.log(window.firebaseEnabled ? '✅ Firebase Connected - Cloud Storage' : '⚠️ Firebase Offline - Local Storage');
+                console.log('');
+                console.log('📋 Akun Super Admin (Akses Semua):');
+                console.log('   • yuzar / yuzar123');
+                console.log('   • iqbal / iqbal123');
+                console.log('');
+                console.log('📋 Akun Staff (Akses Absensi):');
+                console.log('   • agus, selfi, fadel, farel, ikki, sadiq');
+                console.log('   • sirad, bate, boncel, pian, juned');
+                console.log('   • Password: [nama]123');
+                console.log('');
+                console.log('🌐 Aplikasi Tersedia:');
+                console.log('   🌲 Pinus Selow Regist → pinusselowregist.netlify.app');
+                console.log('   💧 Pinewater → pinewater.netlify.app');
+                console.log('   ⛽ BBM Management → bbm-management.netlify.app');
+                console.log('   🔐 Absensi → Internal System');
             }, 500);
         });
     </script>
