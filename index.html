@@ -1092,69 +1092,6 @@
             // Load history
             loadHistoryData(user.username);
         }
-
-        // Load attendance data (Firebase or localStorage fallback)
-        async function loadAttendanceData(username, date) {
-            if (window.firebaseEnabled && window.firebaseDb) {
-                try {
-                    const { doc, getDoc } = window.firebaseModules;
-                    const docRef = doc(window.firebaseDb, 'attendance', `${username}_${date}`);
-                    const docSnap = await getDoc(docRef);
-                    
-                    if (docSnap.exists()) {
-                        return docSnap.data();
-                    }
-                    return null;
-                } catch (error) {
-                    console.error('Firebase error, using localStorage:', error);
-                }
-            }
-            
-            // Fallback to localStorage
-            const data = JSON.parse(localStorage.getItem('attendance_data') || '{}');
-            if (data[username] && data[username][date]) {
-                return data[username][date];
-            }
-            return null;
-        }
-
-        // Load history data (Firebase or localStorage fallback)
-        async function loadHistoryData(username) {
-            const historyContainer = document.getElementById('historyContainer');
-            
-            if (window.firebaseEnabled && window.firebaseDb) {
-                try {
-                    const { collection, query, where, orderBy, limit, getDocs } = window.firebaseModules;
-                    const q = query(
-                        collection(window.firebaseDb, 'attendance'),
-                        where('username', '==', username),
-                        orderBy('date', 'desc'),
-                        limit(30)
-                    );
-                    
-                    const querySnapshot = await getDocs(q);
-                    const historyData = {};
-                    
-                    querySnapshot.forEach((doc) => {
-                        const data = doc.data();
-                        historyData[data.date] = data;
-                    });
-                    
-                    if (historyContainer) {
-                        historyContainer.innerHTML = generateHistoryHTML(historyData);
-                    }
-                    return;
-                } catch (error) {
-                    console.error('Firebase error, using localStorage:', error);
-                }
-            }
-            
-            // Fallback to localStorage
-            const data = JSON.parse(localStorage.getItem('attendance_data') || '{}');
-            if (historyContainer) {
-                historyContainer.innerHTML = generateHistoryHTML(data[username] || {});
-            }
-        }
                 
                 container.innerHTML = `
                     <style>
