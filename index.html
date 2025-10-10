@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katalyst - Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            /* Pinuslo Color Palette */
+            --cream: #F5F5F0;
+            --beige: #E6D8C3;
+            --tan: #C2A68C;
+            --forest: #5D866C;
+            
+            /* Additional Colors */
+            --primary: var(--forest);
+            --secondary: var(--tan);
+            --light: var(--cream);
+            --accent: var(--beige);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%);
+            min-height: 100vh;
+        }
+
+        /* Login Page */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%);
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(93, 134, 108, 0.3);
+            width: 100%;
+            max-width: 420px;
+            animation: slideIn 0.8s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-logo {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-size: 2.5rem;
+            box-shadow: 0 8px 25px rgba(93, 134, 108, 0.4);
+        }
+
+        .login-title {
+            color: var(--forest);
+            font-weight: 700;
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            color: var(--tan);
+            font-size: 0.95rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-input-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 2px solid var(--beige);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--cream);
+        }
+
+        .login-input:focus {
+            border-color: var(--forest);
+            box-shadow: 0 0 0 0.2rem rgba(93, 134, 108, 0.25);
+            outline: none;
+            background: white;
+        }
+
+        .login-input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--forest);
+            font-size: 1.1rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--tan);
+            cursor: pointer;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1.1rem;
+            background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(93, 134, 108, 0.3);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(93, 134, 108, 0.4);
+        }
+
+        /* App Selection Page */
+        .app-selection-container {
+            min-height: 100vh;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%);
+        }
+
+        .app-selection-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .user-welcome {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 600px;
+            margin: 0 auto 3rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-details h3 {
+            color: var(--forest);
+            font-size: 1.3rem;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .user-details p {
+            color: var(--tan);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            background: var(--tan);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: var(--forest);
+            transform: translateY(-2px);
+        }
+
+        .app-selection-title {
+            color: var(--forest);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .app-selection-subtitle {
+            color: var(--tan);
+            font-size: 1.1rem;
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .app-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+
+        .app-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            border-color: var(--forest);
+        }
+
+        .app-card.pinus {
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+        }
+
+        .app-card.pinewater {
+            background: linear-gradient(135deg, #ffffff 0%, #ecfeff 100%);
+        }
+
+        .app-card.bbm {
+            background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
+        }
+
+        .app-card.absensi {
+            background: linear-gradient(135deg, #ffffff 0%, #f3e8ff 100%);
+        }
+
+        .app-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+            color: white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .app-card.pinus .app-icon {
+            background: linear-gradient(135deg, var(--forest) 0%, #3b7a5e 100%);
+        }
+
+        .app-card.pinewater .app-icon {
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+        }
+
+        .app-card.bbm .app-icon {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .app-card.absensi .app-icon {
+            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+        }
+
+        .app-name {
+            color: var(--forest);
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .app-description {
+            color: var(--tan);
+            text-align: center;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .app-features {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .app-features li {
+            color: #666;
+            font-size: 0.9rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--beige);
+        }
+
+        .app-features li:last-child {
+            border-bottom: none;
+        }
+
+        .app-features li i {
+            color: var(--forest);
+            margin-right: 0.5rem;
+            width: 20px;
+        }
+
+        .app-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .app-card.pinus .app-badge {
+            background: rgba(93, 134, 108, 0.15);
+            color: var(--forest);
+        }
+
+        .app-card.pinewater .app-badge {
+            background: rgba(8, 145, 178, 0.15);
+            color: #0891b2;
+        }
+
+        .app-card.bbm .app-badge {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+
+        .app-card.absensi .app-badge {
+            background: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        /* Alert styles */
+        .alert-custom {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            min-width: 300px;
+            max-width: 90%;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        @media (max-width: 768px) {
+            .apps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .user-welcome {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="page-section active">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-logo">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h2 class="login-title">Katalyst System</h2>
+                <p class="login-subtitle">Unified Management Platform</p>
+
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="login-input-container">
+                        <input type="text" class="login-input" id="username" placeholder="Username" required>
+                        <div class="login-input-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+
+                    <div class="login-input-container">
+                        <input type="password" class="login-input" id="password" placeholder="Password" required>
+                        <div class="login-input-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="password-toggle" onclick="togglePassword()">
+                            <i class="fas fa-eye" id="passwordToggleIcon"></i>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="login-btn">
+                        <i class="fas fa-sign-in-alt me-2"></i>Masuk
+                    </button>
+                </form>
+
+                <div id="loginAlert" style="margin-top: 1rem;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Selection Page -->
+    <div id="appSelectionPage" class="page-section">
+        <div class="app-selection-container">
+            <div class="user-welcome">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">Y</div>
+                    <div class="user-details">
+                        <h3 id="userName">Yuzar</h3>
+                        <p id="userRole">Administrator</p>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt me-2"></i>Keluar
+                </button>
+            </div>
+
+            <div class="app-selection-header">
+                <h1 class="app-selection-title">Pilih Aplikasi</h1>
+                <p class="app-selection-subtitle">Silakan pilih aplikasi yang ingin Anda gunakan</p>
+            </div>
+
+            <div class="apps-grid">
+                <!-- Pinus Selow Regist -->
+                <div class="app-card pinus" onclick="selectApp('pinus')">
+                    <div class="app-icon">
+                        <i class="fas fa-tree"></i>
+                    </div>
+                    <h3 class="app-name">Pinus Selow Regist</h3>
+                    <p class="app-description">Sistem Pendaftaran & Manajemen Pinus</p>
+                    <ul class="app-features">
+                        <li><i class="fas fa-check-circle"></i>Pendaftaran Pelanggan</li>
+                        <li><i class="fas fa-check-circle"></i>Manajemen Data</li>
+                        <li><i class="fas fa-check-circle"></i>Laporan & Statistik</li>
+                    </ul>
+                    <div style="text-align: center;">
+                        <span class="app-badge">
+                            <i class="fas fa-users me-1"></i>Multi-User
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Pinewater -->
+                <div class="app-card pinewater" onclick="selectApp('pinewater')">
+                    <div class="app-icon">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <h3 class="app-name">Pinewater</h3>
+                    <p class="app-description">Sistem Manajemen Air & Distribusi</p>
+                    <ul class="app-features">
+                        <li><i class="fas fa-check-circle"></i>Monitoring Distribusi</li>
+                        <li><i class="fas fa-check-circle"></i>Manajemen Pelanggan</li>
+                        <li><i class="fas fa-check-circle"></i>Billing & Payment</li>
+                    </ul>
+                    <div style="text-align: center;">
+                        <span class="app-badge">
+                            <i class="fas fa-chart-line me-1"></i>Real-time
+                        </span>
+                    </div>
+                </div>
+
+                <!-- BBM -->
+                <div class="app-card bbm" onclick="selectApp('bbm')">
+                    <div class="app-icon">
+                        <i class="fas fa-gas-pump"></i>
+                    </div>
+                    <h3 class="app-name">BBM Management</h3>
+                    <p class="app-description">Sistem Manajemen Bahan Bakar Minyak</p>
+                    <ul class="app-features">
+                        <li><i class="fas fa-check-circle"></i>Inventory Control</li>
+                        <li><i class="fas fa-check-circle"></i>Transaction Tracking</li>
+                        <li><i class="fas fa-check-circle"></i>Financial Reports</li>
+                    </ul>
+                    <div style="text-align: center;">
+                        <span class="app-badge">
+                            <i class="fas fa-shield-alt me-1"></i>Secure
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Absensi -->
+                <div class="app-card absensi" onclick="selectApp('absensi')">
+                    <div class="app-icon">
+                        <i class="fas fa-fingerprint"></i>
+                    </div>
+                    <h3 class="app-name">Absensi</h3>
+                    <p class="app-description">Sistem Absensi & Kehadiran Karyawan</p>
+                    <ul class="app-features">
+                        <li><i class="fas fa-check-circle"></i>Check In/Out</li>
+                        <li><i class="fas fa-check-circle"></i>Riwayat Kehadiran</li>
+                        <li><i class="fas fa-check-circle"></i>Laporan Absensi</li>
+                    </ul>
+                    <div style="text-align: center;">
+                        <span class="app-badge">
+                            <i class="fas fa-clock me-1"></i>Real-time
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pinus Container -->
+    <div id="pinusContainer" class="page-section"></div>
+
+    <!-- Pinewater Container -->
+    <div id="pinewaterContainer" class="page-section"></div>
+
+    <!-- BBM Container -->
+    <div id="bbmContainer" class="page-section"></div>
+
+    <!-- Absensi Container -->
+    <div id="absensiContainer" class="page-section"></div>
+
+    <script>
+        // Global Variables
+        let currentUser = null;
+        let currentApp = null;
+
+        // All Users Database
+        const allUsers = [
+            // Super Admin (has access to all apps)
+            { 
+                username: 'yuzar', 
+                password: 'yuzar123', 
+                role: 'super-admin', 
+                fullName: 'Yuzar',
+                apps: ['pinus', 'pinewater', 'bbm', 'absensi']
+            },
+            // Pinus Users
+            { username: 'selow1', password: 'selow1234', role: 'petugas', fullName: 'Petugas Pinus 1', apps: ['pinus', 'absensi'] },
+            { username: 'selow2', password: 'selow1234', role: 'petugas', fullName: 'Petugas Pinus 2', apps: ['pinus', 'absensi'] },
+            // Pinewater Users
+            { username: 'water1', password: 'water123', role: 'staff', fullName: 'Staff Pinewater 1', apps: ['pinewater', 'absensi'] },
+            { username: 'water2', password: 'water123', role: 'staff', fullName: 'Staff Pinewater 2', apps: ['pinewater', 'absensi'] },
+            // BBM Users
+            { username: 'bbm1', password: 'bbm123', role: 'operator', fullName: 'Operator BBM 1', apps: ['bbm', 'absensi'] },
+            { username: 'bbm2', password: 'bbm123', role: 'operator', fullName: 'Operator BBM 2', apps: ['bbm', 'absensi'] }
+        ];
+
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('passwordToggleIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.className = 'fas fa-eye';
+            }
+        }
+
+        // Login handler
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            const user = allUsers.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('katalyst_current_user', JSON.stringify(user));
+                
+                showAlert('Login berhasil! Selamat datang, ' + user.fullName, 'success');
+                
+                setTimeout(() => {
+                    showAppSelection(user);
+                }, 1000);
+            } else {
+                showAlert('Username atau password salah!', 'danger');
+            }
+        }
+
+        // Show app selection page
+        function showAppSelection(user) {
+            document.getElementById('loginPage').classList.remove('active');
+            document.getElementById('appSelectionPage').classList.add('active');
+            
+            // Update user info
+            const avatar = user.fullName.charAt(0).toUpperCase();
+            document.getElementById('userAvatar').textContent = avatar;
+            document.getElementById('userName').textContent = user.fullName;
+            document.getElementById('userRole').textContent = getRoleLabel(user.role);
+            
+            // Filter apps based on user access
+            const appCards = document.querySelectorAll('.app-card');
+            appCards.forEach(card => {
+                const appType = card.classList.contains('pinus') ? 'pinus' : 
+                               card.classList.contains('pinewater') ? 'pinewater' : 
+                               card.classList.contains('bbm') ? 'bbm' :
+                               card.classList.contains('absensi') ? 'absensi' : '';
+                
+                if (!user.apps.includes(appType)) {
+                    card.style.opacity = '0.5';
+                    card.style.cursor = 'not-allowed';
+                    card.onclick = () => showAlert('Anda tidak memiliki akses ke aplikasi ini', 'danger');
+                }
+            });
+        }
+
+        // Select app
+        function selectApp(appType) {
+            if (!currentUser.apps.includes(appType)) {
+                showAlert('Anda tidak memiliki akses ke aplikasi ini', 'danger');
+                return;
+            }
+
+            currentApp = appType;
+            showAlert('Memuat aplikasi ' + getAppName(appType) + '...', 'success');
+            
+            setTimeout(() => {
+                if (appType === 'pinus') {
+                    loadPinusApp(currentUser);
+                } else if (appType === 'pinewater') {
+                    loadPinewaterApp(currentUser);
+                } else if (appType === 'bbm') {
+                    loadBBMApp(currentUser);
+                } else if (appType === 'absensi') {
+                    loadAbsensiApp(currentUser);
+                }
+            }, 1000);
+        }
+
+        // Get app name
+        function getAppName(appType) {
+            const names = {
+                'pinus': 'Pinus Selow Regist',
+                'pinewater': 'Pinewater',
+                'bbm': 'BBM Management',
+                'absensi': 'Absensi'
+            };
+            return names[appType] || appType;
+        }
+
+        // Get role label
+        function getRoleLabel(role) {
+            const labels = {
+                'super-admin': 'Super Administrator',
+                'petugas': 'Petugas',
+                'staff': 'Staff',
+                'operator': 'Operator'
+            };
+            return labels[role] || role;
+        }
+
+        // Logout handler
+        function handleLogout() {
+            if (confirm('Apakah Anda yakin ingin keluar?')) {
+                currentUser = null;
+                currentApp = null;
+                localStorage.removeItem('katalyst_current_user');
+                
+                // Hide all pages
+                document.querySelectorAll('.page-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show login page
+                document.getElementById('loginPage').classList.add('active');
+                document.getElementById('loginForm').reset();
+                
+                showAlert('Anda telah keluar dari sistem', 'success');
+            }
+        }
+
+        // Load Pinus App
+        function loadPinusApp(user) {
+            document.getElementById('appSelectionPage').classList.remove('active');
+            const container = document.getElementById('pinusContainer');
+            container.classList.add('active');
+            container.innerHTML = `
+                <div style="padding: 3rem; text-align: center;">
+                    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 3rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                        <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--forest) 0%, #3b7a5e 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: white; font-size: 3rem;">
+                            <i class="fas fa-tree"></i>
+                        </div>
+                        <h2 style="color: var(--forest); font-size: 2rem; margin-bottom: 1rem;">Pinus Selow Regist</h2>
+                        <p style="color: var(--tan); font-size: 1.1rem; margin-bottom: 2rem;">Aplikasi sedang dimuat...</p>
+                        <p style="color: #666;">Selamat datang, <strong>${user.fullName}</strong></p>
+                        <button onclick="backToSelection()" style="margin-top: 2rem; padding: 0.8rem 2rem; background: var(--tan); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem;">
+                            <i class="fas fa-arrow-left me-2"></i>Kembali ke Menu
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load Pinewater App
+        function loadPinewaterApp(user) {
+            document.getElementById('appSelectionPage').classList.remove('active');
+            const container = document.getElementById('pinewaterContainer');
+            container.classList.add('active');
+            container.innerHTML = `
+                <div style="padding: 3rem; text-align: center;">
+                    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 3rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                        <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: white; font-size: 3rem;">
+                            <i class="fas fa-water"></i>
+                        </div>
+                        <h2 style="color: #0891b2; font-size: 2rem; margin-bottom: 1rem;">Pinewater</h2>
+                        <p style="color: #06b6d4; font-size: 1.1rem; margin-bottom: 2rem;">Aplikasi sedang dimuat...</p>
+                        <p style="color: #666;">Selamat datang, <strong>${user.fullName}</strong></p>
+                        <button onclick="backToSelection()" style="margin-top: 2rem; padding: 0.8rem 2rem; background: #0891b2; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem;">
+                            <i class="fas fa-arrow-left me-2"></i>Kembali ke Menu
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load BBM App
+        function loadBBMApp(user) {
+            document.getElementById('appSelectionPage').classList.remove('active');
+            const container = document.getElementById('bbmContainer');
+            container.classList.add('active');
+            container.innerHTML = `
+                <div style="padding: 3rem; text-align: center;">
+                    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 3rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                        <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: white; font-size: 3rem;">
+                            <i class="fas fa-gas-pump"></i>
+                        </div>
+                        <h2 style="color: #f59e0b; font-size: 2rem; margin-bottom: 1rem;">BBM Management</h2>
+                        <p style="color: #d97706; font-size: 1.1rem; margin-bottom: 2rem;">Aplikasi sedang dimuat...</p>
+                        <p style="color: #666;">Selamat datang, <strong>${user.fullName}</strong></p>
+                        <button onclick="backToSelection()" style="margin-top: 2rem; padding: 0.8rem 2rem; background: #f59e0b; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem;">
+                            <i class="fas fa-arrow-left me-2"></i>Kembali ke Menu
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load Absensi App
+        function loadAbsensiApp(user) {
+            document.getElementById('appSelectionPage').classList.remove('active');
+            const container = document.getElementById('absensiContainer');
+            container.classList.add('active');
+            
+            // Get today's date
+            const today = new Date();
+            const dateStr = today.toISOString().split('T')[0];
+            
+            // Get attendance data from localStorage
+            let attendanceData = JSON.parse(localStorage.getItem('attendance_data') || '{}');
+            if (!attendanceData[user.username]) {
+                attendanceData[user.username] = {};
+            }
+            
+            const todayAttendance = attendanceData[user.username][dateStr];
+            const isCheckedIn = todayAttendance && todayAttendance.checkIn && !todayAttendance.checkOut;
+            const isCompleted = todayAttendance && todayAttendance.checkOut;
+            
+            container.innerHTML = `
+                <style>
+                    .absensi-container {
+                        min-height: 100vh;
+                        background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%);
+                        padding: 2rem;
+                    }
+                    .absensi-header {
+                        background: white;
+                        border-radius: 15px;
+                        padding: 1.5rem;
+                        margin-bottom: 2rem;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        max-width: 1200px;
+                        margin: 0 auto 2rem;
+                    }
+                    .absensi-main {
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 2rem;
+                    }
+                    .absensi-card {
+                        background: white;
+                        border-radius: 20px;
+                        padding: 2rem;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                    }
+                    .clock-display {
+                        text-align: center;
+                        font-size: 3rem;
+                        font-weight: bold;
+                        color: var(--forest);
+                        margin: 2rem 0;
+                        font-family: 'Courier New', monospace;
+                    }
+                    .date-display {
+                        text-align: center;
+                        font-size: 1.2rem;
+                        color: var(--tan);
+                        margin-bottom: 2rem;
+                    }
+                    .check-btn {
+                        width: 100%;
+                        padding: 1.5rem;
+                        border: none;
+                        border-radius: 15px;
+                        font-size: 1.3rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        margin-bottom: 1rem;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 1rem;
+                    }
+                    .check-in-btn {
+                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                        color: white;
+                    }
+                    .check-in-btn:hover:not(:disabled) {
+                        transform: translateY(-3px);
+                        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+                    }
+                    .check-out-btn {
+                        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                        color: white;
+                    }
+                    .check-out-btn:hover:not(:disabled) {
+                        transform: translateY(-3px);
+                        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+                    }
+                    .check-btn:disabled {
+                        opacity: 0.5;
+                        cursor: not-allowed;
+                    }
+                    .status-badge {
+                        display: inline-block;
+                        padding: 0.5rem 1rem;
+                        border-radius: 20px;
+                        font-size: 0.9rem;
+                        font-weight: 600;
+                        margin: 1rem 0;
+                    }
+                    .status-in {
+                        background: rgba(16, 185, 129, 0.15);
+                        color: #059669;
+                    }
+                    .status-out {
+                        background: rgba(239, 68, 68, 0.15);
+                        color: #dc2626;
+                    }
+                    .status-complete {
+                        background: rgba(168, 85, 247, 0.15);
+                        color: #a855f7;
+                    }
+                    .history-item {
+                        padding: 1rem;
+                        border-bottom: 1px solid var(--beige);
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    .history-item:last-child {
+                        border-bottom: none;
+                    }
+                    .history-date {
+                        font-weight: 600;
+                        color: var(--forest);
+                    }
+                    .history-times {
+                        display: flex;
+                        gap: 1rem;
+                        font-size: 0.9rem;
+                        color: #666;
+                    }
+                    @media (max-width: 768px) {
+                        .absensi-main {
+                            grid-template-columns: 1fr;
+                        }
+                    }
+                </style>
+                
+                <div class="absensi-container">
+                    <div class="absensi-header">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                                <i class="fas fa-fingerprint"></i>
+                            </div>
+                            <div>
+                                <h2 style="color: var(--forest); margin: 0; font-size: 1.5rem;">Sistem Absensi</h2>
+                                <p style="color: var(--tan); margin: 0; font-size: 0.9rem;">${user.fullName}</p>
+                            </div>
+                        </div>
+                        <button onclick="backToSelection()" style="padding: 0.8rem 1.5rem; background: var(--tan); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 500;">
+                            <i class="fas fa-arrow-left me-2"></i>Kembali
+                        </button>
+                    </div>
+                    
+                    <div class="absensi-main">
+                        <!-- Check In/Out Card -->
+                        <div class="absensi-card">
+                            <h3 style="color: var(--forest); font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">
+                                <i class="fas fa-clock me-2"></i>Absensi Hari Ini
+                            </h3>
+                            
+                            <div class="clock-display" id="clockDisplay">00:00:00</div>
+                            <div class="date-display" id="dateDisplay"></div>
+                            
+                            <div style="text-align: center; margin-bottom: 2rem;">
+                                ${isCompleted ? 
+                                    '<span class="status-badge status-complete"><i class="fas fa-check-circle me-2"></i>Absensi Selesai</span>' :
+                                    isCheckedIn ? 
+                                    '<span class="status-badge status-in"><i class="fas fa-sign-in-alt me-2"></i>Sudah Check In</span>' :
+                                    '<span class="status-badge status-out"><i class="fas fa-clock me-2"></i>Belum Check In</span>'
+                                }
+                            </div>
+                            
+                            ${todayAttendance ? `
+                                <div style="background: var(--cream); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                        <span style="color: #666;"><i class="fas fa-sign-in-alt me-2" style="color: #10b981;"></i>Check In:</span>
+                                        <strong style="color: var(--forest);">${todayAttendance.checkIn || '-'}</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: #666;"><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span>
+                                        <strong style="color: var(--forest);">${todayAttendance.checkOut || '-'}</strong>
+                                    </div>
+                                    ${todayAttendance.checkOut ? `
+                                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;">
+                                            <span style="color: #666;">Total Jam Kerja:</span>
+                                            <strong style="color: var(--forest); font-size: 1.2rem; display: block; margin-top: 0.5rem;">
+                                                ${calculateWorkHours(todayAttendance.checkIn, todayAttendance.checkOut)}
+                                            </strong>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
+                            
+                            <button class="check-btn check-in-btn" onclick="checkIn()" ${isCheckedIn || isCompleted ? 'disabled' : ''}>
+                                <i class="fas fa-sign-in-alt" style="font-size: 1.5rem;"></i>
+                                <span>Check In</span>
+                            </button>
+                            
+                            <button class="check-btn check-out-btn" onclick="checkOut()" ${!isCheckedIn || isCompleted ? 'disabled' : ''}>
+                                <i class="fas fa-sign-out-alt" style="font-size: 1.5rem;"></i>
+                                <span>Check Out</span>
+                            </button>
+                        </div>
+                        
+                        <!-- History Card -->
+                        <div class="absensi-card">
+                            <h3 style="color: var(--forest); font-size: 1.5rem; margin-bottom: 1.5rem;">
+                                <i class="fas fa-history me-2"></i>Riwayat Absensi
+                            </h3>
+                            
+                            <div id="historyContainer" style="max-height: 500px; overflow-y: auto;">
+                                ${generateHistoryHTML(attendanceData[user.username])}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Start clock
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        // Update clock display
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            const clockEl = document.getElementById('clockDisplay');
+            const dateEl = document.getElementById('dateDisplay');
+            
+            if (clockEl) clockEl.textContent = timeStr;
+            if (dateEl) dateEl.textContent = dateStr;
+        }
+
+        // Check In
+        function checkIn() {
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            let attendanceData = JSON.parse(localStorage.getItem('attendance_data') || '{}');
+            if (!attendanceData[currentUser.username]) {
+                attendanceData[currentUser.username] = {};
+            }
+            
+            attendanceData[currentUser.username][dateStr] = {
+                checkIn: timeStr,
+                checkOut: null,
+                date: dateStr
+            };
+            
+            localStorage.setItem('attendance_data', JSON.stringify(attendanceData));
+            
+            showAlert('Check In berhasil! Waktu: ' + timeStr, 'success');
+            loadAbsensiApp(currentUser);
+        }
+
+        // Check Out
+        function checkOut() {
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            let attendanceData = JSON.parse(localStorage.getItem('attendance_data') || '{}');
+            
+            if (attendanceData[currentUser.username] && attendanceData[currentUser.username][dateStr]) {
+                attendanceData[currentUser.username][dateStr].checkOut = timeStr;
+                localStorage.setItem('attendance_data', JSON.stringify(attendanceData));
+                
+                showAlert('Check Out berhasil! Waktu: ' + timeStr, 'success');
+                loadAbsensiApp(currentUser);
+            }
+        }
+
+        // Calculate work hours
+        function calculateWorkHours(checkIn, checkOut) {
+            if (!checkIn || !checkOut) return '-';
+            
+            const [h1, m1, s1] = checkIn.split(':').map(Number);
+            const [h2, m2, s2] = checkOut.split(':').map(Number);
+            
+            const start = h1 * 3600 + m1 * 60 + s1;
+            const end = h2 * 3600 + m2 * 60 + s2;
+            
+            const diff = end - start;
+            const hours = Math.floor(diff / 3600);
+            const minutes = Math.floor((diff % 3600) / 60);
+            
+            return `${hours} jam ${minutes} menit`;
+        }
+
+        // Generate history HTML
+        function generateHistoryHTML(userData) {
+            if (!userData || Object.keys(userData).length === 0) {
+                return '<p style="text-align: center; color: #999; padding: 2rem;">Belum ada riwayat absensi</p>';
+            }
+            
+            const dates = Object.keys(userData).sort().reverse();
+            
+            return dates.map(date => {
+                const attendance = userData[date];
+                const dateObj = new Date(date);
+                const formattedDate = dateObj.toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+                
+                return `
+                    <div class="history-item">
+                        <div>
+                            <div class="history-date">${formattedDate}</div>
+                            ${attendance.checkOut ? 
+                                `<span style="font-size: 0.85rem; color: #666;">Durasi: ${calculateWorkHours(attendance.checkIn, attendance.checkOut)}</span>` :
+                                '<span style="font-size: 0.85rem; color: #ef4444;">Belum Check Out</span>'
+                            }
+                        </div>
+                        <div class="history-times">
+                            <div>
+                                <i class="fas fa-sign-in-alt" style="color: #10b981;"></i>
+                                ${attendance.checkIn}
+                            </div>
+                            <div>
+                                <i class="fas fa-sign-out-alt" style="color: #ef4444;"></i>
+                                ${attendance.checkOut || '-'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Back to selection
+        function backToSelection() {
+            document.getElementById('pinusContainer').classList.remove('active');
+            document.getElementById('pinewaterContainer').classList.remove('active');
+            document.getElementById('bbmContainer').classList.remove('active');
+            document.getElementById('absensiContainer').classList.remove('active');
+            document.getElementById('appSelectionPage').classList.add('active');
+        }
+
+        // Show alert
+        function showAlert(message, type = 'success') {
+            document.querySelectorAll('.alert-custom').forEach(el => el.remove());
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert-custom alert-${type}`;
+            
+            const iconClass = type === 'success' ? 'check-circle' : 'exclamation-triangle';
+            
+            alertDiv.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span><i class="fas fa-${iconClass} me-2"></i>${message}</span>
+                    <button type="button" style="background: none; border: none; color: inherit; cursor: pointer; padding: 0; margin-left: 1rem;" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) alertDiv.remove();
+            }, 5000);
+        }
+
+        // Check authentication on load
+        window.addEventListener('load', function() {
+            const savedUser = localStorage.getItem('katalyst_current_user');
+            if (savedUser) {
+                const user = JSON.parse(savedUser);
+                currentUser = user;
+                showAppSelection(user);
+            }
+            
+            console.log('🚀 Katalyst Unified System loaded');
+            console.log('📋 Akun tersedia:');
+            console.log('   Super Admin: yuzar/yuzar123 (akses semua aplikasi)');
+            console.log('   Pinus: selow1/selow1234, selow2/selow1234');
+            console.log('   Pinewater: water1/water123, water2/water123');
+            console.log('   BBM: bbm1/bbm123, bbm2/bbm123');
+            console.log('✅ Semua user memiliki akses ke Absensi');
+        });
+    </script>
+</body>
+</html>
