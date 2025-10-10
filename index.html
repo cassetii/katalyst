@@ -12,7 +12,6 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, query, where, orderBy, limit, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAEyZF2Ib10UD7vv8l3nclb-KfChIczIz4",
             authDomain: "pinewater-393fe.firebaseapp.com",
@@ -23,615 +22,123 @@
             measurementId: "G-931M74XQQK"
         };
 
-        // Initialize Firebase
-        let db = null;
-        let firebaseEnabled = false;
-        
         try {
             const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            firebaseEnabled = true;
-            console.log('✅ Firebase connected successfully');
+            const db = getFirestore(app);
+            console.log('✅ Firebase connected');
             window.firebaseDb = db;
             window.firebaseEnabled = true;
             window.firebaseModules = { collection, doc, setDoc, getDoc, updateDoc, query, where, orderBy, limit, getDocs, serverTimestamp };
         } catch (error) {
-            console.error('❌ Firebase connection failed:', error);
-            console.log('📦 Using localStorage as fallback');
+            console.error('❌ Firebase failed:', error);
             window.firebaseEnabled = false;
         }
     </script>
     
     <style>
         :root {
-            /* Pinuslo Color Palette */
             --cream: #F5F5F0;
             --beige: #E6D8C3;
             --tan: #C2A68C;
             --forest: #5D866C;
-            
-            /* Additional Colors */
-            --primary: var(--forest);
-            --secondary: var(--tan);
-            --light: var(--cream);
-            --accent: var(--beige);
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%);
-            min-height: 100vh;
-        }
-
-        /* Login Page */
-        .login-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%);
-        }
-
-        .login-card {
-            background: white;
-            border-radius: 20px;
-            padding: 2.5rem;
-            box-shadow: 0 20px 60px rgba(93, 134, 108, 0.3);
-            width: 100%;
-            max-width: 420px;
-            animation: slideIn 0.8s ease-out;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .login-logo {
-            width: 90px;
-            height: 90px;
-            background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            color: white;
-            font-size: 2.5rem;
-            box-shadow: 0 8px 25px rgba(93, 134, 108, 0.4);
-        }
-
-        .login-title {
-            color: var(--forest);
-            font-weight: 700;
-            font-size: 1.8rem;
-            text-align: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .login-subtitle {
-            color: var(--tan);
-            font-size: 0.95rem;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .login-input-container {
-            position: relative;
-            margin-bottom: 1.5rem;
-        }
-
-        .login-input {
-            width: 100%;
-            padding: 1rem 1rem 1rem 3rem;
-            border: 2px solid var(--beige);
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: var(--cream);
-        }
-
-        .login-input:focus {
-            border-color: var(--forest);
-            box-shadow: 0 0 0 0.2rem rgba(93, 134, 108, 0.25);
-            outline: none;
-            background: white;
-        }
-
-        .login-input-icon {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--forest);
-            font-size: 1.1rem;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--tan);
-            cursor: pointer;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 1.1rem;
-            background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(93, 134, 108, 0.3);
-        }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(93, 134, 108, 0.4);
-        }
-
-        /* App Selection Page */
-        .app-selection-container {
-            min-height: 100vh;
-            padding: 2rem;
-            background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%);
-        }
-
-        .app-selection-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .user-welcome {
-            background: white;
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            max-width: 600px;
-            margin: 0 auto 3rem;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-avatar {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .user-details h3 {
-            color: var(--forest);
-            font-size: 1.3rem;
-            margin: 0;
-            font-weight: 600;
-        }
-
-        .user-details p {
-            color: var(--tan);
-            margin: 0;
-            font-size: 0.9rem;
-        }
-
-        .logout-btn {
-            background: var(--tan);
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .logout-btn:hover {
-            background: var(--forest);
-            transform: translateY(-2px);
-        }
-
-        .app-selection-title {
-            color: var(--forest);
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .app-selection-subtitle {
-            color: var(--tan);
-            font-size: 1.1rem;
-        }
-
-        .apps-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-
-        .app-card {
-            background: white;
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 3px solid transparent;
-        }
-
-        .app-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-            border-color: var(--forest);
-        }
-
-        .app-card.pinus {
-            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
-        }
-
-        .app-card.pinewater {
-            background: linear-gradient(135deg, #ffffff 0%, #ecfeff 100%);
-        }
-
-        .app-card.bbm {
-            background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
-        }
-
-        .app-card.absensi {
-            background: linear-gradient(135deg, #ffffff 0%, #f3e8ff 100%);
-        }
-
-        .app-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            font-size: 2.5rem;
-            color: white;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
-
-        .app-card.pinus .app-icon {
-            background: linear-gradient(135deg, var(--forest) 0%, #3b7a5e 100%);
-        }
-
-        .app-card.pinewater .app-icon {
-            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
-        }
-
-        .app-card.bbm .app-icon {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        }
-
-        .app-card.absensi .app-icon {
-            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
-        }
-
-        .app-name {
-            color: var(--forest);
-            font-size: 1.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .app-description {
-            color: var(--tan);
-            text-align: center;
-            font-size: 0.95rem;
-            margin-bottom: 1rem;
-        }
-
-        .app-features {
-            list-style: none;
-            padding: 0;
-            margin: 1rem 0;
-        }
-
-        .app-features li {
-            color: #666;
-            font-size: 0.9rem;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--beige);
-        }
-
-        .app-features li:last-child {
-            border-bottom: none;
-        }
-
-        .app-features li i {
-            color: var(--forest);
-            margin-right: 0.5rem;
-            width: 20px;
-        }
-
-        .app-badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-top: 1rem;
-        }
-
-        .app-card.pinus .app-badge {
-            background: rgba(93, 134, 108, 0.15);
-            color: var(--forest);
-        }
-
-        .app-card.pinewater .app-badge {
-            background: rgba(8, 145, 178, 0.15);
-            color: #0891b2;
-        }
-
-        .app-card.bbm .app-badge {
-            background: rgba(245, 158, 11, 0.15);
-            color: #f59e0b;
-        }
-
-        .app-card.absensi .app-badge {
-            background: rgba(168, 85, 247, 0.15);
-            color: #a855f7;
-        }
-
-        .page-section {
-            display: none;
-        }
-
-        .page-section.active {
-            display: block;
-        }
-
-        /* Alert styles */
-        .alert-custom {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 9999;
-            min-width: 300px;
-            max-width: 90%;
-            border-radius: 12px;
-            padding: 1rem 1.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            animation: slideDown 0.5s ease-out;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-        }
-
-        .alert-danger {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-        }
-
-        @media (max-width: 768px) {
-            .apps-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .user-welcome {
-                flex-direction: column;
-                text-align: center;
-                gap: 1rem;
-            }
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%); min-height: 100vh; }
+        .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%); }
+        .login-card { background: white; border-radius: 20px; padding: 2.5rem; box-shadow: 0 20px 60px rgba(93, 134, 108, 0.3); width: 100%; max-width: 420px; animation: slideIn 0.8s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
+        .login-logo { width: 90px; height: 90px; background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: white; font-size: 2.5rem; box-shadow: 0 8px 25px rgba(93, 134, 108, 0.4); }
+        .login-title { color: var(--forest); font-weight: 700; font-size: 1.8rem; text-align: center; margin-bottom: 0.5rem; }
+        .login-subtitle { color: var(--tan); font-size: 0.95rem; text-align: center; margin-bottom: 2rem; }
+        .login-input-container { position: relative; margin-bottom: 1.5rem; }
+        .login-input { width: 100%; padding: 1rem 1rem 1rem 3rem; border: 2px solid var(--beige); border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; background: var(--cream); }
+        .login-input:focus { border-color: var(--forest); box-shadow: 0 0 0 0.2rem rgba(93, 134, 108, 0.25); outline: none; background: white; }
+        .login-input-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--forest); font-size: 1.1rem; }
+        .password-toggle { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--tan); cursor: pointer; }
+        .login-btn { width: 100%; padding: 1.1rem; background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(93, 134, 108, 0.3); }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(93, 134, 108, 0.4); }
+        .app-selection-container { min-height: 100vh; padding: 2rem; background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%); }
+        .user-welcome { background: white; border-radius: 15px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; max-width: 600px; margin: 0 auto 3rem; }
+        .user-avatar { width: 60px; height: 60px; background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold; }
+        .logout-btn { background: var(--tan); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; }
+        .logout-btn:hover { background: var(--forest); transform: translateY(-2px); }
+        .apps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+        .app-card { background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s ease; cursor: pointer; border: 3px solid transparent; }
+        .app-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-color: var(--forest); }
+        .app-icon { width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem; color: white; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .app-card.pinus { background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); }
+        .app-card.pinus .app-icon { background: linear-gradient(135deg, var(--forest) 0%, #3b7a5e 100%); }
+        .app-card.absensi { background: linear-gradient(135deg, #ffffff 0%, #f3e8ff 100%); }
+        .app-card.absensi .app-icon { background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); }
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+        .alert-custom { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; min-width: 300px; max-width: 90%; border-radius: 12px; padding: 1rem 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideDown 0.5s ease-out; }
+        @keyframes slideDown { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .alert-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
     </style>
 </head>
 <body>
-    <!-- Login Page -->
     <div id="loginPage" class="page-section active">
         <div class="login-container">
             <div class="login-card">
-                <div class="login-logo">
-                    <i class="fas fa-rocket"></i>
-                </div>
+                <div class="login-logo"><i class="fas fa-rocket"></i></div>
                 <h2 class="login-title">Pinuslo Apps</h2>
                 <p class="login-subtitle">Unified Management Platform</p>
-
-                <form id="loginForm" onsubmit="handleLogin(event)">
+                <form onsubmit="return handleLogin(event)">
                     <div class="login-input-container">
                         <input type="text" class="login-input" id="username" placeholder="Username" required>
-                        <div class="login-input-icon">
-                            <i class="fas fa-user"></i>
-                        </div>
+                        <div class="login-input-icon"><i class="fas fa-user"></i></div>
                     </div>
-
                     <div class="login-input-container">
                         <input type="password" class="login-input" id="password" placeholder="Password" required>
-                        <div class="login-input-icon">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <div class="password-toggle" onclick="togglePassword()">
-                            <i class="fas fa-eye" id="passwordToggleIcon"></i>
-                        </div>
+                        <div class="login-input-icon"><i class="fas fa-lock"></i></div>
+                        <div class="password-toggle" onclick="togglePassword()"><i class="fas fa-eye" id="passwordToggleIcon"></i></div>
                     </div>
-
-                    <button type="submit" class="login-btn">
-                        <i class="fas fa-sign-in-alt me-2"></i>Masuk
-                    </button>
+                    <button type="submit" class="login-btn"><i class="fas fa-sign-in-alt me-2"></i>Masuk</button>
                 </form>
-
-                <div id="loginAlert" style="margin-top: 1rem;"></div>
             </div>
         </div>
     </div>
 
-    <!-- App Selection Page -->
     <div id="appSelectionPage" class="page-section">
         <div class="app-selection-container">
             <div class="user-welcome">
-                <div class="user-info">
+                <div style="display: flex; align-items: center; gap: 1rem;">
                     <div class="user-avatar" id="userAvatar">Y</div>
-                    <div class="user-details">
-                        <h3 id="userName">Yuzar</h3>
-                        <p id="userRole">Administrator</p>
+                    <div>
+                        <h3 id="userName" style="color: var(--forest); margin: 0;">Yuzar</h3>
+                        <p id="userRole" style="color: var(--tan); margin: 0; font-size: 0.9rem;">Administrator</p>
                     </div>
                 </div>
-                <button class="logout-btn" onclick="handleLogout()">
-                    <i class="fas fa-sign-out-alt me-2"></i>Keluar
-                </button>
+                <button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt me-2"></i>Keluar</button>
             </div>
-
-            <div class="app-selection-header">
-                <h1 class="app-selection-title">Pilih Aplikasi</h1>
-                <p class="app-selection-subtitle">Silakan pilih aplikasi yang ingin Anda gunakan</p>
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <h1 style="color: var(--forest); font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Pilih Aplikasi</h1>
+                <p style="color: var(--tan); font-size: 1.1rem;">Silakan pilih aplikasi yang ingin Anda gunakan</p>
             </div>
-
             <div class="apps-grid">
-                <!-- Pinuslo Register -->
                 <div class="app-card pinus" data-app="pinus">
-                    <div class="app-icon">
-                        <i class="fas fa-tree"></i>
-                    </div>
-                    <h3 class="app-name">Pinuslo Register</h3>
-                    <p class="app-description">Sistem Pendaftaran & Manajemen Pinus</p>
-                    <ul class="app-features">
-                        <li><i class="fas fa-check-circle"></i>Pendaftaran Pelanggan</li>
-                        <li><i class="fas fa-check-circle"></i>Manajemen Data</li>
-                        <li><i class="fas fa-check-circle"></i>Laporan & Statistik</li>
-                    </ul>
-                    <div style="text-align: center;">
-                        <span class="app-badge">
-                            <i class="fas fa-users me-1"></i>Multi-User
-                        </span>
-                    </div>
+                    <div class="app-icon"><i class="fas fa-tree"></i></div>
+                    <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinuslo Register</h3>
+                    <p style="color: var(--tan); text-align: center; font-size: 0.95rem;">Sistem Pendaftaran & Manajemen Pinus</p>
                 </div>
-
-                <!-- Pinewater -->
-                <div class="app-card pinewater" data-app="pinewater">
-                    <div class="app-icon">
-                        <i class="fas fa-water"></i>
-                    </div>
-                    <h3 class="app-name">Pinewater</h3>
-                    <p class="app-description">Sistem Manajemen Air & Distribusi</p>
-                    <ul class="app-features">
-                        <li><i class="fas fa-check-circle"></i>Monitoring Distribusi</li>
-                        <li><i class="fas fa-check-circle"></i>Manajemen Pelanggan</li>
-                        <li><i class="fas fa-check-circle"></i>Billing & Payment</li>
-                    </ul>
-                    <div style="text-align: center;">
-                        <span class="app-badge">
-                            <i class="fas fa-chart-line me-1"></i>Real-time
-                        </span>
-                    </div>
-                </div>
-
-                <!-- BBM -->
-                <div class="app-card bbm" data-app="bbm">
-                    <div class="app-icon">
-                        <i class="fas fa-gas-pump"></i>
-                    </div>
-                    <h3 class="app-name">BBM Management</h3>
-                    <p class="app-description">Sistem Manajemen Bahan Bakar Minyak</p>
-                    <ul class="app-features">
-                        <li><i class="fas fa-check-circle"></i>Inventory Control</li>
-                        <li><i class="fas fa-check-circle"></i>Transaction Tracking</li>
-                        <li><i class="fas fa-check-circle"></i>Financial Reports</li>
-                    </ul>
-                    <div style="text-align: center;">
-                        <span class="app-badge">
-                            <i class="fas fa-shield-alt me-1"></i>Secure
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Absensi -->
                 <div class="app-card absensi" data-app="absensi">
-                    <div class="app-icon">
-                        <i class="fas fa-fingerprint"></i>
-                    </div>
-                    <h3 class="app-name">Absensi</h3>
-                    <p class="app-description">Sistem Absensi & Kehadiran Karyawan</p>
-                    <ul class="app-features">
-                        <li><i class="fas fa-check-circle"></i>Check In/Out</li>
-                        <li><i class="fas fa-check-circle"></i>Riwayat Kehadiran</li>
-                        <li><i class="fas fa-check-circle"></i>Laporan Absensi</li>
-                    </ul>
-                    <div style="text-align: center;">
-                        <span class="app-badge">
-                            <i class="fas fa-clock me-1"></i>Real-time
-                        </span>
-                    </div>
+                    <div class="app-icon"><i class="fas fa-fingerprint"></i></div>
+                    <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Absensi</h3>
+                    <p style="color: var(--tan); text-align: center; font-size: 0.95rem;">Sistem Absensi & Kehadiran Karyawan</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Pinus Container -->
-    <div id="pinusContainer" class="page-section"></div>
-
-    <!-- Pinewater Container -->
-    <div id="pinewaterContainer" class="page-section"></div>
-
-    <!-- BBM Container -->
-    <div id="bbmContainer" class="page-section"></div>
-
-    <!-- Absensi Container -->
     <div id="absensiContainer" class="page-section"></div>
 
     <script>
-        // Global Variables
         let currentUser = null;
-        let currentApp = null;
-
-        // All Users Database
         const allUsers = [
-            // Super Admin (has access to all apps)
-            { 
-                username: 'yuzar', 
-                password: 'yuzar123', 
-                role: 'super-admin', 
-                fullName: 'Yuzar',
-                apps: ['pinus', 'pinewater', 'bbm', 'absensi']
-            },
-            { 
-                username: 'iqbal', 
-                password: 'iqbal123', 
-                role: 'super-admin', 
-                fullName: 'Iqbal',
-                apps: ['pinus', 'pinewater', 'bbm', 'absensi']
-            },
-            // Staff Users (all have access to absensi)
+            { username: 'yuzar', password: 'yuzar123', role: 'super-admin', fullName: 'Yuzar', apps: ['pinus', 'absensi'] },
+            { username: 'iqbal', password: 'iqbal123', role: 'super-admin', fullName: 'Iqbal', apps: ['pinus', 'absensi'] },
             { username: 'agus', password: 'agus123', role: 'staff', fullName: 'Agus', apps: ['absensi'] },
             { username: 'selfi', password: 'selfi123', role: 'staff', fullName: 'Selfi', apps: ['absensi'] },
             { username: 'fadel', password: 'fadel123', role: 'staff', fullName: 'Fadel', apps: ['absensi'] },
@@ -642,1219 +149,275 @@
             { username: 'bate', password: 'bate123', role: 'staff', fullName: 'Bate', apps: ['absensi'] },
             { username: 'boncel', password: 'boncel123', role: 'staff', fullName: 'Boncel', apps: ['absensi'] },
             { username: 'pian', password: 'pian123', role: 'staff', fullName: 'Pian', apps: ['absensi'] },
-            { username: 'juned', password: 'juned123', role: 'staff', fullName: 'Juned', apps: ['absensi'] },
-            // Pinuslo Users
-            { username: 'selow1', password: 'selow1234', role: 'petugas', fullName: 'Petugas Pinuslo 1', apps: ['pinus', 'absensi'] },
-            { username: 'selow2', password: 'selow1234', role: 'petugas', fullName: 'Petugas Pinuslo 2', apps: ['pinus', 'absensi'] },
-            // Pinewater Users
-            { username: 'water1', password: 'water123', role: 'staff', fullName: 'Staff Pinewater 1', apps: ['pinewater', 'absensi'] },
-            { username: 'water2', password: 'water123', role: 'staff', fullName: 'Staff Pinewater 2', apps: ['pinewater', 'absensi'] },
-            // BBM Users
-            { username: 'bbm1', password: 'bbm123', role: 'operator', fullName: 'Operator BBM 1', apps: ['bbm', 'absensi'] },
-            { username: 'bbm2', password: 'bbm123', role: 'operator', fullName: 'Operator BBM 2', apps: ['bbm', 'absensi'] }
+            { username: 'juned', password: 'juned123', role: 'staff', fullName: 'Juned', apps: ['absensi'] }
         ];
 
-        // Toggle password visibility
         function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('passwordToggleIcon');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.className = 'fas fa-eye-slash';
+            const input = document.getElementById('password');
+            const icon = document.getElementById('passwordToggleIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
             } else {
-                passwordInput.type = 'password';
-                toggleIcon.className = 'fas fa-eye';
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
             }
         }
 
-        // Login handler
         function handleLogin(event) {
             event.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            
             const user = allUsers.find(u => u.username === username && u.password === password);
             
             if (user) {
                 currentUser = user;
-                localStorage.setItem('pinuslo_current_user', JSON.stringify(user));
-                
+                localStorage.setItem('pinuslo_user', JSON.stringify(user));
                 showAlert('Login berhasil! Selamat datang, ' + user.fullName, 'success');
-                
-                setTimeout(() => {
-                    showAppSelection(user);
-                }, 1000);
+                setTimeout(() => showAppSelection(user), 1000);
             } else {
                 showAlert('Username atau password salah!', 'danger');
             }
+            return false;
         }
 
-        // Show app selection page
         function showAppSelection(user) {
             document.getElementById('loginPage').classList.remove('active');
             document.getElementById('appSelectionPage').classList.add('active');
-            
-            // Update user info
-            const avatar = user.fullName.charAt(0).toUpperCase();
-            document.getElementById('userAvatar').textContent = avatar;
+            document.getElementById('userAvatar').textContent = user.fullName.charAt(0).toUpperCase();
             document.getElementById('userName').textContent = user.fullName;
-            document.getElementById('userRole').textContent = getRoleLabel(user.role);
+            document.getElementById('userRole').textContent = user.role === 'super-admin' ? 'Super Administrator' : 'Staff';
             
-            // Add event listeners to app cards
             setTimeout(() => {
-                const appCards = document.querySelectorAll('.app-card');
-                appCards.forEach(card => {
+                document.querySelectorAll('.app-card').forEach(card => {
                     const appType = card.getAttribute('data-app');
-                    
                     if (!user.apps.includes(appType)) {
                         card.style.opacity = '0.5';
                         card.style.cursor = 'not-allowed';
-                        card.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            showAlert('Anda tidak memiliki akses ke aplikasi ini', 'danger');
-                        });
+                        card.onclick = () => showAlert('Anda tidak memiliki akses', 'danger');
                     } else {
-                        card.style.cursor = 'pointer';
-                        card.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            selectApp(appType);
-                        });
+                        card.onclick = () => {
+                            if (appType === 'absensi') loadAbsensi(user);
+                        };
                     }
                 });
             }, 100);
         }
 
-        // Select app
-        function selectApp(appType) {
-            if (!currentUser.apps.includes(appType)) {
-                showAlert('Anda tidak memiliki akses ke aplikasi ini', 'danger');
-                return false;
-            }
-
-            currentApp = appType;
-            showAlert('Memuat aplikasi ' + getAppName(appType) + '...', 'success');
-            
-            setTimeout(() => {
-                if (appType === 'pinus') {
-                    loadPinusApp(currentUser);
-                } else if (appType === 'pinewater') {
-                    loadPinewaterApp(currentUser);
-                } else if (appType === 'bbm') {
-                    loadBBMApp(currentUser);
-                } else if (appType === 'absensi') {
-                    loadAbsensiApp(currentUser);
-                }
-            }, 500);
-            
-            return false;
-        }
-
-        // Get app name
-        function getAppName(appType) {
-            const names = {
-                'pinus': 'Pinuslo Register',
-                'pinewater': 'Pinewater',
-                'bbm': 'BBM Management',
-                'absensi': 'Absensi'
-            };
-            return names[appType] || appType;
-        }
-
-        // Get role label
-        function getRoleLabel(role) {
-            const labels = {
-                'super-admin': 'Super Administrator',
-                'petugas': 'Petugas',
-                'staff': 'Staff',
-                'operator': 'Operator'
-            };
-            return labels[role] || role;
-        }
-
-        // Logout handler
         function handleLogout() {
-            if (confirm('Apakah Anda yakin ingin keluar?')) {
+            if (confirm('Yakin ingin keluar?')) {
                 currentUser = null;
-                currentApp = null;
-                localStorage.removeItem('pinuslo_current_user');
-                
-                // Hide all pages
-                document.querySelectorAll('.page-section').forEach(section => {
-                    section.classList.remove('active');
-                });
-                
-                // Show login page
+                localStorage.removeItem('pinuslo_user');
+                document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
                 document.getElementById('loginPage').classList.add('active');
-                document.getElementById('loginForm').reset();
-                
-                showAlert('Anda telah keluar dari sistem', 'success');
+                document.querySelector('form').reset();
+                showAlert('Berhasil keluar', 'success');
             }
         }
 
-        // Load Pinus App
-        function loadPinusApp(user) {
-            document.getElementById('appSelectionPage').classList.remove('active');
-            const container = document.getElementById('pinusContainer');
-            container.classList.add('active');
-            container.innerHTML = `
-                <div style="padding: 3rem; text-align: center;">
-                    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 3rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                        <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--forest) 0%, #3b7a5e 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: white; font-size: 3rem;">
-                            <i class="fas fa-tree"></i>
-                        </div>
-                        <h2 style="color: var(--forest); font-size: 2rem; margin-bottom: 1rem;">Pinuslo Register</h2>
-                        <p style="color: var(--tan); font-size: 1.1rem; margin-bottom: 2rem;">Aplikasi sedang dimuat...</p>
-                        <p style="color: #666;">Selamat datang, <strong>${user.fullName}</strong></p>
-                        <button onclick="backToSelection()" style="margin-top: 2rem; padding: 0.8rem 2rem; background: var(--tan); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem;">
-                            <i class="fas fa-arrow-left me-2"></i>Kembali ke Menu
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Load Pinewater App
-        function loadPinewaterApp(user) {
-            document.getElementById('appSelectionPage').classList.remove('active');
-            const container = document.getElementById('pinewaterContainer');
-            container.classList.add('active');
-            container.innerHTML = `
-                <div style="padding: 3rem; text-align: center;">
-                    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 3rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                        <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: white; font-size: 3rem;">
-                            <i class="fas fa-water"></i>
-                        </div>
-                        <h2 style="color: #0891b2; font-size: 2rem; margin-bottom: 1rem;">Pinewater</h2>
-                        <p style="color: #06b6d4; font-size: 1.1rem; margin-bottom: 2rem;">Aplikasi sedang dimuat...</p>
-                        <p style="color: #666;">Selamat datang, <strong>${user.fullName}</strong></p>
-                        <button onclick="backToSelection()" style="margin-top: 2rem; padding: 0.8rem 2rem; background: #0891b2; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem;">
-                            <i class="fas fa-arrow-left me-2"></i>Kembali ke Menu
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Load BBM App
-        function loadBBMApp(user) {
-            document.getElementById('appSelectionPage').classList.remove('active');
-            const container = document.getElementById('bbmContainer');
-            container.classList.add('active');
-            container.innerHTML = `
-                <div style="padding: 3rem; text-align: center;">
-                    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 3rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                        <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: white; font-size: 3rem;">
-                            <i class="fas fa-gas-pump"></i>
-                        </div>
-                        <h2 style="color: #f59e0b; font-size: 2rem; margin-bottom: 1rem;">BBM Management</h2>
-                        <p style="color: #d97706; font-size: 1.1rem; margin-bottom: 2rem;">Aplikasi sedang dimuat...</p>
-                        <p style="color: #666;">Selamat datang, <strong>${user.fullName}</strong></p>
-                        <button onclick="backToSelection()" style="margin-top: 2rem; padding: 0.8rem 2rem; background: #f59e0b; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem;">
-                            <i class="fas fa-arrow-left me-2"></i>Kembali ke Menu
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Load Absensi App
-        async function loadAbsensiApp(user) {
+        async function loadAbsensi(user) {
             document.getElementById('appSelectionPage').classList.remove('active');
             const container = document.getElementById('absensiContainer');
             container.classList.add('active');
             
-            // Get today's date
-            const today = new Date();
-            const dateStr = today.toISOString().split('T')[0];
-            
-            // Load attendance data
-            const todayAttendance = await loadAttendanceData(user.username, dateStr);
-            const isCheckedIn = todayAttendance && todayAttendance.checkIn && !todayAttendance.checkOut;
-            const isCompleted = todayAttendance && todayAttendance.checkOut;
-            
-            // Connection status badge
-            const connectionBadge = window.firebaseEnabled ? 
-                '<span style="background: rgba(16, 185, 129, 0.15); color: #059669; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem;"><i class="fas fa-cloud me-1"></i>Cloud Storage</span>' :
-                '<span style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem;"><i class="fas fa-hdd me-1"></i>Local Storage</span>';
+            const today = new Date().toISOString().split('T')[0];
+            const todayData = await loadData(user.username, today);
+            const isIn = todayData && todayData.checkIn && !todayData.checkOut;
+            const isDone = todayData && todayData.checkOut;
             
             container.innerHTML = `
-                <style>
-                    .absensi-container {
-                        min-height: 100vh;
-                        background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%);
-                        padding: 2rem;
-                    }
-                    .absensi-header {
-                        background: white;
-                        border-radius: 15px;
-                        padding: 1.5rem;
-                        margin-bottom: 2rem;
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        max-width: 1200px;
-                        margin: 0 auto 2rem;
-                    }
-                    .absensi-main {
-                        max-width: 1200px;
-                        margin: 0 auto;
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        gap: 2rem;
-                    }
-                    .absensi-card {
-                        background: white;
-                        border-radius: 20px;
-                        padding: 2rem;
-                        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-                    }
-                    .clock-display {
-                        text-align: center;
-                        font-size: 3rem;
-                        font-weight: bold;
-                        color: var(--forest);
-                        margin: 2rem 0;
-                        font-family: 'Courier New', monospace;
-                    }
-                    .date-display {
-                        text-align: center;
-                        font-size: 1.2rem;
-                        color: var(--tan);
-                        margin-bottom: 2rem;
-                    }
-                    .check-btn {
-                        width: 100%;
-                        padding: 1.5rem;
-                        border: none;
-                        border-radius: 15px;
-                        font-size: 1.3rem;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                        margin-bottom: 1rem;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        gap: 1rem;
-                    }
-                    .check-in-btn {
-                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                        color: white;
-                    }
-                    .check-in-btn:hover:not(:disabled) {
-                        transform: translateY(-3px);
-                        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-                    }
-                    .check-out-btn {
-                        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-                        color: white;
-                    }
-                    .check-out-btn:hover:not(:disabled) {
-                        transform: translateY(-3px);
-                        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
-                    }
-                    .check-btn:disabled {
-                        opacity: 0.5;
-                        cursor: not-allowed;
-                    }
-                    .status-badge {
-                        display: inline-block;
-                        padding: 0.5rem 1rem;
-                        border-radius: 20px;
-                        font-size: 0.9rem;
-                        font-weight: 600;
-                        margin: 1rem 0;
-                    }
-                    .status-in {
-                        background: rgba(16, 185, 129, 0.15);
-                        color: #059669;
-                    }
-                    .status-out {
-                        background: rgba(239, 68, 68, 0.15);
-                        color: #dc2626;
-                    }
-                    .status-complete {
-                        background: rgba(168, 85, 247, 0.15);
-                        color: #a855f7;
-                    }
-                    .history-item {
-                        padding: 1rem;
-                        border-bottom: 1px solid var(--beige);
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                    }
-                    .history-item:last-child {
-                        border-bottom: none;
-                    }
-                    .history-date {
-                        font-weight: 600;
-                        color: var(--forest);
-                    }
-                    .history-times {
-                        display: flex;
-                        gap: 1rem;
-                        font-size: 0.9rem;
-                        color: #666;
-                    }
-                    @media (max-width: 768px) {
-                        .absensi-main {
-                            grid-template-columns: 1fr;
-                        }
-                    }
-                </style>
-                
-                <div class="absensi-container">
-                    <div class="absensi-header">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
-                                <i class="fas fa-fingerprint"></i>
-                            </div>
-                            <div>
-                                <h2 style="color: var(--forest); margin: 0; font-size: 1.5rem;">Sistem Absensi</h2>
-                                <p style="color: var(--tan); margin: 0; font-size: 0.9rem;">${user.fullName} • ${connectionBadge}</p>
-                            </div>
-                        </div>
-                        <button onclick="backToSelection()" style="padding: 0.8rem 1.5rem; background: var(--tan); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 500;">
-                            <i class="fas fa-arrow-left me-2"></i>Kembali
-                        </button>
-                    </div>
-                    
-                    <div class="absensi-main">
-                        <!-- Check In/Out Card -->
-                        <div class="absensi-card">
-                            <h3 style="color: var(--forest); font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">
-                                <i class="fas fa-clock me-2"></i>Absensi Hari Ini
-                            </h3>
-                            
-                            <div class="clock-display" id="clockDisplay">00:00:00</div>
-                            <div class="date-display" id="dateDisplay"></div>
-                            
-                            <div style="text-align: center; margin-bottom: 2rem;">
-                                ${isCompleted ? 
-                                    '<span class="status-badge status-complete"><i class="fas fa-check-circle me-2"></i>Absensi Selesai</span>' :
-                                    isCheckedIn ? 
-                                    '<span class="status-badge status-in"><i class="fas fa-sign-in-alt me-2"></i>Sudah Check In</span>' :
-                                    '<span class="status-badge status-out"><i class="fas fa-clock me-2"></i>Belum Check In</span>'
-                                }
-                            </div>
-                            
-                            ${todayAttendance ? `
-                                <div style="background: var(--cream); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                                        <span style="color: #666;"><i class="fas fa-sign-in-alt me-2" style="color: #10b981;"></i>Check In:</span>
-                                        <strong style="color: var(--forest);">${todayAttendance.checkIn || '-'}</strong>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                                        <span style="color: #666;"><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span>
-                                        <strong style="color: var(--forest);">${todayAttendance.checkOut || '-'}</strong>
-                                    </div>
-                                    ${!todayAttendance.checkOut && todayAttendance.checkIn ? `
-                                        <div style="padding-top: 1rem; border-top: 1px solid var(--beige); margin-top: 0.5rem;">
-                                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #666;">
-                                                <span><i class="fas fa-clock me-2" style="color: #f59e0b;"></i>Estimasi Check Out (8 jam kerja):</span>
-                                                <strong style="color: #f59e0b;">${calculateEstimatedCheckOut(todayAttendance.checkIn)}</strong>
-                                            </div>
-                                        </div>
-                                    ` : ''}
-                                    ${todayAttendance.checkOut ? `
-                                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;">
-                                            <span style="color: #666;">Total Jam Kerja:</span>
-                                            <strong style="color: var(--forest); font-size: 1.2rem; display: block; margin-top: 0.5rem;">
-                                                ${calculateWorkHours(todayAttendance.checkIn, todayAttendance.checkOut)}
-                                            </strong>
-                                        </div>
-                                    ` : ''}
-                                </div>
-                            ` : ''}
-                            
-                            <button class="check-btn check-in-btn" onclick="checkIn()" ${isCheckedIn || isCompleted ? 'disabled' : ''}>
-                                <i class="fas fa-sign-in-alt" style="font-size: 1.5rem;"></i>
-                                <span>Check In</span>
-                            </button>
-                            
-                            <button class="check-btn check-out-btn" onclick="checkOut()" ${!isCheckedIn || isCompleted ? 'disabled' : ''}>
-                                <i class="fas fa-sign-out-alt" style="font-size: 1.5rem;"></i>
-                                <span>Check Out</span>
-                            </button>
-                        </div>
-                        
-                        <!-- History Card -->
-                        <div class="absensi-card">
-                            <h3 style="color: var(--forest); font-size: 1.5rem; margin-bottom: 1.5rem;">
-                                <i class="fas fa-history me-2"></i>Riwayat Absensi
-                            </h3>
-                            
-                            <div id="historyContainer" style="max-height: 500px; overflow-y: auto;">
-                                <p style="text-align: center; color: #999; padding: 2rem;">Memuat riwayat...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Start clock
-            updateClock();
-            setInterval(updateClock, 1000);
-            
-            // Load history
-            loadHistoryData(user.username);
-        }
-                
-                container.innerHTML = `
-                    <style>
-                        .absensi-container {
-                            min-height: 100vh;
-                            background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%);
-                            padding: 2rem;
-                        }
-                        .absensi-header {
-                            background: white;
-                            border-radius: 15px;
-                            padding: 1.5rem;
-                            margin-bottom: 2rem;
-                            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-                            display: flex;
-                            align-items: center;
-                            justify-content: space-between;
-                            max-width: 1200px;
-                            margin: 0 auto 2rem;
-                        }
-                        .absensi-main {
-                            max-width: 1200px;
-                            margin: 0 auto;
-                            display: grid;
-                            grid-template-columns: 1fr 1fr;
-                            gap: 2rem;
-                        }
-                        .absensi-card {
-                            background: white;
-                            border-radius: 20px;
-                            padding: 2rem;
-                            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-                        }
-                        .clock-display {
-                            text-align: center;
-                            font-size: 3rem;
-                            font-weight: bold;
-                            color: var(--forest);
-                            margin: 2rem 0;
-                            font-family: 'Courier New', monospace;
-                        }
-                        .date-display {
-                            text-align: center;
-                            font-size: 1.2rem;
-                            color: var(--tan);
-                            margin-bottom: 2rem;
-                        }
-                        .check-btn {
-                            width: 100%;
-                            padding: 1.5rem;
-                            border: none;
-                            border-radius: 15px;
-                            font-size: 1.3rem;
-                            font-weight: 600;
-                            cursor: pointer;
-                            transition: all 0.3s ease;
-                            margin-bottom: 1rem;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            gap: 1rem;
-                        }
-                        .check-in-btn {
-                            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                            color: white;
-                        }
-                        .check-in-btn:hover:not(:disabled) {
-                            transform: translateY(-3px);
-                            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-                        }
-                        .check-out-btn {
-                            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-                            color: white;
-                        }
-                        .check-out-btn:hover:not(:disabled) {
-                            transform: translateY(-3px);
-                            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
-                        }
-                        .check-btn:disabled {
-                            opacity: 0.5;
-                            cursor: not-allowed;
-                        }
-                        .status-badge {
-                            display: inline-block;
-                            padding: 0.5rem 1rem;
-                            border-radius: 20px;
-                            font-size: 0.9rem;
-                            font-weight: 600;
-                            margin: 1rem 0;
-                        }
-                        .status-in {
-                            background: rgba(16, 185, 129, 0.15);
-                            color: #059669;
-                        }
-                        .status-out {
-                            background: rgba(239, 68, 68, 0.15);
-                            color: #dc2626;
-                        }
-                        .status-complete {
-                            background: rgba(168, 85, 247, 0.15);
-                            color: #a855f7;
-                        }
-                        .history-item {
-                            padding: 1rem;
-                            border-bottom: 1px solid var(--beige);
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                        }
-                        .history-item:last-child {
-                            border-bottom: none;
-                        }
-                        .history-date {
-                            font-weight: 600;
-                            color: var(--forest);
-                        }
-                        .history-times {
-                            display: flex;
-                            gap: 1rem;
-                            font-size: 0.9rem;
-                            color: #666;
-                        }
-                        @media (max-width: 768px) {
-                            .absensi-main {
-                                grid-template-columns: 1fr;
-                            }
-                        }
-                    </style>
-                    
-                    <div class="absensi-container">
-                        <div class="absensi-header">
+                <div style="min-height: 100vh; background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%); padding: 2rem;">
+                    <div style="max-width: 1200px; margin: 0 auto;">
+                        <div style="background: white; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
                             <div style="display: flex; align-items: center; gap: 1rem;">
-                                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
-                                    <i class="fas fa-fingerprint"></i>
-                                </div>
+                                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #a855f7, #9333ea); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;"><i class="fas fa-fingerprint"></i></div>
                                 <div>
-                                    <h2 style="color: var(--forest); margin: 0; font-size: 1.5rem;">Sistem Absensi</h2>
-                                    <p style="color: var(--tan); margin: 0; font-size: 0.9rem;">${user.fullName}</p>
+                                    <h2 style="margin: 0; color: var(--forest);">Sistem Absensi</h2>
+                                    <p style="margin: 0; color: var(--tan); font-size: 0.9rem;">${user.fullName} • ${window.firebaseEnabled ? 'Cloud' : 'Local'}</p>
                                 </div>
                             </div>
-                            <button onclick="backToSelection()" style="padding: 0.8rem 1.5rem; background: var(--tan); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 500;">
-                                <i class="fas fa-arrow-left me-2"></i>Kembali
-                            </button>
+                            <button onclick="backToSelection()" style="padding: 0.8rem 1.5rem; background: var(--tan); color: white; border: none; border-radius: 10px; cursor: pointer;"><i class="fas fa-arrow-left me-2"></i>Kembali</button>
                         </div>
-                        
-                        <div class="absensi-main">
-                            <!-- Check In/Out Card -->
-                            <div class="absensi-card">
-                                <h3 style="color: var(--forest); font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">
-                                    <i class="fas fa-clock me-2"></i>Absensi Hari Ini
-                                </h3>
-                                
-                                <div class="clock-display" id="clockDisplay">00:00:00</div>
-                                <div class="date-display" id="dateDisplay"></div>
-                                
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                                <h3 style="text-align: center; color: var(--forest); margin-bottom: 1rem;"><i class="fas fa-clock me-2"></i>Absensi Hari Ini</h3>
+                                <div id="clock" style="text-align: center; font-size: 3rem; font-weight: bold; color: var(--forest); margin: 2rem 0; font-family: monospace;">00:00:00</div>
+                                <div id="date" style="text-align: center; font-size: 1.2rem; color: var(--tan); margin-bottom: 2rem;"></div>
                                 <div style="text-align: center; margin-bottom: 2rem;">
-                                    ${isCompleted ? 
-                                        '<span class="status-badge status-complete"><i class="fas fa-check-circle me-2"></i>Absensi Selesai</span>' :
-                                        isCheckedIn ? 
-                                        '<span class="status-badge status-in"><i class="fas fa-sign-in-alt me-2"></i>Sudah Check In</span>' :
-                                        '<span class="status-badge status-out"><i class="fas fa-clock me-2"></i>Belum Check In</span>'
-                                    }
+                                    <span style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600; background: ${isDone ? 'rgba(168,85,247,0.15)' : isIn ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; color: ${isDone ? '#a855f7' : isIn ? '#059669' : '#dc2626'};">
+                                        <i class="fas fa-${isDone ? 'check-circle' : isIn ? 'sign-in-alt' : 'clock'} me-2"></i>${isDone ? 'Selesai' : isIn ? 'Sudah Check In' : 'Belum Check In'}
+                                    </span>
                                 </div>
-                                
-                                ${todayAttendance ? `
+                                ${todayData ? `
                                     <div style="background: var(--cream); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
                                         <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                                            <span style="color: #666;"><i class="fas fa-sign-in-alt me-2" style="color: #10b981;"></i>Check In:</span>
-                                            <strong style="color: var(--forest);">${todayAttendance.checkIn || '-'}</strong>
+                                            <span><i class="fas fa-sign-in-alt me-2" style="color: #10b981;"></i>Check In:</span>
+                                            <strong style="color: var(--forest);">${todayData.checkIn || '-'}</strong>
                                         </div>
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                                            <span style="color: #666;"><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span>
-                                            <strong style="color: var(--forest);">${todayAttendance.checkOut || '-'}</strong>
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <span><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span>
+                                            <strong style="color: var(--forest);">${todayData.checkOut || '-'}</strong>
                                         </div>
-                                        ${!todayAttendance.checkOut && todayAttendance.checkIn ? `
-                                            <div style="padding-top: 1rem; border-top: 1px solid var(--beige); margin-top: 0.5rem;">
-                                                <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #666;">
-                                                    <span><i class="fas fa-clock me-2" style="color: #f59e0b;"></i>Estimasi Check Out (8 jam kerja):</span>
-                                                    <strong style="color: #f59e0b;">${calculateEstimatedCheckOut(todayAttendance.checkIn)}</strong>
-                                                </div>
-                                            </div>
-                                        ` : ''}
-                                        ${todayAttendance.checkOut ? `
-                                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;">
-                                                <span style="color: #666;">Total Jam Kerja:</span>
-                                                <strong style="color: var(--forest); font-size: 1.2rem; display: block; margin-top: 0.5rem;">
-                                                    ${calculateWorkHours(todayAttendance.checkIn, todayAttendance.checkOut)}
-                                                </strong>
-                                            </div>
-                                        ` : ''}
+                                        ${todayData.checkOut ? `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;"><span style="color: #666;">Total Jam:</span><strong style="display: block; color: var(--forest); font-size: 1.2rem; margin-top: 0.5rem;">${calcHours(todayData.checkIn, todayData.checkOut)}</strong></div>` : ''}
                                     </div>
                                 ` : ''}
-                                
-                                <button class="check-btn check-in-btn" onclick="checkIn()" ${isCheckedIn || isCompleted ? 'disabled' : ''}>
-                                    <i class="fas fa-sign-in-alt" style="font-size: 1.5rem;"></i>
-                                    <span>Check In</span>
-                                </button>
-                                
-                                <button class="check-btn check-out-btn" onclick="checkOut()" ${!isCheckedIn || isCompleted ? 'disabled' : ''}>
-                                    <i class="fas fa-sign-out-alt" style="font-size: 1.5rem;"></i>
-                                    <span>Check Out</span>
-                                </button>
+                                <button onclick="checkIn()" style="width: 100%; padding: 1.5rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 15px; font-size: 1.3rem; cursor: pointer; margin-bottom: 1rem;" ${isIn || isDone ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}><i class="fas fa-sign-in-alt me-2" style="font-size: 1.5rem;"></i>Check In</button>
+                                <button onclick="checkOut()" style="width: 100%; padding: 1.5rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 15px; font-size: 1.3rem; cursor: pointer;" ${!isIn || isDone ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}><i class="fas fa-sign-out-alt me-2" style="font-size: 1.5rem;"></i>Check Out</button>
                             </div>
-                            
-                            <!-- History Card -->
-                            <div class="absensi-card">
-                                <h3 style="color: var(--forest); font-size: 1.5rem; margin-bottom: 1.5rem;">
-                                    <i class="fas fa-history me-2"></i>Riwayat Absensi
-                                </h3>
-                                
-                                <div id="historyContainer" style="max-height: 500px; overflow-y: auto;">
-                                    <p style="text-align: center; color: #999; padding: 2rem;">Memuat riwayat...</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                // Start clock
-                updateClock();
-                setInterval(updateClock, 1000);
-                
-                // Load history
-                loadHistoryFromFirebase(user.username);
-            });
-        }
-
-        // Load attendance data from Firebase
-        async function loadAttendanceFromFirebase(username, date) {
-            try {
-                const doc = await db.collection('attendance').doc(`${username}_${date}`).get();
-                if (doc.exists) {
-                    return doc.data();
-                }
-                return null;
-            } catch (error) {
-                console.error('Error loading attendance:', error);
-                return null;
-            }
-        }
-
-        // Load history from Firebase
-        async function loadHistoryFromFirebase(username) {
-            try {
-                const snapshot = await db.collection('attendance')
-                    .where('username', '==', username)
-                    .orderBy('date', 'desc')
-                    .limit(30)
-                    .get();
-                
-                const historyData = {};
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    historyData[data.date] = data;
-                });
-                
-                const historyContainer = document.getElementById('historyContainer');
-                if (historyContainer) {
-                    historyContainer.innerHTML = generateHistoryHTML(historyData);
-                }
-            } catch (error) {
-                console.error('Error loading history:', error);
-                const historyContainer = document.getElementById('historyContainer');
-                if (historyContainer) {
-                    historyContainer.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 2rem;">Gagal memuat riwayat</p>';
-                }
-            }
-        }
-            
-            container.innerHTML = `
-                <style>
-                    .absensi-container {
-                        min-height: 100vh;
-                        background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%);
-                        padding: 2rem;
-                    }
-                    .absensi-header {
-                        background: white;
-                        border-radius: 15px;
-                        padding: 1.5rem;
-                        margin-bottom: 2rem;
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        max-width: 1200px;
-                        margin: 0 auto 2rem;
-                    }
-                    .absensi-main {
-                        max-width: 1200px;
-                        margin: 0 auto;
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        gap: 2rem;
-                    }
-                    .absensi-card {
-                        background: white;
-                        border-radius: 20px;
-                        padding: 2rem;
-                        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-                    }
-                    .clock-display {
-                        text-align: center;
-                        font-size: 3rem;
-                        font-weight: bold;
-                        color: var(--forest);
-                        margin: 2rem 0;
-                        font-family: 'Courier New', monospace;
-                    }
-                    .date-display {
-                        text-align: center;
-                        font-size: 1.2rem;
-                        color: var(--tan);
-                        margin-bottom: 2rem;
-                    }
-                    .check-btn {
-                        width: 100%;
-                        padding: 1.5rem;
-                        border: none;
-                        border-radius: 15px;
-                        font-size: 1.3rem;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                        margin-bottom: 1rem;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        gap: 1rem;
-                    }
-                    .check-in-btn {
-                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                        color: white;
-                    }
-                    .check-in-btn:hover:not(:disabled) {
-                        transform: translateY(-3px);
-                        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-                    }
-                    .check-out-btn {
-                        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-                        color: white;
-                    }
-                    .check-out-btn:hover:not(:disabled) {
-                        transform: translateY(-3px);
-                        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
-                    }
-                    .check-btn:disabled {
-                        opacity: 0.5;
-                        cursor: not-allowed;
-                    }
-                    .status-badge {
-                        display: inline-block;
-                        padding: 0.5rem 1rem;
-                        border-radius: 20px;
-                        font-size: 0.9rem;
-                        font-weight: 600;
-                        margin: 1rem 0;
-                    }
-                    .status-in {
-                        background: rgba(16, 185, 129, 0.15);
-                        color: #059669;
-                    }
-                    .status-out {
-                        background: rgba(239, 68, 68, 0.15);
-                        color: #dc2626;
-                    }
-                    .status-complete {
-                        background: rgba(168, 85, 247, 0.15);
-                        color: #a855f7;
-                    }
-                    .history-item {
-                        padding: 1rem;
-                        border-bottom: 1px solid var(--beige);
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                    }
-                    .history-item:last-child {
-                        border-bottom: none;
-                    }
-                    .history-date {
-                        font-weight: 600;
-                        color: var(--forest);
-                    }
-                    .history-times {
-                        display: flex;
-                        gap: 1rem;
-                        font-size: 0.9rem;
-                        color: #666;
-                    }
-                    @media (max-width: 768px) {
-                        .absensi-main {
-                            grid-template-columns: 1fr;
-                        }
-                    }
-                </style>
-                
-                <div class="absensi-container">
-                    <div class="absensi-header">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
-                                <i class="fas fa-fingerprint"></i>
-                            </div>
-                            <div>
-                                <h2 style="color: var(--forest); margin: 0; font-size: 1.5rem;">Sistem Absensi</h2>
-                                <p style="color: var(--tan); margin: 0; font-size: 0.9rem;">${user.fullName}</p>
-                            </div>
-                        </div>
-                        <button onclick="backToSelection()" style="padding: 0.8rem 1.5rem; background: var(--tan); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 500;">
-                            <i class="fas fa-arrow-left me-2"></i>Kembali
-                        </button>
-                    </div>
-                    
-                    <div class="absensi-main">
-                        <!-- Check In/Out Card -->
-                        <div class="absensi-card">
-                            <h3 style="color: var(--forest); font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">
-                                <i class="fas fa-clock me-2"></i>Absensi Hari Ini
-                            </h3>
-                            
-                            <div class="clock-display" id="clockDisplay">00:00:00</div>
-                            <div class="date-display" id="dateDisplay"></div>
-                            
-                            <div style="text-align: center; margin-bottom: 2rem;">
-                                ${isCompleted ? 
-                                    '<span class="status-badge status-complete"><i class="fas fa-check-circle me-2"></i>Absensi Selesai</span>' :
-                                    isCheckedIn ? 
-                                    '<span class="status-badge status-in"><i class="fas fa-sign-in-alt me-2"></i>Sudah Check In</span>' :
-                                    '<span class="status-badge status-out"><i class="fas fa-clock me-2"></i>Belum Check In</span>'
-                                }
-                            </div>
-                            
-                            ${todayAttendance ? `
-                                <div style="background: var(--cream); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                                        <span style="color: #666;"><i class="fas fa-sign-in-alt me-2" style="color: #10b981;"></i>Check In:</span>
-                                        <strong style="color: var(--forest);">${todayAttendance.checkIn || '-'}</strong>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                                        <span style="color: #666;"><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span>
-                                        <strong style="color: var(--forest);">${todayAttendance.checkOut || '-'}</strong>
-                                    </div>
-                                    ${!todayAttendance.checkOut && todayAttendance.checkIn ? `
-                                        <div style="padding-top: 1rem; border-top: 1px solid var(--beige); margin-top: 0.5rem;">
-                                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #666;">
-                                                <span><i class="fas fa-clock me-2" style="color: #f59e0b;"></i>Estimasi Check Out (8 jam kerja):</span>
-                                                <strong style="color: #f59e0b;">${calculateEstimatedCheckOut(todayAttendance.checkIn)}</strong>
-                                            </div>
-                                        </div>
-                                    ` : ''}
-                                    ${todayAttendance.checkOut ? `
-                                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;">
-                                            <span style="color: #666;">Total Jam Kerja:</span>
-                                            <strong style="color: var(--forest); font-size: 1.2rem; display: block; margin-top: 0.5rem;">
-                                                ${calculateWorkHours(todayAttendance.checkIn, todayAttendance.checkOut)}
-                                            </strong>
-                                        </div>
-                                    ` : ''}
-                                </div>
-                            ` : ''}
-                            
-                            <button class="check-btn check-in-btn" onclick="checkIn()" ${isCheckedIn || isCompleted ? 'disabled' : ''}>
-                                <i class="fas fa-sign-in-alt" style="font-size: 1.5rem;"></i>
-                                <span>Check In</span>
-                            </button>
-                            
-                            <button class="check-btn check-out-btn" onclick="checkOut()" ${!isCheckedIn || isCompleted ? 'disabled' : ''}>
-                                <i class="fas fa-sign-out-alt" style="font-size: 1.5rem;"></i>
-                                <span>Check Out</span>
-                            </button>
-                        </div>
-                        
-                        <!-- History Card -->
-                        <div class="absensi-card">
-                            <h3 style="color: var(--forest); font-size: 1.5rem; margin-bottom: 1.5rem;">
-                                <i class="fas fa-history me-2"></i>Riwayat Absensi
-                            </h3>
-                            
-                            <div id="historyContainer" style="max-height: 500px; overflow-y: auto;">
-                                ${generateHistoryHTML(attendanceData[user.username])}
+                            <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                                <h3 style="color: var(--forest); margin-bottom: 1.5rem;"><i class="fas fa-history me-2"></i>Riwayat Absensi</h3>
+                                <div id="history" style="max-height: 500px; overflow-y: auto;"><p style="text-align: center; color: #999; padding: 2rem;">Memuat...</p></div>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
             
-            // Start clock
-            updateClock();
-            setInterval(updateClock, 1000);
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('clock').textContent = now.toLocaleTimeString('id-ID');
+                document.getElementById('date').textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            }, 1000);
+            
+            loadHistory(user.username);
         }
 
-        // Update clock display
-        function updateClock() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            
-            const clockEl = document.getElementById('clockDisplay');
-            const dateEl = document.getElementById('dateDisplay');
-            
-            if (clockEl) clockEl.textContent = timeStr;
-            if (dateEl) dateEl.textContent = dateStr;
+        async function loadData(username, date) {
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
+                    const { doc, getDoc } = window.firebaseModules;
+                    const docSnap = await getDoc(doc(window.firebaseDb, 'attendance', `${username}_${date}`));
+                    return docSnap.exists() ? docSnap.data() : null;
+                } catch (e) { console.log('Firebase error:', e); }
+            }
+            const local = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+            return local[date] || null;
         }
 
-        // Check In
+        async function loadHistory(username) {
+            let data = {};
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
+                    const { collection, query, where, orderBy, limit, getDocs } = window.firebaseModules;
+                    const q = query(collection(window.firebaseDb, 'attendance'), where('username', '==', username), orderBy('date', 'desc'), limit(30));
+                    const snap = await getDocs(q);
+                    snap.forEach(doc => { const d = doc.data(); data[d.date] = d; });
+                } catch (e) { console.log('Firebase error:', e); }
+            }
+            if (Object.keys(data).length === 0) {
+                data = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+            }
+            
+            const html = Object.keys(data).length === 0 ? '<p style="text-align: center; color: #999; padding: 2rem;">Belum ada riwayat</p>' :
+                Object.keys(data).sort().reverse().map(date => {
+                    const d = data[date];
+                    const dateObj = new Date(date + 'T00:00:00');
+                    const formatted = dateObj.toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+                    return `<div style="padding: 1rem; border-bottom: 1px solid var(--beige); display: flex; justify-content: space-between;">
+                        <div><div style="font-weight: 600; color: var(--forest);">${formatted}</div>
+                        <span style="font-size: 0.85rem; color: ${d.checkOut ? '#666' : '#ef4444'};">${d.checkOut ? 'Durasi: ' + calcHours(d.checkIn, d.checkOut) : 'Belum Check Out'}</span></div>
+                        <div style="display: flex; gap: 1rem; font-size: 0.9rem;"><div><i class="fas fa-sign-in-alt" style="color: #10b981;"></i> ${d.checkIn || '-'}</div>
+                        <div><i class="fas fa-sign-out-alt" style="color: #ef4444;"></i> ${d.checkOut || '-'}</div></div></div>`;
+                }).join('');
+            document.getElementById('history').innerHTML = html;
+        }
+
         async function checkIn() {
             const now = new Date();
-            const dateStr = now.toISOString().split('T')[0];
-            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const date = now.toISOString().split('T')[0];
+            const time = now.toLocaleTimeString('id-ID');
+            const data = { username: currentUser.username, fullName: currentUser.fullName, date, checkIn: time, checkOut: null };
             
-            const attendanceData = {
-                username: currentUser.username,
-                fullName: currentUser.fullName,
-                date: dateStr,
-                checkIn: timeStr,
-                checkOut: null
-            };
-            
-            try {
-                if (window.firebaseEnabled && window.firebaseDb) {
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
                     const { doc, setDoc, serverTimestamp } = window.firebaseModules;
-                    const docRef = doc(window.firebaseDb, 'attendance', `${currentUser.username}_${dateStr}`);
-                    
-                    await setDoc(docRef, {
-                        ...attendanceData,
-                        timestamp: serverTimestamp()
-                    });
-                    
-                    showAlert('✅ Check In berhasil! (Cloud) ' + timeStr, 'success');
-                } else {
-                    throw new Error('Firebase not available');
+                    await setDoc(doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`), { ...data, timestamp: serverTimestamp() });
+                    showAlert('✅ Check In berhasil! (Cloud)', 'success');
+                } catch (e) {
+                    console.log('Firebase error, using local');
+                    saveLocal(data);
+                    showAlert('✅ Check In berhasil! (Local)', 'success');
                 }
-            } catch (error) {
-                console.log('Using localStorage fallback');
-                
-                // Fallback to localStorage
-                const data = JSON.parse(localStorage.getItem('attendance_data') || '{}');
-                if (!data[currentUser.username]) {
-                    data[currentUser.username] = {};
-                }
-                data[currentUser.username][dateStr] = attendanceData;
-                localStorage.setItem('attendance_data', JSON.stringify(data));
-                
-                showAlert('✅ Check In berhasil! (Local) ' + timeStr, 'success');
+            } else {
+                saveLocal(data);
+                showAlert('✅ Check In berhasil! (Local)', 'success');
             }
-            
-            setTimeout(() => loadAbsensiApp(currentUser), 1000);
+            setTimeout(() => loadAbsensi(currentUser), 1000);
         }
 
-        // Check Out
         async function checkOut() {
             const now = new Date();
-            const dateStr = now.toISOString().split('T')[0];
-            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const date = now.toISOString().split('T')[0];
+            const time = now.toLocaleTimeString('id-ID');
             
-            try {
-                if (window.firebaseEnabled && window.firebaseDb) {
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
                     const { doc, updateDoc, serverTimestamp } = window.firebaseModules;
-                    const docRef = doc(window.firebaseDb, 'attendance', `${currentUser.username}_${dateStr}`);
-                    
-                    await updateDoc(docRef, {
-                        checkOut: timeStr,
-                        checkOutTimestamp: serverTimestamp()
-                    });
-                    
-                    showAlert('✅ Check Out berhasil! (Cloud) ' + timeStr, 'success');
-                } else {
-                    throw new Error('Firebase not available');
+                    await updateDoc(doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`), { checkOut: time, checkOutTimestamp: serverTimestamp() });
+                    showAlert('✅ Check Out berhasil! (Cloud)', 'success');
+                } catch (e) {
+                    console.log('Firebase error, using local');
+                    updateLocal(date, time);
+                    showAlert('✅ Check Out berhasil! (Local)', 'success');
                 }
-            } catch (error) {
-                console.log('Using localStorage fallback');
-                
-                // Fallback to localStorage
-                const data = JSON.parse(localStorage.getItem('attendance_data') || '{}');
-                if (data[currentUser.username] && data[currentUser.username][dateStr]) {
-                    data[currentUser.username][dateStr].checkOut = timeStr;
-                    localStorage.setItem('attendance_data', JSON.stringify(data));
-                    
-                    showAlert('✅ Check Out berhasil! (Local) ' + timeStr, 'success');
-                }
+            } else {
+                updateLocal(date, time);
+                showAlert('✅ Check Out berhasil! (Local)', 'success');
             }
-            
-            setTimeout(() => loadAbsensiApp(currentUser), 1000);
+            setTimeout(() => loadAbsensi(currentUser), 1000);
         }
 
-        // Calculate work hours
-        function calculateWorkHours(checkIn, checkOut) {
+        function saveLocal(data) {
+            const local = JSON.parse(localStorage.getItem('attendance_' + currentUser.username) || '{}');
+            local[data.date] = data;
+            localStorage.setItem('attendance_' + currentUser.username, JSON.stringify(local));
+        }
+
+        function updateLocal(date, time) {
+            const local = JSON.parse(localStorage.getItem('attendance_' + currentUser.username) || '{}');
+            if (local[date]) {
+                local[date].checkOut = time;
+                localStorage.setItem('attendance_' + currentUser.username, JSON.stringify(local));
+            }
+        }
+
+        function calcHours(checkIn, checkOut) {
             if (!checkIn || !checkOut) return '-';
-            
             try {
-                // Parse time strings (format: HH:MM:SS)
-                const [h1, m1, s1] = checkIn.split(':').map(num => parseInt(num, 10));
-                const [h2, m2, s2] = checkOut.split(':').map(num => parseInt(num, 10));
-                
-                // Check if parsing was successful
-                if (isNaN(h1) || isNaN(m1) || isNaN(s1) || isNaN(h2) || isNaN(m2) || isNaN(s2)) {
-                    return '-';
-                }
-                
-                // Convert to seconds
-                const start = h1 * 3600 + m1 * 60 + s1;
-                const end = h2 * 3600 + m2 * 60 + s2;
-                
-                // Calculate difference
-                let diff = end - start;
-                
-                // Handle case where checkout is next day
-                if (diff < 0) {
-                    diff += 24 * 3600; // Add 24 hours
-                }
-                
-                const hours = Math.floor(diff / 3600);
-                const minutes = Math.floor((diff % 3600) / 60);
-                
-                return `${hours} jam ${minutes} menit`;
-            } catch (error) {
-                console.error('Error calculating work hours:', error);
-                return '-';
-            }
+                const [h1, m1] = checkIn.split(':').map(n => parseInt(n, 10));
+                const [h2, m2] = checkOut.split(':').map(n => parseInt(n, 10));
+                if (isNaN(h1) || isNaN(m1) || isNaN(h2) || isNaN(m2)) return '-';
+                let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+                if (diff < 0) diff += 24 * 60;
+                return `${Math.floor(diff / 60)} jam ${diff % 60} menit`;
+            } catch (e) { return '-'; }
         }
 
-        // Calculate estimated check out time (8 working hours from check in)
-        function calculateEstimatedCheckOut(checkIn) {
-            if (!checkIn) return '-';
-            
-            try {
-                const [h, m, s] = checkIn.split(':').map(num => parseInt(num, 10));
-                
-                if (isNaN(h) || isNaN(m) || isNaN(s)) {
-                    return '-';
-                }
-                
-                // Add 8 hours (28800 seconds)
-                let totalSeconds = h * 3600 + m * 60 + s + (8 * 3600);
-                
-                // Calculate new time
-                let newH = Math.floor(totalSeconds / 3600) % 24;
-                let newM = Math.floor((totalSeconds % 3600) / 60);
-                let newS = totalSeconds % 60;
-                
-                // Format with leading zeros
-                const formatTime = (num) => String(num).padStart(2, '0');
-                
-                return `${formatTime(newH)}:${formatTime(newM)}:${formatTime(newS)}`;
-            } catch (error) {
-                console.error('Error calculating estimated checkout:', error);
-                return '-';
-            }
-        }
-
-        // Generate history HTML
-        function generateHistoryHTML(userData) {
-            if (!userData || Object.keys(userData).length === 0) {
-                return '<p style="text-align: center; color: #999; padding: 2rem;">Belum ada riwayat absensi</p>';
-            }
-            
-            const dates = Object.keys(userData).sort().reverse();
-            
-            return dates.map(date => {
-                const attendance = userData[date];
-                const dateObj = new Date(date + 'T00:00:00'); // Add time to avoid timezone issues
-                const formattedDate = dateObj.toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-                
-                const duration = attendance.checkOut ? calculateWorkHours(attendance.checkIn, attendance.checkOut) : '-';
-                
-                return `
-                    <div class="history-item">
-                        <div>
-                            <div class="history-date">${formattedDate}</div>
-                            ${attendance.checkOut && duration !== '-' ? 
-                                `<span style="font-size: 0.85rem; color: #666;">Durasi: ${duration}</span>` :
-                                '<span style="font-size: 0.85rem; color: #ef4444;">Belum Check Out</span>'
-                            }
-                        </div>
-                        <div class="history-times">
-                            <div>
-                                <i class="fas fa-sign-in-alt" style="color: #10b981;"></i>
-                                ${attendance.checkIn || '-'}
-                            </div>
-                            <div>
-                                <i class="fas fa-sign-out-alt" style="color: #ef4444;"></i>
-                                ${attendance.checkOut || '-'}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Back to selection
         function backToSelection() {
-            document.getElementById('pinusContainer').classList.remove('active');
-            document.getElementById('pinewaterContainer').classList.remove('active');
-            document.getElementById('bbmContainer').classList.remove('active');
             document.getElementById('absensiContainer').classList.remove('active');
             document.getElementById('appSelectionPage').classList.add('active');
         }
 
-        // Show alert
-        function showAlert(message, type = 'success') {
+        function showAlert(msg, type) {
             document.querySelectorAll('.alert-custom').forEach(el => el.remove());
-            
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert-custom alert-${type}`;
-            
-            const iconClass = type === 'success' ? 'check-circle' : 'exclamation-triangle';
-            
-            alertDiv.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <span><i class="fas fa-${iconClass} me-2"></i>${message}</span>
-                    <button type="button" style="background: none; border: none; color: inherit; cursor: pointer; padding: 0; margin-left: 1rem;" onclick="this.parentElement.parentElement.remove()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
-            
-            document.body.appendChild(alertDiv);
-            
-            setTimeout(() => {
-                if (alertDiv.parentNode) alertDiv.remove();
-            }, 5000);
+            const div = document.createElement('div');
+            div.className = `alert-custom alert-${type}`;
+            div.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between;"><span><i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>${msg}</span><button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: inherit; cursor: pointer; padding: 0; margin-left: 1rem;"><i class="fas fa-times"></i></button></div>`;
+            document.body.appendChild(div);
+            setTimeout(() => { if (div.parentNode) div.remove(); }, 5000);
         }
 
-        // Check authentication on load
-        window.addEventListener('load', function() {
-            // Wait for Firebase to initialize
+        window.addEventListener('load', () => {
             setTimeout(() => {
-                const savedUser = localStorage.getItem('pinuslo_current_user');
-                if (savedUser) {
-                    const user = JSON.parse(savedUser);
+                const saved = localStorage.getItem('pinuslo_user');
+                if (saved) {
+                    const user = JSON.parse(saved);
                     currentUser = user;
                     showAppSelection(user);
                 }
-                
-                console.log('🚀 Pinuslo Apps - Unified System loaded');
-                
-                // Check Firebase connection status
-                if (window.firebaseEnabled) {
-                    console.log('✅ Firebase Connected - Data tersimpan di Cloud');
-                } else {
-                    console.log('⚠️ Firebase Offline - Menggunakan Local Storage');
-                    console.log('💡 Data absensi tersimpan lokal di browser ini');
-                }
-                
-                console.log('📋 Akun tersedia:');
-                console.log('   Super Admin: yuzar/yuzar123, iqbal/iqbal123 (akses semua aplikasi)');
-                console.log('   Staff Absensi: agus, selfi, fadel, farel, ikki, sadiq, sirad, bate, boncel, pian, juned (password: [nama]123)');
-                console.log('   Pinuslo: selow1/selow1234, selow2/selow1234');
-                console.log('   Pinewater: water1/water123, water2/water123');
-                console.log('   BBM: bbm1/bbm123, bbm2/bbm123');
-                console.log('✅ Semua user memiliki akses ke Absensi');
+                console.log('🚀 Pinuslo Apps ready');
+                console.log(window.firebaseEnabled ? '✅ Firebase Connected' : '⚠️ Firebase Offline - Local Storage');
+                console.log('📋 Akun: agus/agus123, selfi/selfi123, fadel/fadel123, dll');
             }, 500);
         });
     </script>
