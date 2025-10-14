@@ -58,7 +58,7 @@
         .login-btn { width: 100%; padding: 1.1rem; background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(93, 134, 108, 0.3); }
         .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(93, 134, 108, 0.4); }
         .app-selection-container { min-height: 100vh; padding: 2rem; background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%); }
-        .user-welcome { background: white; border-radius: 15px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; max-width: 600px; margin: 0 auto 3rem; }
+        .user-welcome { background: white; border-radius: 15px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto 3rem; }
         .user-avatar { width: 60px; height: 60px; background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold; }
         .logout-btn { background: var(--tan); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; }
         .logout-btn:hover { background: var(--forest); transform: translateY(-2px); }
@@ -74,6 +74,10 @@
         .app-card.bbm .app-icon { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
         .app-card.absensi { background: linear-gradient(135deg, #ffffff 0%, #f3e8ff 100%); }
         .app-card.absensi .app-icon { background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); }
+        .app-card.cafe { background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%); }
+        .app-card.cafe .app-icon { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); }
+        .app-card.glamping { background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%); }
+        .app-card.glamping .app-icon { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); }
         .page-section { display: none; }
         .page-section.active { display: block; }
         .alert-custom { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; min-width: 300px; max-width: 90%; border-radius: 12px; padding: 1rem 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideDown 0.5s ease-out; }
@@ -137,6 +141,16 @@
                     <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">BBM Management</h3>
                     <p style="color: var(--tan); text-align: center; font-size: 0.95rem;">Sistem Manajemen Bahan Bakar Minyak</p>
                 </div>
+                <div class="app-card cafe" data-app="cafe">
+                    <div class="app-icon"><i class="fas fa-coffee"></i></div>
+                    <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinuslo Cafe</h3>
+                    <p style="color: var(--tan); text-align: center; font-size: 0.95rem;">Sistem Manajemen Cafe & Point of Sale</p>
+                </div>
+                <div class="app-card glamping" data-app="glamping">
+                    <div class="app-icon"><i class="fas fa-campground"></i></div>
+                    <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinuslo Glamping</h3>
+                    <p style="color: var(--tan); text-align: center; font-size: 0.95rem;">Sistem Reservasi & Manajemen Glamping</p>
+                </div>
                 <div class="app-card absensi" data-app="absensi">
                     <div class="app-icon"><i class="fas fa-fingerprint"></i></div>
                     <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Absensi</h3>
@@ -151,8 +165,8 @@
     <script>
         let currentUser = null;
         const allUsers = [
-            { username: 'yuzar', password: 'yuzar123', role: 'super-admin', fullName: 'Yuzar', apps: ['pinus', 'pinewater', 'bbm', 'absensi'] },
-            { username: 'iqbal', password: 'iqbal123', role: 'super-admin', fullName: 'Iqbal', apps: ['pinus', 'pinewater', 'bbm', 'absensi'] },
+            { username: 'yuzar', password: 'yuzar123', role: 'super-admin', fullName: 'Yuzar', apps: ['pinus', 'pinewater', 'bbm', 'cafe', 'glamping', 'absensi'] },
+            { username: 'iqbal', password: 'iqbal123', role: 'super-admin', fullName: 'Iqbal', apps: ['pinus', 'pinewater', 'bbm', 'cafe', 'glamping', 'absensi'] },
             { username: 'agus', password: 'agus123', role: 'staff', fullName: 'Agus', apps: ['pinus', 'absensi'] },
             { username: 'selfi', password: 'selfi123', role: 'staff', fullName: 'Selfi', apps: ['pinus', 'absensi'] },
             { username: 'fadel', password: 'fadel123', role: 'staff', fullName: 'Fadel', apps: ['pinus', 'absensi'] },
@@ -170,7 +184,9 @@
         const appUrls = {
             'pinus': 'https://pinusselowregist.netlify.app',
             'pinewater': 'https://pinewater.netlify.app',
-            'bbm': 'https://bbm-management.netlify.app' // Ganti dengan URL yang sesuai
+            'bbm': 'https://bbm-management.netlify.app',
+            'cafe': 'https://pinuslo-cafe.netlify.app',
+            'glamping': 'https://pinuslo-glamping.netlify.app'
         };
 
         function togglePassword() {
@@ -219,11 +235,16 @@
                     } else {
                         card.onclick = () => {
                             if (appType === 'absensi') {
-                                // Open internal absensi app
                                 loadAbsensi(user);
                             } else if (appUrls[appType]) {
-                                // Redirect to external app
-                                showAlert('Membuka ' + (appType === 'pinus' ? 'Pinus Selow Regist' : appType === 'pinewater' ? 'Pinewater' : 'BBM Management') + '...', 'success');
+                                const appNames = {
+                                    'pinus': 'Pinus Selow Regist',
+                                    'pinewater': 'Pinewater',
+                                    'bbm': 'BBM Management',
+                                    'cafe': 'Pinuslo Cafe',
+                                    'glamping': 'Pinuslo Glamping'
+                                };
+                                showAlert('Membuka ' + appNames[appType] + '...', 'success');
                                 setTimeout(() => {
                                     window.open(appUrls[appType], '_blank');
                                 }, 500);
@@ -461,6 +482,8 @@
                 console.log('   🌲 Pinus Selow Regist → Semua User');
                 console.log('   💧 Pinewater → Super Admin Only');
                 console.log('   ⛽ BBM Management → Super Admin Only');
+                console.log('   ☕ Pinuslo Cafe → Super Admin Only');
+                console.log('   ⛺ Pinuslo Glamping → Super Admin Only');
                 console.log('   🔐 Absensi → Semua User');
             }, 500);
         });
