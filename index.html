@@ -113,10 +113,10 @@
         <div class="app-selection-container">
             <div class="user-welcome">
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div class="user-avatar" id="userAvatar">Y</div>
+                    <div class="user-avatar" id="userAvatar">I</div>
                     <div>
-                        <h3 id="userName" style="color: var(--forest); margin: 0;">Yuzar</h3>
-                        <p id="userRole" style="color: var(--tan); margin: 0; font-size: 0.9rem;">Administrator</p>
+                        <h3 id="userName" style="color: var(--forest); margin: 0;">User</h3>
+                        <p id="userRole" style="color: var(--tan); margin: 0; font-size: 0.9rem;">Staff</p>
                     </div>
                 </div>
                 <button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt me-2"></i>Keluar</button>
@@ -165,19 +165,27 @@
     <script>
         let currentUser = null;
         const allUsers = [
-            { username: 'yuzar', password: 'yuzar123', role: 'super-admin', fullName: 'Yuzar', apps: ['pinus', 'pinewater', 'bbm', 'cafe', 'glamping', 'absensi'] },
-            { username: 'iqbal', password: 'iqbal123', role: 'super-admin', fullName: 'Iqbal', apps: ['pinus', 'pinewater', 'bbm', 'cafe', 'glamping', 'absensi'] },
-            { username: 'agus', password: 'agus123', role: 'staff', fullName: 'Agus', apps: ['pinus', 'absensi'] },
-            { username: 'selfi', password: 'selfi123', role: 'staff', fullName: 'Selfi', apps: ['pinus', 'absensi'] },
-            { username: 'fadel', password: 'fadel123', role: 'staff', fullName: 'Fadel', apps: ['pinus', 'absensi'] },
-            { username: 'farel', password: 'farel123', role: 'staff', fullName: 'Farel', apps: ['pinus', 'absensi'] },
-            { username: 'ikki', password: 'ikki123', role: 'staff', fullName: 'Ikki', apps: ['pinus', 'absensi'] },
-            { username: 'sadiq', password: 'sadiq123', role: 'staff', fullName: 'Sadiq', apps: ['pinus', 'absensi'] },
-            { username: 'sirad', password: 'sirad123', role: 'staff', fullName: 'Sirad', apps: ['pinus', 'absensi'] },
-            { username: 'bate', password: 'bate123', role: 'staff', fullName: 'Bate', apps: ['pinus', 'absensi'] },
-            { username: 'boncel', password: 'boncel123', role: 'staff', fullName: 'Boncel', apps: ['pinus', 'absensi'] },
-            { username: 'pian', password: 'pian123', role: 'staff', fullName: 'Pian', apps: ['pinus', 'absensi'] },
-            { username: 'juned', password: 'juned123', role: 'staff', fullName: 'Juned', apps: ['pinus', 'absensi'] }
+            // ADMIN - Menu Utama Katalist (Akses Penuh Semua Aplikasi)
+            { username: 'iqbal', password: 'iqbal123', role: 'admin', fullName: 'Iqbal', apps: ['pinus', 'pinewater', 'bbm', 'cafe', 'glamping', 'absensi'] },
+            
+            // ADMIN dengan akses terbatas
+            { username: 'jendra', password: 'jendra123', role: 'admin', fullName: 'Jendra', apps: ['cafe', 'absensi'] },
+            { username: 'selow', password: 'selow123', role: 'admin', fullName: 'Selow', apps: ['pinus', 'pinewater', 'absensi'] },
+            { username: 'komandan', password: 'komandan123', role: 'admin', fullName: 'Komandan', apps: ['pinewater', 'bbm', 'absensi'] },
+            
+            // USER - Staff dengan akses terbatas
+            { username: 'agus', password: 'agus123', role: 'user', fullName: 'Agus', apps: ['pinus', 'cafe', 'glamping', 'absensi'] },
+            { username: 'selfi', password: 'selfi123', role: 'user', fullName: 'Selfi', apps: ['pinus', 'cafe', 'glamping', 'absensi'] },
+            { username: 'fadel', password: 'fadel123', role: 'user', fullName: 'Fadel', apps: ['cafe', 'absensi'] },
+            { username: 'farel', password: 'farel123', role: 'user', fullName: 'Farel', apps: ['cafe', 'absensi'] },
+            { username: 'sadiq', password: 'sadiq123', role: 'user', fullName: 'Sadiq', apps: ['cafe', 'absensi'] },
+            { username: 'sirad', password: 'sirad123', role: 'user', fullName: 'Sirad', apps: ['pinus', 'pinewater', 'cafe', 'glamping', 'absensi'] },
+            { username: 'bate', password: 'bate123', role: 'user', fullName: 'Bate', apps: ['pinus', 'cafe', 'absensi'] },
+            { username: 'zulkifli', password: 'zulkifli123', role: 'user', fullName: 'Zulkifli', apps: ['pinus', 'pinewater', 'absensi'] },
+            { username: 'chulo', password: 'chulo123', role: 'user', fullName: 'Chulo', apps: ['glamping'] },
+            { username: 'pian', password: 'pian123', role: 'user', fullName: 'Pian', apps: ['glamping'] },
+            { username: 'imbang', password: 'imbang123', role: 'user', fullName: 'Imbang', apps: ['glamping'] },
+            { username: 'roy', password: 'roy123', role: 'user', fullName: 'Roy', apps: ['pinewater', 'glamping'] }
         ];
 
         // External app URLs
@@ -223,7 +231,7 @@
             document.getElementById('appSelectionPage').classList.add('active');
             document.getElementById('userAvatar').textContent = user.fullName.charAt(0).toUpperCase();
             document.getElementById('userName').textContent = user.fullName;
-            document.getElementById('userRole').textContent = user.role === 'super-admin' ? 'Super Administrator' : 'Staff';
+            document.getElementById('userRole').textContent = user.role === 'admin' ? 'Administrator' : 'User';
             
             setTimeout(() => {
                 document.querySelectorAll('.app-card').forEach(card => {
@@ -469,22 +477,23 @@
                 console.log('🚀 Pinuslo Apps - Unified Management System');
                 console.log(window.firebaseEnabled ? '✅ Firebase Connected - Cloud Storage' : '⚠️ Firebase Offline - Local Storage');
                 console.log('');
-                console.log('📋 Akun Super Admin (Akses Semua Aplikasi):');
-                console.log('   • yuzar / yuzar123');
-                console.log('   • iqbal / iqbal123');
+                console.log('👑 ADMIN - Menu Utama Katalist:');
+                console.log('   • iqbal / iqbal123 → Full Access (Semua Aplikasi)');
+                console.log('   • jendra / jendra123 → Café, Absensi');
+                console.log('   • selow / selow123 → Regist, Pinewater, Absensi');
+                console.log('   • komandan / komandan123 → Pinewater, BBM, Absensi');
                 console.log('');
-                console.log('📋 Akun Staff (Akses Pinus & Absensi):');
-                console.log('   • agus, selfi, fadel, farel, ikki, sadiq');
-                console.log('   • sirad, bate, boncel, pian, juned');
-                console.log('   • Password: [nama]123');
+                console.log('👥 USER - Akses Terbatas:');
+                console.log('   • agus → Regist, Café, Glamping, Absensi');
+                console.log('   • selfi → Regist, Café, Glamping, Absensi');
+                console.log('   • fadel, farel, sadiq → Café, Absensi');
+                console.log('   • sirad → Regist, Pinewater, Café, Glamping, Absensi');
+                console.log('   • bate → Regist, Café, Absensi');
+                console.log('   • zulkifli → Regist, Pinewater, Absensi');
+                console.log('   • chulo, pian, imbang → Glamping Only (Tanpa Absensi)');
+                console.log('   • roy → Pinewater, Glamping (Tanpa Absensi)');
                 console.log('');
-                console.log('🌐 Aplikasi Tersedia:');
-                console.log('   🌲 Pinus Selow Regist → Semua User');
-                console.log('   💧 Pinewater → Super Admin Only');
-                console.log('   ⛽ BBM Management → Super Admin Only');
-                console.log('   ☕ Pinuslo Cafe → Super Admin Only');
-                console.log('   ⛺ Pinuslo Glamping → Super Admin Only');
-                console.log('   🔐 Absensi → Semua User');
+                console.log('📌 Password Format: [username]123');
             }, 500);
         });
     </script>
