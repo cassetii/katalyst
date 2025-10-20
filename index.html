@@ -84,6 +84,27 @@
         @keyframes slideDown { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
         .alert-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .tab-menu { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 2px solid var(--beige); }
+        .tab-btn { padding: 1rem 2rem; background: none; border: none; color: var(--tan); cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent; transition: all 0.3s ease; }
+        .tab-btn.active { color: var(--forest); border-bottom-color: var(--forest); }
+        .tab-btn:hover { color: var(--forest); }
+        .report-table { width: 100%; border-collapse: collapse; }
+        .report-table th { background: var(--forest); color: white; padding: 1rem; text-align: left; font-weight: 600; }
+        .report-table td { padding: 1rem; border-bottom: 1px solid var(--beige); }
+        .report-table tr:hover { background: var(--cream); }
+        .status-badge { display: inline-block; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .status-approved { background: #d1fae5; color: #065f46; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-incomplete { background: #fee2e2; color: #991b1b; }
+        .approve-btn { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease; }
+        .approve-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
+        .approve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .filter-section { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: center; }
+        .filter-input { padding: 0.8rem; border: 2px solid var(--beige); border-radius: 10px; font-size: 0.95rem; background: white; }
+        .filter-btn { padding: 0.8rem 1.5rem; background: var(--forest); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+        .filter-btn:hover { background: var(--tan); transform: translateY(-2px); }
+        .export-btn { padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+        .export-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(8, 145, 178, 0.3); }
     </style>
 </head>
 <body>
@@ -198,6 +219,8 @@
             'glamping': 'https://pinuslo-glamping.netlify.app'
         };
 
+        let currentAbsensiView = 'check';
+
         function togglePassword() {
             const input = document.getElementById('password');
             const icon = document.getElementById('passwordToggleIcon');
@@ -279,6 +302,7 @@
             document.getElementById('appSelectionPage').classList.remove('active');
             const container = document.getElementById('absensiContainer');
             container.classList.add('active');
+            currentAbsensiView = 'check';
             
             const today = new Date().toISOString().split('T')[0];
             const todayData = await loadData(user.username, today);
@@ -287,7 +311,7 @@
             
             container.innerHTML = `
                 <div style="min-height: 100vh; background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%); padding: 2rem;">
-                    <div style="max-width: 1200px; margin: 0 auto;">
+                    <div style="max-width: 1400px; margin: 0 auto;">
                         <div style="background: white; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
                             <div style="display: flex; align-items: center; gap: 1rem;">
                                 <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #a855f7, #9333ea); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;"><i class="fas fa-fingerprint"></i></div>
@@ -298,48 +322,308 @@
                             </div>
                             <button onclick="backToSelection()" style="padding: 0.8rem 1.5rem; background: var(--tan); color: white; border: none; border-radius: 10px; cursor: pointer;"><i class="fas fa-arrow-left me-2"></i>Kembali</button>
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                            <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                                <h3 style="text-align: center; color: var(--forest); margin-bottom: 1rem;"><i class="fas fa-clock me-2"></i>Absensi Hari Ini</h3>
-                                <div id="clock" style="text-align: center; font-size: 3rem; font-weight: bold; color: var(--forest); margin: 2rem 0; font-family: monospace;">00:00:00</div>
-                                <div id="date" style="text-align: center; font-size: 1.2rem; color: var(--tan); margin-bottom: 2rem;"></div>
-                                <div style="text-align: center; margin-bottom: 2rem;">
-                                    <span style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600; background: ${isDone ? 'rgba(168,85,247,0.15)' : isIn ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; color: ${isDone ? '#a855f7' : isIn ? '#059669' : '#dc2626'};">
-                                        <i class="fas fa-${isDone ? 'check-circle' : isIn ? 'sign-in-alt' : 'clock'} me-2"></i>${isDone ? 'Selesai' : isIn ? 'Sudah Check In' : 'Belum Check In'}
-                                    </span>
-                                </div>
-                                ${todayData ? `
-                                    <div style="background: var(--cream); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                                            <span><i class="fas fa-sign-in-alt me-2" style="color: #10b981;"></i>Check In:</span>
-                                            <strong style="color: var(--forest);">${todayData.checkIn || '-'}</strong>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between;">
-                                            <span><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span>
-                                            <strong style="color: var(--forest);">${todayData.checkOut || '-'}</strong>
-                                        </div>
-                                        ${todayData.checkOut ? `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;"><span style="color: #666;">Total Jam:</span><strong style="display: block; color: var(--forest); font-size: 1.2rem; margin-top: 0.5rem;">${calcHours(todayData.checkIn, todayData.checkOut)}</strong></div>` : ''}
+                        
+                        <div class="tab-menu">
+                            <button class="tab-btn active" onclick="switchTab('check')"><i class="fas fa-fingerprint me-2"></i>Check In/Out</button>
+                            <button class="tab-btn" onclick="switchTab('history')"><i class="fas fa-history me-2"></i>Riwayat</button>
+                            ${user.role === 'admin' ? '<button class="tab-btn" onclick="switchTab(\'reports\')"><i class="fas fa-chart-bar me-2"></i>Laporan</button>' : ''}
+                        </div>
+                        
+                        <div id="checkView" class="tab-content">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                                <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                                    <h3 style="text-align: center; color: var(--forest); margin-bottom: 1rem;"><i class="fas fa-clock me-2"></i>Absensi Hari Ini</h3>
+                                    <div id="clock" style="text-align: center; font-size: 3rem; font-weight: bold; color: var(--forest); margin: 2rem 0; font-family: monospace;">00:00:00</div>
+                                    <div id="date" style="text-align: center; font-size: 1.2rem; color: var(--tan); margin-bottom: 2rem;"></div>
+                                    <div style="text-align: center; margin-bottom: 2rem;">
+                                        <span style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600; background: ${isDone ? 'rgba(168,85,247,0.15)' : isIn ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; color: ${isDone ? '#a855f7' : isIn ? '#059669' : '#dc2626'};">
+                                            <i class="fas fa-${isDone ? 'check-circle' : isIn ? 'sign-in-alt' : 'clock'} me-2"></i>${isDone ? 'Selesai' : isIn ? 'Sudah Check In' : 'Belum Check In'}
+                                        </span>
                                     </div>
-                                ` : ''}
-                                <button onclick="checkIn()" style="width: 100%; padding: 1.5rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 15px; font-size: 1.3rem; cursor: pointer; margin-bottom: 1rem;" ${isIn || isDone ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}><i class="fas fa-sign-in-alt me-2" style="font-size: 1.5rem;"></i>Check In</button>
-                                <button onclick="checkOut()" style="width: 100%; padding: 1.5rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 15px; font-size: 1.3rem; cursor: pointer;" ${!isIn || isDone ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}><i class="fas fa-sign-out-alt me-2" style="font-size: 1.5rem;"></i>Check Out</button>
-                            </div>
-                            <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                                <h3 style="color: var(--forest); margin-bottom: 1.5rem;"><i class="fas fa-history me-2"></i>Riwayat Absensi</h3>
-                                <div id="history" style="max-height: 500px; overflow-y: auto;"><p style="text-align: center; color: #999; padding: 2rem;">Memuat...</p></div>
+                                    ${todayData ? `
+                                        <div style="background: var(--cream); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
+                                            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                                <span><i class="fas fa-sign-in-alt me-2" style="color: #10b981;"></i>Check In:</span>
+                                                <strong style="color: var(--forest);">${todayData.checkIn || '-'}</strong>
+                                            </div>
+                                            <div style="display: flex; justify-content: space-between;">
+                                                <span><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span>
+                                                <strong style="color: var(--forest);">${todayData.checkOut || '-'}</strong>
+                                            </div>
+                                            ${todayData.checkOut ? `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;"><span style="color: #666;">Total Jam:</span><strong style="display: block; color: var(--forest); font-size: 1.2rem; margin-top: 0.5rem;">${calcHours(todayData.checkIn, todayData.checkOut)}</strong></div>` : ''}
+                                        </div>
+                                    ` : ''}
+                                    <button onclick="checkIn()" style="width: 100%; padding: 1.5rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 15px; font-size: 1.3rem; cursor: pointer; margin-bottom: 1rem;" ${isIn || isDone ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}><i class="fas fa-sign-in-alt me-2" style="font-size: 1.5rem;"></i>Check In</button>
+                                    <button onclick="checkOut()" style="width: 100%; padding: 1.5rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 15px; font-size: 1.3rem; cursor: pointer;" ${!isIn || isDone ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}><i class="fas fa-sign-out-alt me-2" style="font-size: 1.5rem;"></i>Check Out</button>
+                                </div>
+                                <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                                    <h3 style="color: var(--forest); margin-bottom: 1.5rem;"><i class="fas fa-history me-2"></i>Riwayat Terbaru</h3>
+                                    <div id="historyQuick" style="max-height: 500px; overflow-y: auto;"><p style="text-align: center; color: #999; padding: 2rem;">Memuat...</p></div>
+                                </div>
                             </div>
                         </div>
+                        
+                        <div id="historyView" class="tab-content" style="display: none;">
+                            <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                                <h3 style="color: var(--forest); margin-bottom: 1.5rem;"><i class="fas fa-history me-2"></i>Riwayat Absensi Lengkap</h3>
+                                <div id="historyFull" style="max-height: 600px; overflow-y: auto;"><p style="text-align: center; color: #999; padding: 2rem;">Memuat...</p></div>
+                            </div>
+                        </div>
+                        
+                        ${user.role === 'admin' ? `
+                        <div id="reportsView" class="tab-content" style="display: none;">
+                            <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                                <h3 style="color: var(--forest); margin-bottom: 1.5rem;"><i class="fas fa-chart-bar me-2"></i>Laporan Absensi</h3>
+                                
+                                <div class="filter-section">
+                                    <select id="reportType" class="filter-input" onchange="loadReports()">
+                                        <option value="daily">Laporan Harian</option>
+                                        <option value="weekly">Laporan Mingguan</option>
+                                        <option value="monthly">Laporan Bulanan</option>
+                                    </select>
+                                    
+                                    <input type="date" id="reportDate" class="filter-input" value="${new Date().toISOString().split('T')[0]}" onchange="loadReports()">
+                                    
+                                    <select id="reportUser" class="filter-input" onchange="loadReports()">
+                                        <option value="all">Semua User</option>
+                                        ${allUsers.filter(u => u.apps.includes('absensi')).map(u => `<option value="${u.username}">${u.fullName}</option>`).join('')}
+                                    </select>
+                                    
+                                    <button class="filter-btn" onclick="loadReports()"><i class="fas fa-search me-2"></i>Filter</button>
+                                    <button class="export-btn" onclick="exportReport()"><i class="fas fa-download me-2"></i>Export Excel</button>
+                                </div>
+                                
+                                <div id="reportContent" style="overflow-x: auto;"></div>
+                            </div>
+                        </div>
+                        ` : ''}
                     </div>
                 </div>
             `;
             
             setInterval(() => {
                 const now = new Date();
-                document.getElementById('clock').textContent = now.toLocaleTimeString('id-ID');
-                document.getElementById('date').textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                const clockEl = document.getElementById('clock');
+                const dateEl = document.getElementById('date');
+                if (clockEl) clockEl.textContent = now.toLocaleTimeString('id-ID');
+                if (dateEl) dateEl.textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             }, 1000);
             
-            loadHistory(user.username);
+            loadHistory(user.username, 'historyQuick', 5);
+            
+            if (user.role === 'admin') {
+                loadReports();
+            }
+        }
+
+        function switchTab(tab) {
+            currentAbsensiView = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+            
+            if (tab === 'check') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('checkView').style.display = 'block';
+            } else if (tab === 'history') {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('historyView').style.display = 'block';
+                loadHistory(currentUser.username, 'historyFull', 30);
+            } else if (tab === 'reports') {
+                document.querySelectorAll('.tab-btn')[2].classList.add('active');
+                document.getElementById('reportsView').style.display = 'block';
+                loadReports();
+            }
+        }
+
+        async function loadReports() {
+            const reportType = document.getElementById('reportType').value;
+            const reportDate = new Date(document.getElementById('reportDate').value);
+            const reportUser = document.getElementById('reportUser').value;
+            
+            let allData = {};
+            
+            // Load data from Firebase or localStorage for all users
+            if (reportUser === 'all') {
+                for (const user of allUsers.filter(u => u.apps.includes('absensi'))) {
+                    const userData = await loadAllUserData(user.username);
+                    Object.assign(allData, userData);
+                }
+            } else {
+                allData = await loadAllUserData(reportUser);
+            }
+            
+            // Filter data based on report type
+            let filteredData = [];
+            const dates = Object.keys(allData).sort().reverse();
+            
+            if (reportType === 'daily') {
+                const targetDate = reportDate.toISOString().split('T')[0];
+                filteredData = dates.filter(d => d === targetDate).map(d => allData[d]);
+            } else if (reportType === 'weekly') {
+                const weekStart = new Date(reportDate);
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                
+                filteredData = dates.filter(d => {
+                    const date = new Date(d);
+                    return date >= weekStart && date <= weekEnd;
+                }).map(d => allData[d]);
+            } else if (reportType === 'monthly') {
+                const month = reportDate.getMonth();
+                const year = reportDate.getFullYear();
+                
+                filteredData = dates.filter(d => {
+                    const date = new Date(d);
+                    return date.getMonth() === month && date.getFullYear() === year;
+                }).map(d => allData[d]);
+            }
+            
+            // Generate report table
+            let html = '<table class="report-table"><thead><tr>';
+            html += '<th>No</th><th>Nama</th><th>Tanggal</th><th>Hari</th><th>Check In</th><th>Check Out</th><th>Total Jam</th><th>Status</th>';
+            if (currentUser.role === 'admin') html += '<th>Aksi</th>';
+            html += '</tr></thead><tbody>';
+            
+            if (filteredData.length === 0) {
+                html += '<tr><td colspan="9" style="text-align: center; padding: 2rem; color: #999;">Tidak ada data</td></tr>';
+            } else {
+                filteredData.forEach((data, index) => {
+                    const date = new Date(data.date);
+                    const dayName = date.toLocaleDateString('id-ID', { weekday: 'long' });
+                    const formattedDate = date.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+                    const totalHours = calcHours(data.checkIn, data.checkOut);
+                    
+                    let status = 'pending';
+                    let statusText = 'Menunggu';
+                    if (data.approved) {
+                        status = 'approved';
+                        statusText = 'Disetujui';
+                    } else if (!data.checkOut) {
+                        status = 'incomplete';
+                        statusText = 'Belum Selesai';
+                    }
+                    
+                    html += `<tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${data.fullName}</strong></td>
+                        <td>${formattedDate}</td>
+                        <td>${dayName}</td>
+                        <td><span style="color: #10b981;"><i class="fas fa-sign-in-alt me-1"></i>${data.checkIn || '-'}</span></td>
+                        <td><span style="color: #ef4444;"><i class="fas fa-sign-out-alt me-1"></i>${data.checkOut || '-'}</span></td>
+                        <td><strong>${totalHours}</strong></td>
+                        <td><span class="status-badge status-${status}">${statusText}</span></td>`;
+                    
+                    if (currentUser.role === 'admin') {
+                        html += `<td>
+                            <button class="approve-btn" onclick="approveAttendance('${data.username}', '${data.date}')" ${data.approved || !data.checkOut ? 'disabled' : ''}>
+                                <i class="fas fa-check me-1"></i>Setujui
+                            </button>
+                        </td>`;
+                    }
+                    
+                    html += '</tr>';
+                });
+            }
+            
+            html += '</tbody></table>';
+            document.getElementById('reportContent').innerHTML = html;
+        }
+
+        async function loadAllUserData(username) {
+            let data = {};
+            
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
+                    const { collection, query, where, getDocs } = window.firebaseModules;
+                    const q = query(collection(window.firebaseDb, 'attendance'), where('username', '==', username));
+                    const snap = await getDocs(q);
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        data[d.date] = d;
+                    });
+                } catch (e) {
+                    console.log('Firebase error:', e);
+                }
+            }
+            
+            if (Object.keys(data).length === 0) {
+                data = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+            }
+            
+            return data;
+        }
+
+        async function approveAttendance(username, date) {
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
+                    const { doc, updateDoc } = window.firebaseModules;
+                    await updateDoc(doc(window.firebaseDb, 'attendance', `${username}_${date}`), { 
+                        approved: true,
+                        approvedBy: currentUser.fullName,
+                        approvedAt: new Date().toISOString()
+                    });
+                    showAlert('✅ Absensi disetujui!', 'success');
+                } catch (e) {
+                    console.log('Firebase error, using local');
+                    approveLocal(username, date);
+                    showAlert('✅ Absensi disetujui! (Local)', 'success');
+                }
+            } else {
+                approveLocal(username, date);
+                showAlert('✅ Absensi disetujui! (Local)', 'success');
+            }
+            setTimeout(() => loadReports(), 500);
+        }
+
+        function approveLocal(username, date) {
+            const local = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+            if (local[date]) {
+                local[date].approved = true;
+                local[date].approvedBy = currentUser.fullName;
+                local[date].approvedAt = new Date().toISOString();
+                localStorage.setItem('attendance_' + username, JSON.stringify(local));
+            }
+        }
+
+        function exportReport() {
+            const reportType = document.getElementById('reportType').value;
+            const reportDate = document.getElementById('reportDate').value;
+            const reportUser = document.getElementById('reportUser').value;
+            
+            let filename = `Laporan_Absensi_${reportType}_${reportDate}`;
+            if (reportUser !== 'all') {
+                filename += `_${reportUser}`;
+            }
+            
+            const table = document.querySelector('.report-table');
+            if (!table) {
+                showAlert('Tidak ada data untuk diekspor', 'danger');
+                return;
+            }
+            
+            let csv = [];
+            const rows = table.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td, th');
+                const csvRow = [];
+                cols.forEach((col, idx) => {
+                    if (idx < cols.length - 1) { // Skip action column
+                        csvRow.push('"' + col.textContent.replace(/"/g, '""') + '"');
+                    }
+                });
+                csv.push(csvRow.join(','));
+            });
+            
+            const csvContent = csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename + '.csv';
+            link.click();
+            
+            showAlert('✅ Report berhasil diexport!', 'success');
         }
 
         async function loadData(username, date) {
@@ -354,12 +638,12 @@
             return local[date] || null;
         }
 
-        async function loadHistory(username) {
+        async function loadHistory(username, elementId, limitCount) {
             let data = {};
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
                     const { collection, query, where, orderBy, limit, getDocs } = window.firebaseModules;
-                    const q = query(collection(window.firebaseDb, 'attendance'), where('username', '==', username), orderBy('date', 'desc'), limit(30));
+                    const q = query(collection(window.firebaseDb, 'attendance'), where('username', '==', username), orderBy('date', 'desc'), limit(limitCount));
                     const snap = await getDocs(q);
                     snap.forEach(doc => { const d = doc.data(); data[d.date] = d; });
                 } catch (e) { console.log('Firebase error:', e); }
@@ -369,24 +653,30 @@
             }
             
             const html = Object.keys(data).length === 0 ? '<p style="text-align: center; color: #999; padding: 2rem;">Belum ada riwayat</p>' :
-                Object.keys(data).sort().reverse().map(date => {
+                Object.keys(data).sort().reverse().slice(0, limitCount).map(date => {
                     const d = data[date];
                     const dateObj = new Date(date + 'T00:00:00');
                     const formatted = dateObj.toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-                    return `<div style="padding: 1rem; border-bottom: 1px solid var(--beige); display: flex; justify-content: space-between;">
-                        <div><div style="font-weight: 600; color: var(--forest);">${formatted}</div>
-                        <span style="font-size: 0.85rem; color: ${d.checkOut ? '#666' : '#ef4444'};">${d.checkOut ? 'Durasi: ' + calcHours(d.checkIn, d.checkOut) : 'Belum Check Out'}</span></div>
-                        <div style="display: flex; gap: 1rem; font-size: 0.9rem;"><div><i class="fas fa-sign-in-alt" style="color: #10b981;"></i> ${d.checkIn || '-'}</div>
-                        <div><i class="fas fa-sign-out-alt" style="color: #ef4444;"></i> ${d.checkOut || '-'}</div></div></div>`;
+                    return `<div style="padding: 1rem; border-bottom: 1px solid var(--beige); display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600; color: var(--forest);">${formatted}</div>
+                            <span style="font-size: 0.85rem; color: ${d.checkOut ? '#666' : '#ef4444'};">${d.checkOut ? 'Durasi: ' + calcHours(d.checkIn, d.checkOut) : 'Belum Check Out'}</span>
+                            ${d.approved ? '<div style="margin-top: 0.3rem;"><span class="status-badge status-approved" style="font-size: 0.75rem;">Disetujui</span></div>' : ''}
+                        </div>
+                        <div style="display: flex; gap: 1rem; font-size: 0.9rem;">
+                            <div><i class="fas fa-sign-in-alt" style="color: #10b981;"></i> ${d.checkIn || '-'}</div>
+                            <div><i class="fas fa-sign-out-alt" style="color: #ef4444;"></i> ${d.checkOut || '-'}</div>
+                        </div>
+                    </div>`;
                 }).join('');
-            document.getElementById('history').innerHTML = html;
+            document.getElementById(elementId).innerHTML = html;
         }
 
         async function checkIn() {
             const now = new Date();
             const date = now.toISOString().split('T')[0];
             const time = now.toLocaleTimeString('id-ID');
-            const data = { username: currentUser.username, fullName: currentUser.fullName, date, checkIn: time, checkOut: null };
+            const data = { username: currentUser.username, fullName: currentUser.fullName, date, checkIn: time, checkOut: null, approved: false };
             
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
@@ -478,23 +768,16 @@
                 console.log('🚀 Pinuslo Apps - Unified Management System');
                 console.log(window.firebaseEnabled ? '✅ Firebase Connected - Cloud Storage' : '⚠️ Firebase Offline - Local Storage');
                 console.log('');
+                console.log('📊 FITUR BARU: Laporan Absensi (Harian/Mingguan/Bulanan)');
+                console.log('   • Admin dapat melihat dan menyetujui absensi');
+                console.log('   • Export laporan ke Excel/CSV');
+                console.log('   • Filter berdasarkan tanggal dan user');
+                console.log('');
                 console.log('👑 ADMIN - Menu Utama Katalist:');
                 console.log('   • iqbal / iqbal123 → Full Access (Semua Aplikasi)');
                 console.log('   • jendra / jendra123 → Café, Absensi');
                 console.log('   • selow / selow123 → Regist, Pinewater, Absensi');
                 console.log('   • komandan / komandan123 → Pinewater, BBM, Absensi');
-                console.log('');
-                console.log('👥 USER - Akses Terbatas:');
-                console.log('   • agus → Regist, Café, Glamping, Absensi');
-                console.log('   • selfi → Regist, Café, Glamping, Absensi');
-                console.log('   • fadel, farel, sadiq → Café, Absensi');
-                console.log('   • sirad → Regist, Pinewater, Café, Glamping, Absensi');
-                console.log('   • bate, ikki → Regist, Café, Absensi');
-                console.log('   • zulkifli → Regist, Pinewater, Absensi');
-                console.log('   • chulo, pian, imbang → Glamping Only (Tanpa Absensi)');
-                console.log('   • roy → Pinewater, Glamping (Tanpa Absensi)');
-                console.log('');
-                console.log('📌 Password Format: [username]123');
             }, 500);
         });
     </script>
