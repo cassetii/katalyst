@@ -13,22 +13,25 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, query, where, orderBy, limit, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
         
         const firebaseConfig = {
-            apiKey: "AIzaSyAEyZF2Ib10UD7vv8l3nclb-KfChIczIz4",
-            authDomain: "pinewater-393fe.firebaseapp.com",
-            projectId: "pinewater-393fe",
-            storageBucket: "pinewater-393fe.firebasestorage.app",
-            messagingSenderId: "1039943692827",
-            appId: "1:1039943692827:web:014dd0b891143a8a95febe",
-            measurementId: "G-931M74XQQK"
+            apiKey: "AIzaSyB8X3i-YHCqYiki4hkBxHNk26Af5qQOfjM",
+            authDomain: "drmd-2c6da.firebaseapp.com",
+            projectId: "drmd-2c6da",
+            storageBucket: "drmd-2c6da.firebasestorage.app",
+            messagingSenderId: "656840700301",
+            appId: "1:656840700301:web:ba79742f91c13388100dc4",
+            measurementId: "G-XGJ7ZNQKB9"
         };
 
         try {
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
-            console.log('✅ Firebase connected');
+            const analytics = getAnalytics(app);
+            console.log('✅ Firebase connected - DRMD Project');
             window.firebaseDb = db;
+            window.firebaseAnalytics = analytics;
             window.firebaseEnabled = true;
             window.firebaseModules = { collection, doc, setDoc, getDoc, updateDoc, query, where, orderBy, limit, getDocs, serverTimestamp };
         } catch (error) {
