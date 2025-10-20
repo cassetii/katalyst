@@ -118,6 +118,10 @@
         .wifi-connected { background: #d1fae5; color: #065f46; }
         .wifi-disconnected { background: #fee2e2; color: #991b1b; }
         .wifi-checking { background: #fef3c7; color: #92400e; }
+        .validation-warning { background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 2px solid #ef4444; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+        .btn-disabled-custom { opacity: 0.4 !important; cursor: not-allowed !important; position: relative; }
+        .btn-disabled-custom::after { content: '🔒'; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 1.2rem; }
     </style>
 </head>
 <body>
@@ -202,6 +206,8 @@
         let userMarker = null;
         let currentLocation = null;
         let geofenceCircle = null;
+        let validationInterval = null;
+        let isValidForAttendance = false;
         
         // Single Point Geofencing - Cafepinuslo Location
         const GEOFENCE_CENTER = {
@@ -280,7 +286,7 @@
                 if (connection) {
                     // If on cellular, definitely not on WiFi
                     if (connection.type && connection.type !== 'wifi') {
-                        return { connected: false, reason: 'Tidak terhubung ke WiFi (menggunakan data seluler)' };
+                        return { connected: false, reason: 'Menggunakan data seluler, bukan WiFi' };
                     }
                 }
             }
@@ -295,13 +301,114 @@
                 );
                 
                 if (distance <= GEOFENCE_RADIUS) {
-                    return { connected: true, reason: 'Terkoneksi dan berada di lokasi' };
+                    return { connected: true, reason: 'Terkoneksi dan berada di lokasi', distance: Math.round(distance) };
                 } else {
-                    return { connected: false, reason: `Terlalu jauh dari WiFi Cafepinuslo (${Math.round(distance)}m)` };
+                    return { connected: false, reason: `Terlalu jauh dari WiFi (${Math.round(distance)}m dari area)`, distance: Math.round(distance) };
                 }
             }
 
             return { connected: false, reason: 'Lokasi belum terdeteksi' };
+        }
+
+        async function validateAttendanceConditions() {
+            const wifiCheck = await checkWiFiConnection();
+            const locationValid = currentLocation && isInGeofence(currentLocation.lat, currentLocation.lon);
+            
+            isValidForAttendance = wifiCheck.connected && locationValid;
+            
+            updateButtonStates();
+            updateValidationWarning(wifiCheck, locationValid);
+            
+            return isValidForAttendance;
+        }
+
+        function updateButtonStates() {
+            const checkInBtn = document.getElementById('checkInBtn');
+            const checkOutBtn = document.getElementById('checkOutBtn');
+            
+            if (!checkInBtn || !checkOutBtn) return;
+            
+            // Get current attendance status
+            const today = new Date().toISOString().split('T')[0];
+            loadData(currentUser.username, today).then(todayData => {
+                const isIn = todayData && todayData.checkIn && !todayData.checkOut;
+                const isDone = todayData && todayData.checkOut;
+                
+                // Check In button
+                if (!isValidForAttendance || isIn || isDone) {
+                    checkInBtn.disabled = true;
+                    checkInBtn.classList.add('btn-disabled-custom');
+                } else {
+                    checkInBtn.disabled = false;
+                    checkInBtn.classList.remove('btn-disabled-custom');
+                }
+                
+                // Check Out button
+                if (!isValidForAttendance || !isIn || isDone) {
+                    checkOutBtn.disabled = true;
+                    checkOutBtn.classList.add('btn-disabled-custom');
+                } else {
+                    checkOutBtn.disabled = false;
+                    checkOutBtn.classList.remove('btn-disabled-custom');
+                }
+            });
+        }
+
+        function updateValidationWarning(wifiCheck, locationValid) {
+            const warningDiv = document.getElementById('validationWarning');
+            if (!warningDiv) return;
+            
+            if (!isValidForAttendance) {
+                let reasons = [];
+                
+                if (!wifiCheck.connected) {
+                    reasons.push(`<div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;"><i class="fas fa-wifi" style="font-size: 1.2rem;"></i><div><strong>WiFi:</strong> ${wifiCheck.reason}</div></div>`);
+                }
+                
+                if (!locationValid) {
+                    const dist = wifiCheck.distance || 0;
+                    reasons.push(`<div style="display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-map-marker-alt" style="font-size: 1.2rem;"></i><div><strong>Lokasi:</strong> ${dist > 0 ? `Anda berada ${dist}m dari area (maksimal ${GEOFENCE_RADIUS}m)` : 'Di luar area WiFi Cafepinuslo'}</div></div>`);
+                }
+                
+                warningDiv.style.display = 'block';
+                warningDiv.innerHTML = `
+                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #dc2626;"></i>
+                        <div style="flex: 1;">
+                            <h4 style="color: #991b1b; margin-bottom: 0.8rem; font-size: 1.1rem;">🔒 Check In/Out Tidak Tersedia</h4>
+                            <p style="margin-bottom: 1rem; color: #7f1d1d;">Anda tidak dapat melakukan absensi karena:</p>
+                            ${reasons.join('')}
+                            <div style="margin-top: 1rem; padding: 0.8rem; background: white; border-radius: 8px; border-left: 4px solid #dc2626;">
+                                <strong>Solusi:</strong> Pastikan Anda terhubung ke WiFi <strong>"${REQUIRED_WIFI.ssid}"</strong> dan berada dalam radius ${GEOFENCE_RADIUS}m dari lokasi.
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                warningDiv.style.display = 'none';
+            }
+        }
+
+        function startValidationMonitoring() {
+            // Clear existing interval
+            if (validationInterval) {
+                clearInterval(validationInterval);
+            }
+            
+            // Validate immediately
+            validateAttendanceConditions();
+            
+            // Then validate every 5 seconds
+            validationInterval = setInterval(() => {
+                validateAttendanceConditions();
+            }, 5000);
+        }
+
+        function stopValidationMonitoring() {
+            if (validationInterval) {
+                clearInterval(validationInterval);
+                validationInterval = null;
+            }
         }
 
         function initMap() {
@@ -370,8 +477,9 @@
                 }
             }
 
-            // Update WiFi status
+            // Update WiFi status and validate
             updateWiFiStatus();
+            validateAttendanceConditions();
         }
 
         async function updateWiFiStatus() {
@@ -493,6 +601,7 @@
 
         function handleLogout() {
             if (confirm('Yakin ingin keluar?')) {
+                stopValidationMonitoring();
                 currentUser = null;
                 localStorage.removeItem('pinuslo_user');
                 document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
@@ -518,10 +627,10 @@
                     <div style="max-width: 1400px; margin: 0 auto;">
                         <div style="background: white; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
                             <div style="display: flex; align-items: center; gap: 1rem;">
-                                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #a855f7, #9333ea); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;"><i class="fas fa-wifi"></i></div>
+                                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #a855f7, #9333ea); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;"><i class="fas fa-shield-alt"></i></div>
                                 <div>
-                                    <h2 style="margin: 0; color: var(--forest);">Sistem Absensi • WiFi Authentication</h2>
-                                    <p style="margin: 0; color: var(--tan); font-size: 0.9rem;">${user.fullName} • ${window.firebaseEnabled ? 'Cloud' : 'Local'}</p>
+                                    <h2 style="margin: 0; color: var(--forest);">Sistem Absensi • Validasi Ketat</h2>
+                                    <p style="margin: 0; color: var(--tan); font-size: 0.9rem;">${user.fullName} • WiFi + Lokasi Protected</p>
                                 </div>
                             </div>
                             <button onclick="backToSelection()" style="padding: 0.8rem 1.5rem; background: var(--tan); color: white; border: none; border-radius: 10px; cursor: pointer;"><i class="fas fa-arrow-left me-2"></i>Kembali</button>
@@ -529,7 +638,7 @@
 
                         <div class="wifi-requirement">
                             <h4 style="color: #1e40af; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-shield-alt"></i> Persyaratan Koneksi
+                                <i class="fas fa-lock"></i> Persyaratan Koneksi Wajib
                             </h4>
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
                                 <div>
@@ -541,14 +650,13 @@
                                     <div style="background: white; padding: 0.5rem; border-radius: 8px;">${REQUIRED_WIFI.security}</div>
                                 </div>
                                 <div>
-                                    <div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-network-wired me-2"></i>MAC Address:</div>
-                                    <div style="background: white; padding: 0.5rem; border-radius: 8px; font-family: monospace; font-size: 0.85rem;">${REQUIRED_WIFI.bssid}</div>
+                                    <div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-map-marker-alt me-2"></i>Radius Maksimal:</div>
+                                    <div style="background: white; padding: 0.5rem; border-radius: 8px; font-weight: bold;">${GEOFENCE_RADIUS} meter dari titik WiFi</div>
                                 </div>
                             </div>
-                            <div style="margin-top: 1rem; padding: 0.8rem; background: white; border-left: 4px solid #3b82f6; border-radius: 8px;">
-                                <strong>⚠️ Penting:</strong> Pastikan Anda terhubung ke WiFi <strong>${REQUIRED_WIFI.ssid}</strong> dan berada dalam radius ${GEOFENCE_RADIUS}m dari titik WiFi untuk dapat melakukan absensi.
-                            </div>
                         </div>
+
+                        <div id="validationWarning" class="validation-warning" style="display: none;"></div>
                         
                         <div class="tab-menu">
                             <button class="tab-btn active" onclick="switchTab('check')"><i class="fas fa-fingerprint me-2"></i>Check In/Out</button>
@@ -559,7 +667,7 @@
                         <div id="checkView" class="tab-content">
                             <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem;">
                                 <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                                    <h3 style="color: var(--forest); margin-bottom: 1rem;"><i class="fas fa-map-marked-alt me-2"></i>Peta Lokasi WiFi Cafepinuslo</h3>
+                                    <h3 style="color: var(--forest); margin-bottom: 1rem;"><i class="fas fa-map-marked-alt me-2"></i>Monitor Lokasi & WiFi</h3>
                                     
                                     <div id="wifiStatus" class="wifi-status wifi-checking">
                                         <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i>
@@ -596,18 +704,18 @@
                                                 <span><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span>
                                                 <strong style="color: var(--forest);">${todayData.checkOut || '-'}</strong>
                                             </div>
-                                            ${todayData.location ? `
+                                            ${todayData.distance ? `
                                                 <div style="padding-top: 1rem; border-top: 1px solid var(--beige);">
                                                     <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem;">
-                                                        <i class="fas fa-map-pin me-1"></i>Jarak dari WiFi: ${todayData.distance ? todayData.distance + 'm' : '-'}
+                                                        <i class="fas fa-map-pin me-1"></i>Jarak dari WiFi: ${todayData.distance}m
                                                     </div>
                                                 </div>
                                             ` : ''}
                                             ${todayData.checkOut ? `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;"><span style="color: #666;">Total Jam:</span><strong style="display: block; color: var(--forest); font-size: 1.2rem; margin-top: 0.5rem;">${calcHours(todayData.checkIn, todayData.checkOut)}</strong></div>` : ''}
                                         </div>
                                     ` : ''}
-                                    <button onclick="checkIn()" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 15px; font-size: 1.1rem; cursor: pointer; margin-bottom: 1rem;" ${isIn || isDone ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}><i class="fas fa-sign-in-alt me-2"></i>Check In</button>
-                                    <button onclick="checkOut()" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 15px; font-size: 1.1rem; cursor: pointer;" ${!isIn || isDone ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}><i class="fas fa-sign-out-alt me-2"></i>Check Out</button>
+                                    <button id="checkInBtn" onclick="checkIn()" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 15px; font-size: 1.1rem; cursor: pointer; margin-bottom: 1rem;" disabled class="btn-disabled-custom"><i class="fas fa-sign-in-alt me-2"></i>Check In</button>
+                                    <button id="checkOutBtn" onclick="checkOut()" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 15px; font-size: 1.1rem; cursor: pointer;" disabled class="btn-disabled-custom"><i class="fas fa-sign-out-alt me-2"></i>Check Out</button>
                                 </div>
                             </div>
                         </div>
@@ -652,10 +760,14 @@
             
             setTimeout(() => {
                 initMap();
-                getCurrentLocation().catch(err => {
-                    console.error('Location error:', err);
-                    showAlert('Gagal mendapatkan lokasi. Aktifkan GPS dan izinkan akses lokasi.', 'warning');
-                });
+                getCurrentLocation()
+                    .then(() => {
+                        startValidationMonitoring();
+                    })
+                    .catch(err => {
+                        console.error('Location error:', err);
+                        showAlert('Gagal mendapatkan lokasi. Aktifkan GPS dan izinkan akses lokasi.', 'warning');
+                    });
             }, 300);
             
             setInterval(() => {
@@ -675,6 +787,7 @@
             getCurrentLocation()
                 .then(() => {
                     showAlert('✅ Lokasi dan WiFi diperbarui!', 'success');
+                    validateAttendanceConditions();
                 })
                 .catch(err => showAlert('Gagal mendapatkan lokasi: ' + err.message, 'danger'));
         }
@@ -690,14 +803,18 @@
                 setTimeout(() => {
                     if (map) map.invalidateSize();
                 }, 100);
-            } else if (tab === 'history') {
-                document.querySelectorAll('.tab-btn')[1].classList.add('active');
-                document.getElementById('historyView').style.display = 'block';
-                loadHistory(currentUser.username, 'historyFull', 30);
-            } else if (tab === 'reports') {
-                document.querySelectorAll('.tab-btn')[2].classList.add('active');
-                document.getElementById('reportsView').style.display = 'block';
-                loadReports();
+                startValidationMonitoring();
+            } else {
+                stopValidationMonitoring();
+                if (tab === 'history') {
+                    document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                    document.getElementById('historyView').style.display = 'block';
+                    loadHistory(currentUser.username, 'historyFull', 30);
+                } else if (tab === 'reports') {
+                    document.querySelectorAll('.tab-btn')[2].classList.add('active');
+                    document.getElementById('reportsView').style.display = 'block';
+                    loadReports();
+                }
             }
         }
 
@@ -940,15 +1057,11 @@
         }
 
         async function checkIn() {
-            if (!currentLocation) {
-                showAlert('❌ Lokasi belum terdeteksi. Refresh lokasi terlebih dahulu!', 'warning');
-                return;
-            }
-
-            // Check WiFi connection
-            const wifiCheck = await checkWiFiConnection();
-            if (!wifiCheck.connected) {
-                showAlert(`❌ ${wifiCheck.reason}. Hubungkan ke WiFi "${REQUIRED_WIFI.ssid}" terlebih dahulu!`, 'danger');
+            // Final validation check
+            const isValid = await validateAttendanceConditions();
+            
+            if (!isValid) {
+                showAlert('❌ Tidak dapat Check In! Pastikan WiFi dan lokasi sudah sesuai.', 'danger');
                 return;
             }
             
@@ -958,11 +1071,6 @@
                 GEOFENCE_CENTER.lat, 
                 GEOFENCE_CENTER.lon
             );
-            
-            if (distance > GEOFENCE_RADIUS) {
-                showAlert(`❌ Anda terlalu jauh dari area WiFi! Jarak: ${Math.round(distance)}m (maksimal ${GEOFENCE_RADIUS}m)`, 'danger');
-                return;
-            }
             
             const now = new Date();
             const date = now.toISOString().split('T')[0];
@@ -996,15 +1104,11 @@
         }
 
         async function checkOut() {
-            if (!currentLocation) {
-                showAlert('❌ Lokasi belum terdeteksi. Refresh lokasi terlebih dahulu!', 'warning');
-                return;
-            }
-
-            // Check WiFi connection
-            const wifiCheck = await checkWiFiConnection();
-            if (!wifiCheck.connected) {
-                showAlert(`❌ ${wifiCheck.reason}. Hubungkan ke WiFi "${REQUIRED_WIFI.ssid}" terlebih dahulu!`, 'danger');
+            // Final validation check
+            const isValid = await validateAttendanceConditions();
+            
+            if (!isValid) {
+                showAlert('❌ Tidak dapat Check Out! Pastikan WiFi dan lokasi sudah sesuai.', 'danger');
                 return;
             }
             
@@ -1014,11 +1118,6 @@
                 GEOFENCE_CENTER.lat, 
                 GEOFENCE_CENTER.lon
             );
-            
-            if (distance > GEOFENCE_RADIUS) {
-                showAlert(`❌ Anda terlalu jauh dari area WiFi! Jarak: ${Math.round(distance)}m (maksimal ${GEOFENCE_RADIUS}m)`, 'danger');
-                return;
-            }
             
             const now = new Date();
             const date = now.toISOString().split('T')[0];
@@ -1075,6 +1174,7 @@
         }
 
         function backToSelection() {
+            stopValidationMonitoring();
             document.getElementById('absensiContainer').classList.remove('active');
             document.getElementById('appSelectionPage').classList.add('active');
             if (map) {
@@ -1100,17 +1200,16 @@
                     currentUser = user;
                     showAppSelection(user);
                 }
-                console.log('🚀 Pinuslo Apps - WiFi Authentication System');
+                console.log('🚀 Pinuslo Apps - Strict Validation System');
                 console.log(window.firebaseEnabled ? '✅ Firebase Connected' : '⚠️ Firebase Offline');
                 console.log('');
-                console.log('📍 WiFi Location - Cafepinuslo:');
-                console.log(`   Center: ${GEOFENCE_CENTER.lat}, ${GEOFENCE_CENTER.lon}`);
-                console.log(`   Radius: ${GEOFENCE_RADIUS} meters`);
+                console.log('🔒 VALIDASI KETAT - Check In/Out HANYA jika:');
+                console.log('   1. Terhubung ke WiFi Cafepinuslo');
+                console.log('   2. Dalam radius 50m dari titik WiFi');
+                console.log('   3. Lokasi GPS aktif dan valid');
                 console.log('');
-                console.log('📶 WiFi Requirements:');
-                console.log(`   SSID: ${REQUIRED_WIFI.ssid}`);
-                console.log(`   MAC: ${REQUIRED_WIFI.bssid}`);
-                console.log(`   Security: ${REQUIRED_WIFI.security}`);
+                console.log('📍 WiFi Location:', GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon);
+                console.log('📶 WiFi SSID:', REQUIRED_WIFI.ssid);
             }, 500);
         });
     </script>
