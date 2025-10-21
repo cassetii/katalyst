@@ -327,7 +327,7 @@
         .logout-btn { background: var(--sage-green); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; }
         .logout-btn:hover { background: var(--dark-forest); transform: translateY(-2px); }
         .apps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
-        .app-card { background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s ease; cursor: pointer; border: 3px solid transparent; }
+        .app-card { background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s ease; cursor: pointer; border: 3px solid transparent; position: relative; overflow: hidden; }
         .app-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-color: var(--pine-green); }
         .app-icon { width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem; color: white; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .app-card.pinus { background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); }
@@ -384,6 +384,78 @@
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
         .btn-disabled-custom { opacity: 0.4 !important; cursor: not-allowed !important; position: relative; }
         .btn-disabled-custom::after { content: '🔒'; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 1.2rem; }
+
+        /* Dashboard Stats Cards Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Pulse animation for stats */
+        @keyframes statPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Quick action button hover */
+        button[onclick^="quickOpen"]:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        /* Scrollbar styling for activity feed */
+        #recentActivity::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #recentActivity::-webkit-scrollbar-track {
+            background: var(--beige);
+            border-radius: 10px;
+        }
+
+        #recentActivity::-webkit-scrollbar-thumb {
+            background: var(--sage-green);
+            border-radius: 10px;
+        }
+
+        #recentActivity::-webkit-scrollbar-thumb:hover {
+            background: var(--dark-forest);
+        }
+
+        /* Shine effect on hover for app cards */
+        .app-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .app-card:hover::before {
+            left: 100%;
+        }
+
+        /* Weather icon rotation on hover */
+        .fa-cloud-sun {
+            transition: transform 0.5s ease;
+        }
+
+        .fa-cloud-sun:hover {
+            transform: rotate(20deg);
+        }
     </style>
 </head>
 <body>
@@ -542,11 +614,172 @@
                         <p id="userRole" style="color: var(--sage-green); margin: 0; font-size: 0.9rem;">Staff</p>
                     </div>
                 </div>
-                <button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt me-2"></i>Keluar</button>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div id="currentTime" style="color: var(--dark-forest); font-weight: 600; font-size: 0.95rem;"></div>
+                    <button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt me-2"></i>Keluar</button>
+                </div>
             </div>
-            <div style="text-align: center; margin-bottom: 3rem;">
-                <h1 style="color: var(--dark-forest); font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Pilih Aplikasi</h1>
-                <p style="color: var(--sage-green); font-size: 1.1rem;">Silakan pilih aplikasi yang ingin Anda gunakan</p>
+
+            <!-- Dashboard Overview Section -->
+            <div style="max-width: 1200px; margin: 0 auto 3rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    <!-- Attendance Stats -->
+                    <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 20px; padding: 1.5rem; color: white; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                            <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; opacity: 0.9;">Kehadiran Bulan Ini</div>
+                                <div id="monthlyAttendance" style="font-size: 1.8rem; font-weight: 700;">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hours Worked -->
+                    <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 20px; padding: 1.5rem; color: white; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                            <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; opacity: 0.9;">Jam Minggu Ini</div>
+                                <div id="weeklyHours" style="font-size: 1.8rem; font-weight: 700;">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Rate -->
+                    <div style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); border-radius: 20px; padding: 1.5rem; color: white; box-shadow: 0 8px 20px rgba(168, 85, 247, 0.3);">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                            <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; opacity: 0.9;">Tingkat Kehadiran</div>
+                                <div id="attendanceRate" style="font-size: 1.8rem; font-weight: 700;">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Today -->
+                    <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 20px; padding: 1.5rem; color: white; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                            <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; opacity: 0.9;">Status Hari Ini</div>
+                                <div id="todayStatus" style="font-size: 1.2rem; font-weight: 700;">Belum Check In</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions & Weather -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                    <!-- Quick Actions -->
+                    <div style="background: white; border-radius: 20px; padding: 1.5rem; box-shadow: 0 8px 20px rgba(0,0,0,0.08);">
+                        <h3 style="color: var(--dark-forest); margin-bottom: 1rem; font-size: 1.2rem;">
+                            <i class="fas fa-bolt" style="color: #f59e0b;"></i> Akses Cepat
+                        </h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem;">
+                            <button onclick="quickOpenAbsensi()" style="padding: 1rem; background: linear-gradient(135deg, #a855f7, #9333ea); color: white; border: none; border-radius: 12px; cursor: pointer; transition: all 0.3s;">
+                                <i class="fas fa-fingerprint" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
+                                <span style="font-size: 0.85rem;">Absensi</span>
+                            </button>
+                            <button onclick="quickOpenCafe()" style="padding: 1rem; background: linear-gradient(135deg, #dc2626, #991b1b); color: white; border: none; border-radius: 12px; cursor: pointer; transition: all 0.3s;">
+                                <i class="fas fa-coffee" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
+                                <span style="font-size: 0.85rem;">Cafe</span>
+                            </button>
+                            <button onclick="quickOpenGlamping()" style="padding: 1rem; background: linear-gradient(135deg, #ea580c, #c2410c); color: white; border: none; border-radius: 12px; cursor: pointer; transition: all 0.3s;">
+                                <i class="fas fa-campground" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
+                                <span style="font-size: 0.85rem;">Glamping</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Weather Widget -->
+                    <div style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); border-radius: 20px; padding: 1.5rem; color: white; box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);">
+                        <div style="text-align: center;">
+                            <i class="fas fa-cloud-sun" style="font-size: 3rem; margin-bottom: 0.5rem;"></i>
+                            <div style="font-size: 2rem; font-weight: 700;" id="weatherTemp">28°C</div>
+                            <div style="font-size: 0.9rem; opacity: 0.9;">Cerah Berawan</div>
+                            <div style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.5rem;">Pinuslo Glamping</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Announcements & Recent Activity -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                    <!-- Announcements -->
+                    <div style="background: white; border-radius: 20px; padding: 1.5rem; box-shadow: 0 8px 20px rgba(0,0,0,0.08);">
+                        <h3 style="color: var(--dark-forest); margin-bottom: 1rem; font-size: 1.2rem;">
+                            <i class="fas fa-bullhorn" style="color: #ef4444;"></i> Pengumuman
+                        </h3>
+                        <div id="announcements">
+                            <div style="padding: 1rem; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 12px; margin-bottom: 0.8rem; border-left: 4px solid #f59e0b;">
+                                <div style="font-weight: 600; color: #92400e; margin-bottom: 0.3rem;">Meeting Tim - Besok 10:00</div>
+                                <div style="font-size: 0.85rem; color: #78350f;">Harap hadir tepat waktu untuk pembahasan operasional</div>
+                            </div>
+                            <div style="padding: 1rem; background: linear-gradient(135deg, #dbeafe, #bfdbfe); border-radius: 12px; margin-bottom: 0.8rem; border-left: 4px solid #3b82f6;">
+                                <div style="font-weight: 600; color: #1e40af; margin-bottom: 0.3rem;">Update Sistem Cafe</div>
+                                <div style="font-size: 0.85rem; color: #1e3a8a;">Fitur baru telah ditambahkan ke sistem POS</div>
+                            </div>
+                            <div style="padding: 1rem; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 12px; border-left: 4px solid #10b981;">
+                                <div style="font-weight: 600; color: #065f46; margin-bottom: 0.3rem;">Selamat Bekerja!</div>
+                                <div style="font-size: 0.85rem; color: #064e3b;">Semangat untuk hari ini! 💪</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div style="background: white; border-radius: 20px; padding: 1.5rem; box-shadow: 0 8px 20px rgba(0,0,0,0.08);">
+                        <h3 style="color: var(--dark-forest); margin-bottom: 1rem; font-size: 1.2rem;">
+                            <i class="fas fa-history" style="color: #6366f1;"></i> Aktivitas Terakhir
+                        </h3>
+                        <div id="recentActivity" style="max-height: 250px; overflow-y: auto;">
+                            <div style="padding: 0.8rem; border-bottom: 1px solid var(--beige);">
+                                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                    <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.9rem;">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: var(--dark-forest); font-size: 0.9rem;">Check In Berhasil</div>
+                                        <div style="font-size: 0.75rem; color: var(--sage-green);">Hari ini - Lihat riwayat lengkap</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="padding: 0.8rem; border-bottom: 1px solid var(--beige);">
+                                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                    <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.9rem;">
+                                        <i class="fas fa-coffee"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: var(--dark-forest); font-size: 0.9rem;">Akses Cafe POS</div>
+                                        <div style="font-size: 0.75rem; color: var(--sage-green);">Kemarin 15:30</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="padding: 0.8rem; border-bottom: 1px solid var(--beige);">
+                                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                    <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #ea580c, #c2410c); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.9rem;">
+                                        <i class="fas fa-campground"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: var(--dark-forest); font-size: 0.9rem;">Update Reservasi Glamping</div>
+                                        <div style="font-size: 0.75rem; color: var(--sage-green);">2 hari lalu</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h1 style="color: var(--dark-forest); font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Semua Aplikasi</h1>
+                <p style="color: var(--sage-green); font-size: 1.1rem;">Pilih aplikasi yang ingin Anda gunakan</p>
             </div>
             <div class="apps-grid">
                 <div class="app-card pinus" data-app="pinus">
@@ -852,6 +1085,14 @@
             document.getElementById('userAvatar').textContent = user.fullName.charAt(0).toUpperCase();
             document.getElementById('userName').textContent = user.fullName;
             document.getElementById('userRole').textContent = user.role === 'admin' ? 'Administrator' : 'User';
+
+            // Update time display
+            updateDashboardTime();
+            setInterval(updateDashboardTime, 1000);
+
+            // Load dashboard statistics
+            loadDashboardStats(user);
+
             setTimeout(() => {
                 document.querySelectorAll('.app-card').forEach(card => {
                     const appType = card.getAttribute('data-app');
@@ -872,6 +1113,109 @@
                     }
                 });
             }, 100);
+        }
+
+        function updateDashboardTime() {
+            const now = new Date();
+            const timeEl = document.getElementById('currentTime');
+            if (timeEl) {
+                const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                timeEl.textContent = now.toLocaleDateString('id-ID', options);
+            }
+        }
+
+        async function loadDashboardStats(user) {
+            const userData = await loadAllUserData(user.username);
+            const dates = Object.keys(userData).sort();
+
+            // Calculate monthly attendance
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            const monthlyDates = dates.filter(d => {
+                const date = new Date(d);
+                return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+            });
+            const monthlyAttendanceEl = document.getElementById('monthlyAttendance');
+            if (monthlyAttendanceEl) {
+                monthlyAttendanceEl.textContent = monthlyDates.length + ' hari';
+            }
+
+            // Calculate weekly hours
+            const weekStart = new Date(now);
+            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+
+            let totalMinutes = 0;
+            dates.forEach(d => {
+                const date = new Date(d);
+                if (date >= weekStart && date <= weekEnd && userData[d].checkIn && userData[d].checkOut) {
+                    const [h1, m1] = userData[d].checkIn.split(':').map(n => parseInt(n, 10));
+                    const [h2, m2] = userData[d].checkOut.split(':').map(n => parseInt(n, 10));
+                    let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+                    if (diff < 0) diff += 24 * 60;
+                    totalMinutes += diff;
+                }
+            });
+
+            const weeklyHoursEl = document.getElementById('weeklyHours');
+            if (weeklyHoursEl) {
+                const hours = Math.floor(totalMinutes / 60);
+                weeklyHoursEl.textContent = hours + ' jam';
+            }
+
+            // Calculate attendance rate
+            const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const currentDay = now.getDate();
+            const workDays = currentDay; // Simplified - assuming all days are work days
+            const attendanceRate = workDays > 0 ? Math.round((monthlyDates.length / workDays) * 100) : 0;
+
+            const attendanceRateEl = document.getElementById('attendanceRate');
+            if (attendanceRateEl) {
+                attendanceRateEl.textContent = attendanceRate + '%';
+            }
+
+            // Update today's status
+            const today = now.toISOString().split('T')[0];
+            const todayData = userData[today];
+            const todayStatusEl = document.getElementById('todayStatus');
+            if (todayStatusEl) {
+                if (todayData && todayData.checkOut) {
+                    todayStatusEl.textContent = 'Selesai';
+                } else if (todayData && todayData.checkIn) {
+                    todayStatusEl.textContent = 'Sudah Check In';
+                } else {
+                    todayStatusEl.textContent = 'Belum Check In';
+                }
+            }
+        }
+
+        // Quick action functions
+        function quickOpenAbsensi() {
+            if (currentUser && currentUser.apps.includes('absensi')) {
+                loadAbsensi(currentUser);
+            } else {
+                showAlert('Anda tidak memiliki akses ke Absensi', 'danger');
+            }
+        }
+
+        function quickOpenCafe() {
+            if (currentUser && currentUser.apps.includes('cafe')) {
+                showAlert('Membuka Pinuslo Cafe...', 'success');
+                setTimeout(() => window.open(appUrls['cafe'], '_blank'), 500);
+            } else {
+                showAlert('Anda tidak memiliki akses ke Cafe', 'danger');
+            }
+        }
+
+        function quickOpenGlamping() {
+            if (currentUser && currentUser.apps.includes('glamping')) {
+                showAlert('Membuka Pinuslo Glamping...', 'success');
+                setTimeout(() => window.open(appUrls['glamping'], '_blank'), 500);
+            } else {
+                showAlert('Anda tidak memiliki akses ke Glamping', 'danger');
+            }
         }
 
         function handleLogout() {
