@@ -46,33 +46,292 @@
             --beige: #E6D8C3;
             --tan: #C2A68C;
             --forest: #5D866C;
+            --pine-green: #6e9726;
+            --sage-green: #7d8b70;
+            --dark-forest: #465c35;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%); min-height: 100vh; }
-        .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%); }
-        .login-card { background: white; border-radius: 20px; padding: 2.5rem; box-shadow: 0 20px 60px rgba(93, 134, 108, 0.3); width: 100%; max-width: 420px; animation: slideIn 0.8s ease-out; }
+        .login-container { 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 1rem; 
+            background: linear-gradient(135deg, var(--dark-forest) 0%, var(--sage-green) 50%, var(--pine-green) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Nature Background Animations */
+        .nature-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        /* Floating Leaves */
+        .leaf {
+            position: absolute;
+            opacity: 0.6;
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        .leaf:nth-child(1) {
+            left: 10%;
+            top: -10%;
+            animation-delay: 0s;
+            animation-duration: 18s;
+        }
+        
+        .leaf:nth-child(2) {
+            left: 30%;
+            top: -10%;
+            animation-delay: 3s;
+            animation-duration: 20s;
+        }
+        
+        .leaf:nth-child(3) {
+            left: 50%;
+            top: -10%;
+            animation-delay: 6s;
+            animation-duration: 16s;
+        }
+        
+        .leaf:nth-child(4) {
+            left: 70%;
+            top: -10%;
+            animation-delay: 9s;
+            animation-duration: 22s;
+        }
+        
+        .leaf:nth-child(5) {
+            left: 85%;
+            top: -10%;
+            animation-delay: 12s;
+            animation-duration: 19s;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(110vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Mountain Silhouettes */
+        .mountains {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 300px;
+            opacity: 0.2;
+        }
+        
+        /* Birds Flying */
+        .bird {
+            position: absolute;
+            animation: fly 25s linear infinite;
+            opacity: 0.3;
+        }
+        
+        .bird:nth-child(1) {
+            top: 15%;
+            left: -5%;
+            animation-delay: 0s;
+        }
+        
+        .bird:nth-child(2) {
+            top: 25%;
+            left: -5%;
+            animation-delay: 8s;
+        }
+        
+        .bird:nth-child(3) {
+            top: 35%;
+            left: -5%;
+            animation-delay: 16s;
+        }
+        
+        @keyframes fly {
+            0% {
+                left: -5%;
+                transform: scale(0.5);
+            }
+            50% {
+                transform: scale(1);
+            }
+            100% {
+                left: 105%;
+                transform: scale(0.5);
+            }
+        }
+        
+        /* Welcome Text */
+        .welcome-text {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: white;
+            z-index: 1;
+            animation: fadeInDown 1.5s ease-out;
+        }
+        
+        .welcome-text h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+        }
+        
+        .welcome-text h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            color: #ffffff;
+        }
+        
+        .welcome-text p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            letter-spacing: 1px;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        .login-card { 
+            background: rgba(255, 255, 255, 0.15); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px; 
+            padding: 2.5rem; 
+            box-shadow: 0 20px 60px rgba(70, 92, 53, 0.4); 
+            width: 100%; 
+            max-width: 420px; 
+            animation: slideIn 0.8s ease-out;
+            position: relative;
+            z-index: 2;
+        }
         @keyframes slideIn { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
-        .login-logo { width: 90px; height: 90px; background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: white; font-size: 2.5rem; box-shadow: 0 8px 25px rgba(93, 134, 108, 0.4); }
-        .login-title { color: var(--forest); font-weight: 700; font-size: 1.8rem; text-align: center; margin-bottom: 0.5rem; }
-        .login-subtitle { color: var(--tan); font-size: 0.95rem; text-align: center; margin-bottom: 2rem; }
+        
+        /* Logo Styles */
+        .login-logo { 
+            width: 150px; 
+            height: 150px; 
+            margin: 0 auto 1rem; 
+        }
+        
+        /* Animasi pohon bergoyang seperti tertiup angin */
+        @keyframes tree-sway-left {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-2deg); }
+            75% { transform: rotate(2deg); }
+        }
+
+        @keyframes tree-sway-center {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-3deg); }
+            75% { transform: rotate(3deg); }
+        }
+
+        @keyframes tree-sway-right {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(2deg); }
+            75% { transform: rotate(-2deg); }
+        }
+
+        .tree-left {
+            animation: tree-sway-left 3s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+
+        .tree-center {
+            animation: tree-sway-center 2.5s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+
+        .tree-right {
+            animation: tree-sway-right 3.2s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+
+        /* Animasi flash highlight untuk teks PINUSLO */
+        @keyframes text-flash {
+            0%, 100% { 
+                fill: #ffffff;
+                opacity: 1;
+            }
+            50% { 
+                fill: #6e9726;
+                opacity: 0.8;
+                filter: drop-shadow(0 0 8px #6e9726);
+            }
+        }
+
+        .text-pinuslo {
+            animation: text-flash 2s ease-in-out infinite;
+        }
+
+        /* Animasi untuk brush stroke */
+        @keyframes rotate-brush {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .brush-stroke {
+            animation: rotate-brush 30s linear infinite;
+            transform-origin: center;
+        }
+        
+        .login-title { color: #ffffff; font-weight: 700; font-size: 1.8rem; text-align: center; margin-bottom: 0.5rem; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
+        .login-subtitle { color: rgba(255, 255, 255, 0.9); font-size: 0.95rem; text-align: center; margin-bottom: 2rem; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2); }
         .login-input-container { position: relative; margin-bottom: 1.5rem; }
-        .login-input { width: 100%; padding: 1rem 1rem 1rem 3rem; border: 2px solid var(--beige); border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; background: var(--cream); }
-        .login-input:focus { border-color: var(--forest); box-shadow: 0 0 0 0.2rem rgba(93, 134, 108, 0.25); outline: none; background: white; }
-        .login-input-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--forest); font-size: 1.1rem; }
-        .password-toggle { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--tan); cursor: pointer; }
-        .login-btn { width: 100%; padding: 1.1rem; background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(93, 134, 108, 0.3); }
-        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(93, 134, 108, 0.4); }
+        .login-input { width: 100%; padding: 1rem 1rem 1rem 3rem; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.9); }
+        .login-input:focus { border-color: var(--pine-green); box-shadow: 0 0 0 0.2rem rgba(110, 151, 38, 0.25); outline: none; background: white; }
+        .login-input-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--dark-forest); font-size: 1.1rem; }
+        .password-toggle { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--sage-green); cursor: pointer; }
+        .login-btn { width: 100%; padding: 1.1rem; background: linear-gradient(135deg, var(--pine-green) 0%, var(--dark-forest) 100%); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(70, 92, 53, 0.4); }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(70, 92, 53, 0.5); }
         .app-selection-container { min-height: 100vh; padding: 2rem; background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%); }
         .user-welcome { background: white; border-radius: 15px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto 3rem; }
-        .user-avatar { width: 60px; height: 60px; background: linear-gradient(135deg, var(--forest) 0%, var(--tan) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold; }
-        .logout-btn { background: var(--tan); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; }
-        .logout-btn:hover { background: var(--forest); transform: translateY(-2px); }
+        .user-avatar { width: 60px; height: 60px; background: linear-gradient(135deg, var(--pine-green) 0%, var(--dark-forest) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold; }
+        .logout-btn { background: var(--sage-green); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; }
+        .logout-btn:hover { background: var(--dark-forest); transform: translateY(-2px); }
         .apps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
         .app-card { background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s ease; cursor: pointer; border: 3px solid transparent; }
-        .app-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-color: var(--forest); }
+        .app-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-color: var(--pine-green); }
         .app-icon { width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem; color: white; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .app-card.pinus { background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); }
-        .app-card.pinus .app-icon { background: linear-gradient(135deg, var(--forest) 0%, #3b7a5e 100%); }
+        .app-card.pinus .app-icon { background: linear-gradient(135deg, var(--pine-green) 0%, var(--dark-forest) 100%); }
         .app-card.pinewater { background: linear-gradient(135deg, #ffffff 0%, #ecfeff 100%); }
         .app-card.pinewater .app-icon { background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%); }
         .app-card.bbm { background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%); }
@@ -92,10 +351,10 @@
         .alert-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
         .tab-menu { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 2px solid var(--beige); }
         .tab-btn { padding: 1rem 2rem; background: none; border: none; color: var(--tan); cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent; transition: all 0.3s ease; }
-        .tab-btn.active { color: var(--forest); border-bottom-color: var(--forest); }
-        .tab-btn:hover { color: var(--forest); }
+        .tab-btn.active { color: var(--dark-forest); border-bottom-color: var(--pine-green); }
+        .tab-btn:hover { color: var(--dark-forest); }
         .report-table { width: 100%; border-collapse: collapse; }
-        .report-table th { background: var(--forest); color: white; padding: 1rem; text-align: left; font-weight: 600; }
+        .report-table th { background: var(--dark-forest); color: white; padding: 1rem; text-align: left; font-weight: 600; }
         .report-table td { padding: 1rem; border-bottom: 1px solid var(--beige); }
         .report-table tr:hover { background: var(--cream); }
         .status-badge { display: inline-block; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
@@ -107,8 +366,8 @@
         .approve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .filter-section { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: center; }
         .filter-input { padding: 0.8rem; border: 2px solid var(--beige); border-radius: 10px; font-size: 0.95rem; background: white; }
-        .filter-btn { padding: 0.8rem 1.5rem; background: var(--forest); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
-        .filter-btn:hover { background: var(--tan); transform: translateY(-2px); }
+        .filter-btn { padding: 0.8rem 1.5rem; background: var(--pine-green); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+        .filter-btn:hover { background: var(--dark-forest); transform: translateY(-2px); }
         .export-btn { padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
         .export-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(8, 145, 178, 0.3); }
         #map { height: 350px; border-radius: 15px; margin-bottom: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -130,10 +389,133 @@
 <body>
     <div id="loginPage" class="page-section active">
         <div class="login-container">
+            <!-- Nature Background Animations -->
+            <div class="nature-bg">
+                <!-- Floating Leaves -->
+                <svg class="leaf" width="30" height="30" viewBox="0 0 30 30">
+                    <path d="M15 2 Q 5 8, 5 15 Q 5 25, 15 28 Q 25 25, 25 15 Q 25 8, 15 2" fill="#6e9726" opacity="0.8"/>
+                </svg>
+                <svg class="leaf" width="25" height="25" viewBox="0 0 30 30">
+                    <path d="M15 2 Q 5 8, 5 15 Q 5 25, 15 28 Q 25 25, 25 15 Q 25 8, 15 2" fill="#7d8b70" opacity="0.8"/>
+                </svg>
+                <svg class="leaf" width="35" height="35" viewBox="0 0 30 30">
+                    <path d="M15 2 Q 5 8, 5 15 Q 5 25, 15 28 Q 25 25, 25 15 Q 25 8, 15 2" fill="#465c35" opacity="0.8"/>
+                </svg>
+                <svg class="leaf" width="28" height="28" viewBox="0 0 30 30">
+                    <path d="M15 2 Q 5 8, 5 15 Q 5 25, 15 28 Q 25 25, 25 15 Q 25 8, 15 2" fill="#6e9726" opacity="0.8"/>
+                </svg>
+                <svg class="leaf" width="32" height="32" viewBox="0 0 30 30">
+                    <path d="M15 2 Q 5 8, 5 15 Q 5 25, 15 28 Q 25 25, 25 15 Q 25 8, 15 2" fill="#7d8b70" opacity="0.8"/>
+                </svg>
+                
+                <!-- Flying Birds -->
+                <svg class="bird" width="40" height="30" viewBox="0 0 40 30">
+                    <path d="M5 15 Q 10 10, 20 15 Q 30 10, 35 15" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+                </svg>
+                <svg class="bird" width="40" height="30" viewBox="0 0 40 30">
+                    <path d="M5 15 Q 10 10, 20 15 Q 30 10, 35 15" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+                </svg>
+                <svg class="bird" width="40" height="30" viewBox="0 0 40 30">
+                    <path d="M5 15 Q 10 10, 20 15 Q 30 10, 35 15" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+                </svg>
+                
+                <!-- Mountain Silhouettes -->
+                <svg class="mountains" viewBox="0 0 1200 300">
+                    <path d="M0 300 L 0 150 L 200 80 L 400 150 L 600 50 L 800 120 L 1000 90 L 1200 180 L 1200 300 Z" fill="rgba(70, 92, 53, 0.3)"/>
+                    <path d="M0 300 L 0 200 L 300 130 L 600 100 L 900 150 L 1200 120 L 1200 300 Z" fill="rgba(110, 151, 38, 0.2)"/>
+                </svg>
+            </div>
+            
             <div class="login-card">
-                <div class="login-logo"><i class="fas fa-rocket"></i></div>
+                <div class="login-logo">
+                    <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Background circle -->
+                        <circle cx="250" cy="250" r="220" fill="#465c35"/>
+                        
+                        <!-- Brush stroke decoration (rotating slowly) -->
+                        <g class="brush-stroke">
+                            <!-- Top left brush -->
+                            <path d="M 80 100 Q 70 80, 100 70" stroke="#6e9726" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.9"/>
+                            <path d="M 90 110 Q 75 95, 110 85" stroke="#7d8b70" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
+                            
+                            <!-- Top right brush -->
+                            <path d="M 400 100 Q 410 80, 380 70" stroke="#6e9726" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.9"/>
+                            <path d="M 390 110 Q 405 95, 370 85" stroke="#7d8b70" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
+                            
+                            <!-- Bottom left brush -->
+                            <path d="M 100 420 Q 70 430, 80 400" stroke="#6e9726" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.9"/>
+                            <path d="M 110 410 Q 85 425, 95 390" stroke="#7d8b70" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
+                            
+                            <!-- Bottom right brush -->
+                            <path d="M 400 420 Q 430 430, 420 400" stroke="#6e9726" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.9"/>
+                            <path d="M 390 410 Q 415 425, 405 390" stroke="#7d8b70" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
+                        </g>
+
+                        <!-- Ground/hill -->
+                        <ellipse cx="250" cy="300" rx="180" ry="30" fill="#7d8b70"/>
+                        <path d="M 70 300 Q 250 280, 430 300" stroke="#6e9726" stroke-width="3" fill="none"/>
+
+                        <!-- Fence posts -->
+                        <rect x="160" y="260" width="8" height="40" fill="#ffffff" rx="2"/>
+                        <rect x="245" y="240" width="10" height="60" fill="#ffffff" rx="2"/>
+                        <rect x="335" y="260" width="8" height="40" fill="#ffffff" rx="2"/>
+
+                        <!-- Left Tree (animated) -->
+                        <g class="tree-left">
+                            <!-- Trunk -->
+                            <rect x="165" y="200" width="12" height="60" fill="#465c35"/>
+                            
+                            <!-- Tree layers -->
+                            <path d="M 171 210 L 155 225 L 187 225 Z" fill="#5a7047"/>
+                            <path d="M 171 200 L 150 220 L 192 220 Z" fill="#5a7047"/>
+                            <path d="M 171 190 L 145 215 L 197 215 Z" fill="#6e9726"/>
+                            <path d="M 171 180 L 140 210 L 202 210 Z" fill="#6e9726"/>
+                            <path d="M 171 170 L 150 195 L 192 195 Z" fill="#7da030"/>
+                        </g>
+
+                        <!-- Center Tree (animated - tallest) -->
+                        <g class="tree-center">
+                            <!-- Trunk -->
+                            <rect x="245" y="160" width="15" height="80" fill="#465c35"/>
+                            
+                            <!-- Tree layers -->
+                            <path d="M 252 180 L 230 200 L 274 200 Z" fill="#5a7047"/>
+                            <path d="M 252 168 L 220 195 L 284 195 Z" fill="#5a7047"/>
+                            <path d="M 252 156 L 210 190 L 294 190 Z" fill="#6e9726"/>
+                            <path d="M 252 144 L 205 180 L 299 180 Z" fill="#6e9726"/>
+                            <path d="M 252 132 L 200 170 L 304 170 Z" fill="#7da030"/>
+                            <path d="M 252 120 L 210 155 L 294 155 Z" fill="#7da030"/>
+                            <path d="M 252 110 L 220 145 L 284 145 Z" fill="#8cb03a"/>
+                        </g>
+
+                        <!-- Right Tree (animated) -->
+                        <g class="tree-right">
+                            <!-- Trunk -->
+                            <rect x="330" y="200" width="12" height="60" fill="#465c35"/>
+                            
+                            <!-- Tree layers -->
+                            <path d="M 336 210 L 320 225 L 352 225 Z" fill="#5a7047"/>
+                            <path d="M 336 200 L 315 220 L 357 220 Z" fill="#5a7047"/>
+                            <path d="M 336 190 L 310 215 L 362 215 Z" fill="#6e9726"/>
+                            <path d="M 336 180 L 305 210 L 367 210 Z" fill="#6e9726"/>
+                            <path d="M 336 170 L 315 195 L 357 195 Z" fill="#7da030"/>
+                        </g>
+
+                        <!-- Text PINUSLO (with flash animation) -->
+                        <g class="text-pinuslo">
+                            <text x="250" y="345" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="#ffffff" letter-spacing="8">
+                                PINUSLO
+                            </text>
+                        </g>
+
+                        <!-- Tagline -->
+                        <text x="250" y="370" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#ffffff" letter-spacing="2">
+                            Camping Feels Like Home
+                        </text>
+                    </svg>
+                </div>
                 <h2 class="login-title">Pinuslo Apps</h2>
-                <p class="login-subtitle">Unified Management Platform</p>
+                <p class="login-subtitle">Silahkan Login</p>
                 <form onsubmit="return handleLogin(event)">
                     <div class="login-input-container">
                         <input type="text" class="login-input" id="username" placeholder="Username" required>
@@ -156,46 +538,46 @@
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <div class="user-avatar" id="userAvatar">I</div>
                     <div>
-                        <h3 id="userName" style="color: var(--forest); margin: 0;">User</h3>
-                        <p id="userRole" style="color: var(--tan); margin: 0; font-size: 0.9rem;">Staff</p>
+                        <h3 id="userName" style="color: var(--dark-forest); margin: 0;">User</h3>
+                        <p id="userRole" style="color: var(--sage-green); margin: 0; font-size: 0.9rem;">Staff</p>
                     </div>
                 </div>
                 <button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt me-2"></i>Keluar</button>
             </div>
             <div style="text-align: center; margin-bottom: 3rem;">
-                <h1 style="color: var(--forest); font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Pilih Aplikasi</h1>
-                <p style="color: var(--tan); font-size: 1.1rem;">Silakan pilih aplikasi yang ingin Anda gunakan</p>
+                <h1 style="color: var(--dark-forest); font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Pilih Aplikasi</h1>
+                <p style="color: var(--sage-green); font-size: 1.1rem;">Silakan pilih aplikasi yang ingin Anda gunakan</p>
             </div>
             <div class="apps-grid">
                 <div class="app-card pinus" data-app="pinus">
                     <div class="app-icon"><i class="fas fa-tree"></i></div>
-                    <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinus Selow Regist</h3>
-                    <p style="color: var(--tan); text-align: center; font-size: 0.95rem;">Sistem Pendaftaran & Manajemen Pinus</p>
+                    <h3 style="color: var(--dark-forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinus Selow Regist</h3>
+                    <p style="color: var(--sage-green); text-align: center; font-size: 0.95rem;">Sistem Pendaftaran & Manajemen Pinus</p>
                 </div>
                 <div class="app-card pinewater" data-app="pinewater">
                     <div class="app-icon"><i class="fas fa-water"></i></div>
-                    <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinewater</h3>
-                    <p style="color: var(--tan); text-align: center; font-size: 0.95rem;">Sistem Manajemen Air & Distribusi</p>
+                    <h3 style="color: var(--dark-forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinewater</h3>
+                    <p style="color: var(--sage-green); text-align: center; font-size: 0.95rem;">Sistem Manajemen Air & Distribusi</p>
                 </div>
                 <div class="app-card bbm" data-app="bbm">
                     <div class="app-icon"><i class="fas fa-gas-pump"></i></div>
-                    <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">BBM Management</h3>
-                    <p style="color: var(--tan); text-align: center; font-size: 0.95rem;">Sistem Manajemen Bahan Bakar Minyak</p>
+                    <h3 style="color: var(--dark-forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">BBM Management</h3>
+                    <p style="color: var(--sage-green); text-align: center; font-size: 0.95rem;">Sistem Manajemen Bahan Bakar Minyak</p>
                 </div>
                 <div class="app-card cafe" data-app="cafe">
                     <div class="app-icon"><i class="fas fa-coffee"></i></div>
-                    <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinuslo Cafe</h3>
-                    <p style="color: var(--tan); text-align: center; font-size: 0.95rem;">Sistem Manajemen Cafe & Point of Sale</p>
+                    <h3 style="color: var(--dark-forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinuslo Cafe</h3>
+                    <p style="color: var(--sage-green); text-align: center; font-size: 0.95rem;">Sistem Manajemen Cafe & Point of Sale</p>
                 </div>
                 <div class="app-card glamping" data-app="glamping">
                     <div class="app-icon"><i class="fas fa-campground"></i></div>
-                    <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinuslo Glamping</h3>
-                    <p style="color: var(--tan); text-align: center; font-size: 0.95rem;">Sistem Reservasi & Manajemen Glamping</p>
+                    <h3 style="color: var(--dark-forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinuslo Glamping</h3>
+                    <p style="color: var(--sage-green); text-align: center; font-size: 0.95rem;">Sistem Reservasi & Manajemen Glamping</p>
                 </div>
                 <div class="app-card absensi" data-app="absensi">
                     <div class="app-icon"><i class="fas fa-fingerprint"></i></div>
-                    <h3 style="color: var(--forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Absensi</h3>
-                    <p style="color: var(--tan); text-align: center; font-size: 0.95rem;">Sistem Absensi & Kehadiran Karyawan</p>
+                    <h3 style="color: var(--dark-forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Absensi</h3>
+                    <p style="color: var(--sage-green); text-align: center; font-size: 0.95rem;">Sistem Absensi & Kehadiran Karyawan</p>
                 </div>
             </div>
         </div>
@@ -212,14 +594,12 @@
         let validationInterval = null;
         let isValidForAttendance = false;
         
-        // Single Point Geofencing - Cafepinuslo Location
         const GEOFENCE_CENTER = {
             lat: -5.367065295968101,
             lon: 119.6489802711651
         };
-        const GEOFENCE_RADIUS = 50; // meters - strict radius for WiFi area
+        const GEOFENCE_RADIUS = 50;
         
-        // WiFi Requirements
         const REQUIRED_WIFI = {
             ssid: "Cafepinuslo",
             bssid: "96:3c:80:6a:83:6d",
@@ -256,20 +636,15 @@
 
         let currentAbsensiView = 'check';
 
-        // Haversine Formula - Calculate distance between two points
         function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // Earth radius in meters
+            const R = 6371e3;
             const φ1 = lat1 * Math.PI / 180;
             const φ2 = lat2 * Math.PI / 180;
             const Δφ = (lat2 - lat1) * Math.PI / 180;
             const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                    Math.cos(φ1) * Math.cos(φ2) *
-                    Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-            return R * c; // Distance in meters
+            return R * c;
         }
 
         function isInGeofence(lat, lon) {
@@ -278,66 +653,43 @@
         }
 
         async function checkWiFiConnection() {
-            // Check if online
             if (!navigator.onLine) {
                 return { connected: false, reason: 'Tidak terhubung ke internet' };
             }
-
-            // Check network type (WiFi detection)
             if ('connection' in navigator) {
                 const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-                if (connection) {
-                    // If on cellular, definitely not on WiFi
-                    if (connection.type && connection.type !== 'wifi') {
-                        return { connected: false, reason: 'Menggunakan data seluler, bukan WiFi' };
-                    }
+                if (connection && connection.type && connection.type !== 'wifi') {
+                    return { connected: false, reason: 'Menggunakan data seluler, bukan WiFi' };
                 }
             }
-
-            // Additional validation: must be very close to the location (within 50m)
             if (currentLocation) {
-                const distance = getDistance(
-                    currentLocation.lat, 
-                    currentLocation.lon, 
-                    GEOFENCE_CENTER.lat, 
-                    GEOFENCE_CENTER.lon
-                );
-                
+                const distance = getDistance(currentLocation.lat, currentLocation.lon, GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon);
                 if (distance <= GEOFENCE_RADIUS) {
                     return { connected: true, reason: 'Terkoneksi dan berada di lokasi', distance: Math.round(distance) };
                 } else {
                     return { connected: false, reason: `Terlalu jauh dari WiFi (${Math.round(distance)}m dari area)`, distance: Math.round(distance) };
                 }
             }
-
             return { connected: false, reason: 'Lokasi belum terdeteksi' };
         }
 
         async function validateAttendanceConditions() {
             const wifiCheck = await checkWiFiConnection();
             const locationValid = currentLocation && isInGeofence(currentLocation.lat, currentLocation.lon);
-            
             isValidForAttendance = wifiCheck.connected && locationValid;
-            
             updateButtonStates();
             updateValidationWarning(wifiCheck, locationValid);
-            
             return isValidForAttendance;
         }
 
         function updateButtonStates() {
             const checkInBtn = document.getElementById('checkInBtn');
             const checkOutBtn = document.getElementById('checkOutBtn');
-            
             if (!checkInBtn || !checkOutBtn) return;
-            
-            // Get current attendance status
             const today = new Date().toISOString().split('T')[0];
             loadData(currentUser.username, today).then(todayData => {
                 const isIn = todayData && todayData.checkIn && !todayData.checkOut;
                 const isDone = todayData && todayData.checkOut;
-                
-                // Check In button
                 if (!isValidForAttendance || isIn || isDone) {
                     checkInBtn.disabled = true;
                     checkInBtn.classList.add('btn-disabled-custom');
@@ -345,8 +697,6 @@
                     checkInBtn.disabled = false;
                     checkInBtn.classList.remove('btn-disabled-custom');
                 }
-                
-                // Check Out button
                 if (!isValidForAttendance || !isIn || isDone) {
                     checkOutBtn.disabled = true;
                     checkOutBtn.classList.add('btn-disabled-custom');
@@ -360,51 +710,26 @@
         function updateValidationWarning(wifiCheck, locationValid) {
             const warningDiv = document.getElementById('validationWarning');
             if (!warningDiv) return;
-            
             if (!isValidForAttendance) {
                 let reasons = [];
-                
                 if (!wifiCheck.connected) {
                     reasons.push(`<div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;"><i class="fas fa-wifi" style="font-size: 1.2rem;"></i><div><strong>WiFi:</strong> ${wifiCheck.reason}</div></div>`);
                 }
-                
                 if (!locationValid) {
                     const dist = wifiCheck.distance || 0;
                     reasons.push(`<div style="display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-map-marker-alt" style="font-size: 1.2rem;"></i><div><strong>Lokasi:</strong> ${dist > 0 ? `Anda berada ${dist}m dari area (maksimal ${GEOFENCE_RADIUS}m)` : 'Di luar area WiFi Cafepinuslo'}</div></div>`);
                 }
-                
                 warningDiv.style.display = 'block';
-                warningDiv.innerHTML = `
-                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #dc2626;"></i>
-                        <div style="flex: 1;">
-                            <h4 style="color: #991b1b; margin-bottom: 0.8rem; font-size: 1.1rem;">🔒 Check In/Out Tidak Tersedia</h4>
-                            <p style="margin-bottom: 1rem; color: #7f1d1d;">Anda tidak dapat melakukan absensi karena:</p>
-                            ${reasons.join('')}
-                            <div style="margin-top: 1rem; padding: 0.8rem; background: white; border-radius: 8px; border-left: 4px solid #dc2626;">
-                                <strong>Solusi:</strong> Pastikan Anda terhubung ke WiFi <strong>"${REQUIRED_WIFI.ssid}"</strong> dan berada dalam radius ${GEOFENCE_RADIUS}m dari lokasi.
-                            </div>
-                        </div>
-                    </div>
-                `;
+                warningDiv.innerHTML = `<div style="display: flex; align-items: flex-start; gap: 1rem;"><i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #dc2626;"></i><div style="flex: 1;"><h4 style="color: #991b1b; margin-bottom: 0.8rem; font-size: 1.1rem;">🔒 Check In/Out Tidak Tersedia</h4><p style="margin-bottom: 1rem; color: #7f1d1d;">Anda tidak dapat melakukan absensi karena:</p>${reasons.join('')}<div style="margin-top: 1rem; padding: 0.8rem; background: white; border-radius: 8px; border-left: 4px solid #dc2626;"><strong>Solusi:</strong> Pastikan Anda terhubung ke WiFi <strong>"${REQUIRED_WIFI.ssid}"</strong> dan berada dalam radius ${GEOFENCE_RADIUS}m dari lokasi.</div></div></div>`;
             } else {
                 warningDiv.style.display = 'none';
             }
         }
 
         function startValidationMonitoring() {
-            // Clear existing interval
-            if (validationInterval) {
-                clearInterval(validationInterval);
-            }
-            
-            // Validate immediately
+            if (validationInterval) clearInterval(validationInterval);
             validateAttendanceConditions();
-            
-            // Then validate every 5 seconds
-            validationInterval = setInterval(() => {
-                validateAttendanceConditions();
-            }, 5000);
+            validationInterval = setInterval(() => validateAttendanceConditions(), 5000);
         }
 
         function stopValidationMonitoring() {
@@ -415,60 +740,24 @@
         }
 
         function initMap() {
-            if (map) {
-                map.remove();
-            }
-            
+            if (map) map.remove();
             map = L.map('map').setView([GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon], 18);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-            
-            // Draw geofence circle
-            geofenceCircle = L.circle([GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon], {
-                color: '#5D866C',
-                fillColor: '#5D866C',
-                fillOpacity: 0.2,
-                radius: GEOFENCE_RADIUS,
-                weight: 3
-            }).addTo(map);
-            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
+            geofenceCircle = L.circle([GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon], { color: '#5D866C', fillColor: '#5D866C', fillOpacity: 0.2, radius: GEOFENCE_RADIUS, weight: 3 }).addTo(map);
             geofenceCircle.bindPopup(`<strong>Area WiFi Cafepinuslo</strong><br>Radius: ${GEOFENCE_RADIUS}m<br>Anda harus berada dalam area ini`);
-            
-            // Center marker
-            const centerIcon = L.divIcon({
-                html: '<div style="background: #dc2626; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.4);"></div>',
-                iconSize: [16, 16],
-                className: ''
-            });
-            
-            L.marker([GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon], { icon: centerIcon }).addTo(map)
-                .bindPopup('<strong>📍 Cafepinuslo</strong><br>Titik WiFi Center');
+            const centerIcon = L.divIcon({ html: '<div style="background: #dc2626; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.4);"></div>', iconSize: [16, 16], className: '' });
+            L.marker([GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon], { icon: centerIcon }).addTo(map).bindPopup('<strong>📍 Cafepinuslo</strong><br>Titik WiFi Center');
         }
 
         function updateUserLocation(lat, lon) {
             currentLocation = { lat, lon };
-            
-            if (userMarker) {
-                map.removeLayer(userMarker);
-            }
-            
+            if (userMarker) map.removeLayer(userMarker);
             const distance = getDistance(lat, lon, GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon);
             const isInside = distance <= GEOFENCE_RADIUS;
-            
-            const icon = L.divIcon({
-                html: `<div style="background: ${isInside ? '#10b981' : '#ef4444'}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
-                iconSize: [20, 20],
-                className: ''
-            });
-            
+            const icon = L.divIcon({ html: `<div style="background: ${isInside ? '#10b981' : '#ef4444'}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`, iconSize: [20, 20], className: '' });
             userMarker = L.marker([lat, lon], { icon }).addTo(map);
             userMarker.bindPopup(`<strong>Lokasi Anda</strong><br>${isInside ? '✅ Di dalam area WiFi' : '❌ Di luar area WiFi'}<br>Jarak: ${Math.round(distance)}m`);
-            
             map.setView([lat, lon], 18);
-            
-            // Update location status
             const statusDiv = document.getElementById('locationStatus');
             if (statusDiv) {
                 if (isInside) {
@@ -479,8 +768,6 @@
                     statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle" style="font-size: 1.5rem;"></i><div><strong>Lokasi Tidak Valid ❌</strong><br><small>Anda ${Math.round(distance)}m dari WiFi Cafepinuslo (maksimal ${GEOFENCE_RADIUS}m)</small></div>`;
                 }
             }
-
-            // Update WiFi status and validate
             updateWiFiStatus();
             validateAttendanceConditions();
         }
@@ -488,12 +775,9 @@
         async function updateWiFiStatus() {
             const wifiStatusDiv = document.getElementById('wifiStatus');
             if (!wifiStatusDiv) return;
-
             wifiStatusDiv.className = 'wifi-status wifi-checking';
             wifiStatusDiv.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i><div><strong>Memeriksa Koneksi WiFi...</strong></div>';
-
             const wifiCheck = await checkWiFiConnection();
-            
             if (wifiCheck.connected) {
                 wifiStatusDiv.className = 'wifi-status wifi-connected';
                 wifiStatusDiv.innerHTML = `<i class="fas fa-wifi" style="font-size: 1.5rem;"></i><div><strong>WiFi Terhubung ✅</strong><br><small>${wifiCheck.reason}</small></div>`;
@@ -509,13 +793,11 @@
                     reject(new Error('Geolocation tidak didukung browser Anda'));
                     return;
                 }
-                
                 const statusDiv = document.getElementById('locationStatus');
                 if (statusDiv) {
                     statusDiv.className = 'location-status loading';
                     statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i><div><strong>Mendapatkan Lokasi...</strong><br><small>Mohon tunggu</small></div>';
                 }
-                
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         const lat = position.coords.latitude;
@@ -553,7 +835,6 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const user = allUsers.find(u => u.username === username && u.password === password);
-            
             if (user) {
                 currentUser = user;
                 localStorage.setItem('pinuslo_user', JSON.stringify(user));
@@ -571,7 +852,6 @@
             document.getElementById('userAvatar').textContent = user.fullName.charAt(0).toUpperCase();
             document.getElementById('userName').textContent = user.fullName;
             document.getElementById('userRole').textContent = user.role === 'admin' ? 'Administrator' : 'User';
-            
             setTimeout(() => {
                 document.querySelectorAll('.app-card').forEach(card => {
                     const appType = card.getAttribute('data-app');
@@ -584,17 +864,9 @@
                             if (appType === 'absensi') {
                                 loadAbsensi(user);
                             } else if (appUrls[appType]) {
-                                const appNames = {
-                                    'pinus': 'Pinus Selow Regist',
-                                    'pinewater': 'Pinewater',
-                                    'bbm': 'BBM Management',
-                                    'cafe': 'Pinuslo Cafe',
-                                    'glamping': 'Pinuslo Glamping'
-                                };
+                                const appNames = { 'pinus': 'Pinus Selow Regist', 'pinewater': 'Pinewater', 'bbm': 'BBM Management', 'cafe': 'Pinuslo Cafe', 'glamping': 'Pinuslo Glamping' };
                                 showAlert('Membuka ' + appNames[appType] + '...', 'success');
-                                setTimeout(() => {
-                                    window.open(appUrls[appType], '_blank');
-                                }, 500);
+                                setTimeout(() => window.open(appUrls[appType], '_blank'), 500);
                             }
                         };
                     }
@@ -619,160 +891,15 @@
             const container = document.getElementById('absensiContainer');
             container.classList.add('active');
             currentAbsensiView = 'check';
-            
             const today = new Date().toISOString().split('T')[0];
             const todayData = await loadData(user.username, today);
             const isIn = todayData && todayData.checkIn && !todayData.checkOut;
             const isDone = todayData && todayData.checkOut;
-            
-            container.innerHTML = `
-                <div style="min-height: 100vh; background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%); padding: 2rem;">
-                    <div style="max-width: 1400px; margin: 0 auto;">
-                        <div style="background: white; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #a855f7, #9333ea); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;"><i class="fas fa-shield-alt"></i></div>
-                                <div>
-                                    <h2 style="margin: 0; color: var(--forest);">Sistem Absensi • Validasi Ketat</h2>
-                                    <p style="margin: 0; color: var(--tan); font-size: 0.9rem;">${user.fullName} • WiFi + Lokasi Protected</p>
-                                </div>
-                            </div>
-                            <button onclick="backToSelection()" style="padding: 0.8rem 1.5rem; background: var(--tan); color: white; border: none; border-radius: 10px; cursor: pointer;"><i class="fas fa-arrow-left me-2"></i>Kembali</button>
-                        </div>
-
-                        <div class="wifi-requirement">
-                            <h4 style="color: #1e40af; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-lock"></i> Persyaratan Koneksi Wajib
-                            </h4>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
-                                <div>
-                                    <div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-wifi me-2"></i>WiFi SSID:</div>
-                                    <div style="background: white; padding: 0.5rem; border-radius: 8px; font-family: monospace;">${REQUIRED_WIFI.ssid}</div>
-                                </div>
-                                <div>
-                                    <div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-lock me-2"></i>Security:</div>
-                                    <div style="background: white; padding: 0.5rem; border-radius: 8px;">${REQUIRED_WIFI.security}</div>
-                                </div>
-                                <div>
-                                    <div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-map-marker-alt me-2"></i>Radius Maksimal:</div>
-                                    <div style="background: white; padding: 0.5rem; border-radius: 8px; font-weight: bold;">${GEOFENCE_RADIUS} meter dari titik WiFi</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="validationWarning" class="validation-warning" style="display: none;"></div>
-                        
-                        <div class="tab-menu">
-                            <button class="tab-btn active" onclick="switchTab('check')"><i class="fas fa-fingerprint me-2"></i>Check In/Out</button>
-                            <button class="tab-btn" onclick="switchTab('history')"><i class="fas fa-history me-2"></i>Riwayat</button>
-                            ${user.role === 'admin' ? '<button class="tab-btn" onclick="switchTab(\'reports\')"><i class="fas fa-chart-bar me-2"></i>Laporan</button>' : ''}
-                        </div>
-                        
-                        <div id="checkView" class="tab-content">
-                            <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem;">
-                                <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                                    <h3 style="color: var(--forest); margin-bottom: 1rem;"><i class="fas fa-map-marked-alt me-2"></i>Monitor Lokasi & WiFi</h3>
-                                    
-                                    <div id="wifiStatus" class="wifi-status wifi-checking">
-                                        <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i>
-                                        <div><strong>Memeriksa WiFi...</strong></div>
-                                    </div>
-                                    
-                                    <div id="locationStatus" class="location-status loading">
-                                        <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i>
-                                        <div><strong>Memuat Lokasi...</strong><br><small>Mohon tunggu</small></div>
-                                    </div>
-                                    
-                                    <div id="map"></div>
-                                    
-                                    <button onclick="refreshLocation()" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; border: none; border-radius: 12px; font-size: 1rem; cursor: pointer; margin-top: 1rem;">
-                                        <i class="fas fa-sync-alt me-2"></i>Refresh Lokasi & WiFi
-                                    </button>
-                                </div>
-                                <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                                    <h3 style="text-align: center; color: var(--forest); margin-bottom: 1rem;"><i class="fas fa-clock me-2"></i>Absensi Hari Ini</h3>
-                                    <div id="clock" style="text-align: center; font-size: 2.5rem; font-weight: bold; color: var(--forest); margin: 1.5rem 0; font-family: monospace;">00:00:00</div>
-                                    <div id="date" style="text-align: center; font-size: 1rem; color: var(--tan); margin-bottom: 1.5rem;"></div>
-                                    <div style="text-align: center; margin-bottom: 1.5rem;">
-                                        <span style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600; background: ${isDone ? 'rgba(168,85,247,0.15)' : isIn ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; color: ${isDone ? '#a855f7' : isIn ? '#059669' : '#dc2626'};">
-                                            <i class="fas fa-${isDone ? 'check-circle' : isIn ? 'sign-in-alt' : 'clock'} me-2"></i>${isDone ? 'Selesai' : isIn ? 'Sudah Check In' : 'Belum Check In'}
-                                        </span>
-                                    </div>
-                                    ${todayData ? `
-                                        <div style="background: var(--cream); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
-                                            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                                                <span><i class="fas fa-sign-in-alt me-2" style="color: #10b981;"></i>Check In:</span>
-                                                <strong style="color: var(--forest);">${todayData.checkIn || '-'}</strong>
-                                            </div>
-                                            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                                                <span><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span>
-                                                <strong style="color: var(--forest);">${todayData.checkOut || '-'}</strong>
-                                            </div>
-                                            ${todayData.distance ? `
-                                                <div style="padding-top: 1rem; border-top: 1px solid var(--beige);">
-                                                    <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem;">
-                                                        <i class="fas fa-map-pin me-1"></i>Jarak dari WiFi: ${todayData.distance}m
-                                                    </div>
-                                                </div>
-                                            ` : ''}
-                                            ${todayData.checkOut ? `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;"><span style="color: #666;">Total Jam:</span><strong style="display: block; color: var(--forest); font-size: 1.2rem; margin-top: 0.5rem;">${calcHours(todayData.checkIn, todayData.checkOut)}</strong></div>` : ''}
-                                        </div>
-                                    ` : ''}
-                                    <button id="checkInBtn" onclick="checkIn()" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 15px; font-size: 1.1rem; cursor: pointer; margin-bottom: 1rem;" disabled class="btn-disabled-custom"><i class="fas fa-sign-in-alt me-2"></i>Check In</button>
-                                    <button id="checkOutBtn" onclick="checkOut()" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 15px; font-size: 1.1rem; cursor: pointer;" disabled class="btn-disabled-custom"><i class="fas fa-sign-out-alt me-2"></i>Check Out</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div id="historyView" class="tab-content" style="display: none;">
-                            <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                                <h3 style="color: var(--forest); margin-bottom: 1.5rem;"><i class="fas fa-history me-2"></i>Riwayat Absensi Lengkap</h3>
-                                <div id="historyFull" style="max-height: 600px; overflow-y: auto;"><p style="text-align: center; color: #999; padding: 2rem;">Memuat...</p></div>
-                            </div>
-                        </div>
-                        
-                        ${user.role === 'admin' ? `
-                        <div id="reportsView" class="tab-content" style="display: none;">
-                            <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                                <h3 style="color: var(--forest); margin-bottom: 1.5rem;"><i class="fas fa-chart-bar me-2"></i>Laporan Absensi</h3>
-                                
-                                <div class="filter-section">
-                                    <select id="reportType" class="filter-input" onchange="loadReports()">
-                                        <option value="daily">Laporan Harian</option>
-                                        <option value="weekly">Laporan Mingguan</option>
-                                        <option value="monthly">Laporan Bulanan</option>
-                                    </select>
-                                    
-                                    <input type="date" id="reportDate" class="filter-input" value="${new Date().toISOString().split('T')[0]}" onchange="loadReports()">
-                                    
-                                    <select id="reportUser" class="filter-input" onchange="loadReports()">
-                                        <option value="all">Semua User</option>
-                                        ${allUsers.filter(u => u.apps.includes('absensi')).map(u => `<option value="${u.username}">${u.fullName}</option>`).join('')}
-                                    </select>
-                                    
-                                    <button class="filter-btn" onclick="loadReports()"><i class="fas fa-search me-2"></i>Filter</button>
-                                    <button class="export-btn" onclick="exportReport()"><i class="fas fa-download me-2"></i>Export Excel</button>
-                                </div>
-                                
-                                <div id="reportContent" style="overflow-x: auto;"></div>
-                            </div>
-                        </div>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-            
+            container.innerHTML = `<div style="min-height: 100vh; background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%); padding: 2rem;"><div style="max-width: 1400px; margin: 0 auto;"><div style="background: white; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;"><div style="display: flex; align-items: center; gap: 1rem;"><div style="width: 60px; height: 60px; background: linear-gradient(135deg, #a855f7, #9333ea); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;"><i class="fas fa-shield-alt"></i></div><div><h2 style="margin: 0; color: var(--dark-forest);">Sistem Absensi • Validasi Ketat</h2><p style="margin: 0; color: var(--sage-green); font-size: 0.9rem;">${user.fullName} • WiFi + Lokasi Protected</p></div></div><button onclick="backToSelection()" style="padding: 0.8rem 1.5rem; background: var(--sage-green); color: white; border: none; border-radius: 10px; cursor: pointer;"><i class="fas fa-arrow-left me-2"></i>Kembali</button></div><div class="wifi-requirement"><h4 style="color: #1e40af; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-lock"></i> Persyaratan Koneksi Wajib</h4><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;"><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-wifi me-2"></i>WiFi SSID:</div><div style="background: white; padding: 0.5rem; border-radius: 8px; font-family: monospace;">${REQUIRED_WIFI.ssid}</div></div><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-lock me-2"></i>Security:</div><div style="background: white; padding: 0.5rem; border-radius: 8px;">${REQUIRED_WIFI.security}</div></div><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-map-marker-alt me-2"></i>Radius Maksimal:</div><div style="background: white; padding: 0.5rem; border-radius: 8px; font-weight: bold;">${GEOFENCE_RADIUS} meter dari titik WiFi</div></div></div></div><div id="validationWarning" class="validation-warning" style="display: none;"></div><div class="tab-menu"><button class="tab-btn active" onclick="switchTab('check')"><i class="fas fa-fingerprint me-2"></i>Check In/Out</button><button class="tab-btn" onclick="switchTab('history')"><i class="fas fa-history me-2"></i>Riwayat</button>${user.role === 'admin' ? '<button class="tab-btn" onclick="switchTab(\'reports\')"><i class="fas fa-chart-bar me-2"></i>Laporan</button>' : ''}</div><div id="checkView" class="tab-content"><div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem;"><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="color: var(--dark-forest); margin-bottom: 1rem;"><i class="fas fa-map-marked-alt me-2"></i>Monitor Lokasi & WiFi</h3><div id="wifiStatus" class="wifi-status wifi-checking"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i><div><strong>Memeriksa WiFi...</strong></div></div><div id="locationStatus" class="location-status loading"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i><div><strong>Memuat Lokasi...</strong><br><small>Mohon tunggu</small></div></div><div id="map"></div><button onclick="refreshLocation()" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; border: none; border-radius: 12px; font-size: 1rem; cursor: pointer; margin-top: 1rem;"><i class="fas fa-sync-alt me-2"></i>Refresh Lokasi & WiFi</button></div><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="text-align: center; color: var(--dark-forest); margin-bottom: 1rem;"><i class="fas fa-clock me-2"></i>Absensi Hari Ini</h3><div id="clock" style="text-align: center; font-size: 2.5rem; font-weight: bold; color: var(--dark-forest); margin: 1.5rem 0; font-family: monospace;">00:00:00</div><div id="date" style="text-align: center; font-size: 1rem; color: var(--sage-green); margin-bottom: 1.5rem;"></div><div style="text-align: center; margin-bottom: 1.5rem;"><span style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600; background: ${isDone ? 'rgba(168,85,247,0.15)' : isIn ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; color: ${isDone ? '#a855f7' : isIn ? '#059669' : '#dc2626'};"><i class="fas fa-${isDone ? 'check-circle' : isIn ? 'sign-in-alt' : 'clock'} me-2"></i>${isDone ? 'Selesai' : isIn ? 'Sudah Check In' : 'Belum Check In'}</span></div>${todayData ? `<div style="background: var(--cream); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 1rem;"><span><i class="fas fa-sign-in-alt me-2" style="color: #10b981;"></i>Check In:</span><strong style="color: var(--dark-forest);">${todayData.checkIn || '-'}</strong></div><div style="display: flex; justify-content: space-between; margin-bottom: 1rem;"><span><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span><strong style="color: var(--dark-forest);">${todayData.checkOut || '-'}</strong></div>${todayData.distance ? `<div style="padding-top: 1rem; border-top: 1px solid var(--beige);"><div style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem;"><i class="fas fa-map-pin me-1"></i>Jarak dari WiFi: ${todayData.distance}m</div></div>` : ''}${todayData.checkOut ? `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;"><span style="color: #666;">Total Jam:</span><strong style="display: block; color: var(--dark-forest); font-size: 1.2rem; margin-top: 0.5rem;">${calcHours(todayData.checkIn, todayData.checkOut)}</strong></div>` : ''}</div>` : ''}<button id="checkInBtn" onclick="checkIn()" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 15px; font-size: 1.1rem; cursor: pointer; margin-bottom: 1rem;" disabled class="btn-disabled-custom"><i class="fas fa-sign-in-alt me-2"></i>Check In</button><button id="checkOutBtn" onclick="checkOut()" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 15px; font-size: 1.1rem; cursor: pointer;" disabled class="btn-disabled-custom"><i class="fas fa-sign-out-alt me-2"></i>Check Out</button></div></div></div><div id="historyView" class="tab-content" style="display: none;"><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="color: var(--dark-forest); margin-bottom: 1.5rem;"><i class="fas fa-history me-2"></i>Riwayat Absensi Lengkap</h3><div id="historyFull" style="max-height: 600px; overflow-y: auto;"><p style="text-align: center; color: #999; padding: 2rem;">Memuat...</p></div></div></div>${user.role === 'admin' ? `<div id="reportsView" class="tab-content" style="display: none;"><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="color: var(--dark-forest); margin-bottom: 1.5rem;"><i class="fas fa-chart-bar me-2"></i>Laporan Absensi</h3><div class="filter-section"><select id="reportType" class="filter-input" onchange="loadReports()"><option value="daily">Laporan Harian</option><option value="weekly">Laporan Mingguan</option><option value="monthly">Laporan Bulanan</option></select><input type="date" id="reportDate" class="filter-input" value="${new Date().toISOString().split('T')[0]}" onchange="loadReports()"><select id="reportUser" class="filter-input" onchange="loadReports()"><option value="all">Semua User</option>${allUsers.filter(u => u.apps.includes('absensi')).map(u => `<option value="${u.username}">${u.fullName}</option>`).join('')}</select><button class="filter-btn" onclick="loadReports()"><i class="fas fa-search me-2"></i>Filter</button><button class="export-btn" onclick="exportReport()"><i class="fas fa-download me-2"></i>Export Excel</button></div><div id="reportContent" style="overflow-x: auto;"></div></div></div>` : ''}</div></div>`;
             setTimeout(() => {
                 initMap();
-                getCurrentLocation()
-                    .then(() => {
-                        startValidationMonitoring();
-                    })
-                    .catch(err => {
-                        console.error('Location error:', err);
-                        showAlert('Gagal mendapatkan lokasi. Aktifkan GPS dan izinkan akses lokasi.', 'warning');
-                    });
+                getCurrentLocation().then(() => startValidationMonitoring()).catch(err => { console.error('Location error:', err); showAlert('Gagal mendapatkan lokasi. Aktifkan GPS dan izinkan akses lokasi.', 'warning'); });
             }, 300);
-            
             setInterval(() => {
                 const now = new Date();
                 const clockEl = document.getElementById('clock');
@@ -780,32 +907,21 @@
                 if (clockEl) clockEl.textContent = now.toLocaleTimeString('id-ID');
                 if (dateEl) dateEl.textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             }, 1000);
-            
-            if (user.role === 'admin') {
-                loadReports();
-            }
+            if (user.role === 'admin') loadReports();
         }
 
         function refreshLocation() {
-            getCurrentLocation()
-                .then(() => {
-                    showAlert('✅ Lokasi dan WiFi diperbarui!', 'success');
-                    validateAttendanceConditions();
-                })
-                .catch(err => showAlert('Gagal mendapatkan lokasi: ' + err.message, 'danger'));
+            getCurrentLocation().then(() => { showAlert('✅ Lokasi dan WiFi diperbarui!', 'success'); validateAttendanceConditions(); }).catch(err => showAlert('Gagal mendapatkan lokasi: ' + err.message, 'danger'));
         }
 
         function switchTab(tab) {
             currentAbsensiView = tab;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
-            
             if (tab === 'check') {
                 document.querySelectorAll('.tab-btn')[0].classList.add('active');
                 document.getElementById('checkView').style.display = 'block';
-                setTimeout(() => {
-                    if (map) map.invalidateSize();
-                }, 100);
+                setTimeout(() => { if (map) map.invalidateSize(); }, 100);
                 startValidationMonitoring();
             } else {
                 stopValidationMonitoring();
@@ -825,9 +941,7 @@
             const reportType = document.getElementById('reportType').value;
             const reportDate = new Date(document.getElementById('reportDate').value);
             const reportUser = document.getElementById('reportUser').value;
-            
             let allData = {};
-            
             if (reportUser === 'all') {
                 for (const user of allUsers.filter(u => u.apps.includes('absensi'))) {
                     const userData = await loadAllUserData(user.username);
@@ -836,10 +950,8 @@
             } else {
                 allData = await loadAllUserData(reportUser);
             }
-            
             let filteredData = [];
             const dates = Object.keys(allData).sort().reverse();
-            
             if (reportType === 'daily') {
                 const targetDate = reportDate.toISOString().split('T')[0];
                 filteredData = dates.filter(d => d === targetDate).map(d => allData[d]);
@@ -848,26 +960,16 @@
                 weekStart.setDate(weekStart.getDate() - weekStart.getDay());
                 const weekEnd = new Date(weekStart);
                 weekEnd.setDate(weekEnd.getDate() + 6);
-                
-                filteredData = dates.filter(d => {
-                    const date = new Date(d);
-                    return date >= weekStart && date <= weekEnd;
-                }).map(d => allData[d]);
+                filteredData = dates.filter(d => { const date = new Date(d); return date >= weekStart && date <= weekEnd; }).map(d => allData[d]);
             } else if (reportType === 'monthly') {
                 const month = reportDate.getMonth();
                 const year = reportDate.getFullYear();
-                
-                filteredData = dates.filter(d => {
-                    const date = new Date(d);
-                    return date.getMonth() === month && date.getFullYear() === year;
-                }).map(d => allData[d]);
+                filteredData = dates.filter(d => { const date = new Date(d); return date.getMonth() === month && date.getFullYear() === year; }).map(d => allData[d]);
             }
-            
             let html = '<table class="report-table"><thead><tr>';
             html += '<th>No</th><th>Nama</th><th>Tanggal</th><th>Hari</th><th>Check In</th><th>Check Out</th><th>Jarak WiFi</th><th>Total Jam</th><th>Status</th>';
             if (currentUser.role === 'admin') html += '<th>Aksi</th>';
             html += '</tr></thead><tbody>';
-            
             if (filteredData.length === 0) {
                 html += '<tr><td colspan="10" style="text-align: center; padding: 2rem; color: #999;">Tidak ada data</td></tr>';
             } else {
@@ -876,67 +978,30 @@
                     const dayName = date.toLocaleDateString('id-ID', { weekday: 'long' });
                     const formattedDate = date.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
                     const totalHours = calcHours(data.checkIn, data.checkOut);
-                    
                     let status = 'pending';
                     let statusText = 'Menunggu';
-                    if (data.approved) {
-                        status = 'approved';
-                        statusText = 'Disetujui';
-                    } else if (!data.checkOut) {
-                        status = 'incomplete';
-                        statusText = 'Belum Selesai';
-                    }
-                    
+                    if (data.approved) { status = 'approved'; statusText = 'Disetujui'; } else if (!data.checkOut) { status = 'incomplete'; statusText = 'Belum Selesai'; }
                     const distanceText = data.distance ? data.distance + 'm' : '-';
-                    
-                    html += `<tr>
-                        <td>${index + 1}</td>
-                        <td><strong>${data.fullName}</strong></td>
-                        <td>${formattedDate}</td>
-                        <td>${dayName}</td>
-                        <td><span style="color: #10b981;"><i class="fas fa-sign-in-alt me-1"></i>${data.checkIn || '-'}</span></td>
-                        <td><span style="color: #ef4444;"><i class="fas fa-sign-out-alt me-1"></i>${data.checkOut || '-'}</span></td>
-                        <td style="font-size: 0.85rem;"><i class="fas fa-wifi me-1"></i>${distanceText}</td>
-                        <td><strong>${totalHours}</strong></td>
-                        <td><span class="status-badge status-${status}">${statusText}</span></td>`;
-                    
-                    if (currentUser.role === 'admin') {
-                        html += `<td>
-                            <button class="approve-btn" onclick="approveAttendance('${data.username}', '${data.date}')" ${data.approved || !data.checkOut ? 'disabled' : ''}>
-                                <i class="fas fa-check me-1"></i>Setujui
-                            </button>
-                        </td>`;
-                    }
-                    
+                    html += `<tr><td>${index + 1}</td><td><strong>${data.fullName}</strong></td><td>${formattedDate}</td><td>${dayName}</td><td><span style="color: #10b981;"><i class="fas fa-sign-in-alt me-1"></i>${data.checkIn || '-'}</span></td><td><span style="color: #ef4444;"><i class="fas fa-sign-out-alt me-1"></i>${data.checkOut || '-'}</span></td><td style="font-size: 0.85rem;"><i class="fas fa-wifi me-1"></i>${distanceText}</td><td><strong>${totalHours}</strong></td><td><span class="status-badge status-${status}">${statusText}</span></td>`;
+                    if (currentUser.role === 'admin') { html += `<td><button class="approve-btn" onclick="approveAttendance('${data.username}', '${data.date}')" ${data.approved || !data.checkOut ? 'disabled' : ''}><i class="fas fa-check me-1"></i>Setujui</button></td>`; }
                     html += '</tr>';
                 });
             }
-            
             html += '</tbody></table>';
             document.getElementById('reportContent').innerHTML = html;
         }
 
         async function loadAllUserData(username) {
             let data = {};
-            
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
                     const { collection, query, where, getDocs } = window.firebaseModules;
                     const q = query(collection(window.firebaseDb, 'attendance'), where('username', '==', username));
                     const snap = await getDocs(q);
-                    snap.forEach(doc => {
-                        const d = doc.data();
-                        data[d.date] = d;
-                    });
-                } catch (e) {
-                    console.log('Firebase error:', e);
-                }
+                    snap.forEach(doc => { const d = doc.data(); data[d.date] = d; });
+                } catch (e) { console.log('Firebase error:', e); }
             }
-            
-            if (Object.keys(data).length === 0) {
-                data = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
-            }
-            
+            if (Object.keys(data).length === 0) data = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
             return data;
         }
 
@@ -944,71 +1009,40 @@
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
                     const { doc, updateDoc } = window.firebaseModules;
-                    await updateDoc(doc(window.firebaseDb, 'attendance', `${username}_${date}`), { 
-                        approved: true,
-                        approvedBy: currentUser.fullName,
-                        approvedAt: new Date().toISOString()
-                    });
+                    await updateDoc(doc(window.firebaseDb, 'attendance', `${username}_${date}`), { approved: true, approvedBy: currentUser.fullName, approvedAt: new Date().toISOString() });
                     showAlert('✅ Absensi disetujui!', 'success');
-                } catch (e) {
-                    console.log('Firebase error, using local');
-                    approveLocal(username, date);
-                    showAlert('✅ Absensi disetujui! (Local)', 'success');
-                }
-            } else {
-                approveLocal(username, date);
-                showAlert('✅ Absensi disetujui! (Local)', 'success');
-            }
+                } catch (e) { console.log('Firebase error, using local'); approveLocal(username, date); showAlert('✅ Absensi disetujui! (Local)', 'success'); }
+            } else { approveLocal(username, date); showAlert('✅ Absensi disetujui! (Local)', 'success'); }
             setTimeout(() => loadReports(), 500);
         }
 
         function approveLocal(username, date) {
             const local = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
-            if (local[date]) {
-                local[date].approved = true;
-                local[date].approvedBy = currentUser.fullName;
-                local[date].approvedAt = new Date().toISOString();
-                localStorage.setItem('attendance_' + username, JSON.stringify(local));
-            }
+            if (local[date]) { local[date].approved = true; local[date].approvedBy = currentUser.fullName; local[date].approvedAt = new Date().toISOString(); localStorage.setItem('attendance_' + username, JSON.stringify(local)); }
         }
 
         function exportReport() {
             const reportType = document.getElementById('reportType').value;
             const reportDate = document.getElementById('reportDate').value;
             const reportUser = document.getElementById('reportUser').value;
-            
             let filename = `Laporan_Absensi_${reportType}_${reportDate}`;
-            if (reportUser !== 'all') {
-                filename += `_${reportUser}`;
-            }
-            
+            if (reportUser !== 'all') filename += `_${reportUser}`;
             const table = document.querySelector('.report-table');
-            if (!table) {
-                showAlert('Tidak ada data untuk diekspor', 'danger');
-                return;
-            }
-            
+            if (!table) { showAlert('Tidak ada data untuk diekspor', 'danger'); return; }
             let csv = [];
             const rows = table.querySelectorAll('tr');
-            
             rows.forEach(row => {
                 const cols = row.querySelectorAll('td, th');
                 const csvRow = [];
-                cols.forEach((col, idx) => {
-                    if (idx < cols.length - 1) {
-                        csvRow.push('"' + col.textContent.replace(/"/g, '""') + '"');
-                    }
-                });
+                cols.forEach((col, idx) => { if (idx < cols.length - 1) csvRow.push('"' + col.textContent.replace(/"/g, '""') + '"'); });
                 csv.push(csvRow.join(','));
             });
-            
             const csvContent = csv.join('\n');
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = filename + '.csv';
             link.click();
-            
             showAlert('✅ Report berhasil diexport!', 'success');
         }
 
@@ -1034,117 +1068,48 @@
                     snap.forEach(doc => { const d = doc.data(); data[d.date] = d; });
                 } catch (e) { console.log('Firebase error:', e); }
             }
-            if (Object.keys(data).length === 0) {
-                data = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
-            }
-            
-            const html = Object.keys(data).length === 0 ? '<p style="text-align: center; color: #999; padding: 2rem;">Belum ada riwayat</p>' :
-                Object.keys(data).sort().reverse().slice(0, limitCount).map(date => {
-                    const d = data[date];
-                    const dateObj = new Date(date + 'T00:00:00');
-                    const formatted = dateObj.toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-                    return `<div style="padding: 1rem; border-bottom: 1px solid var(--beige); display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <div style="font-weight: 600; color: var(--forest);">${formatted}</div>
-                            <span style="font-size: 0.85rem; color: ${d.checkOut ? '#666' : '#ef4444'};">${d.checkOut ? 'Durasi: ' + calcHours(d.checkIn, d.checkOut) : 'Belum Check Out'}</span>
-                            ${d.distance ? `<div style="font-size: 0.75rem; color: #999; margin-top: 0.2rem;"><i class="fas fa-wifi me-1"></i>Jarak WiFi: ${d.distance}m</div>` : ''}
-                            ${d.approved ? '<div style="margin-top: 0.3rem;"><span class="status-badge status-approved" style="font-size: 0.75rem;">Disetujui</span></div>' : ''}
-                        </div>
-                        <div style="display: flex; gap: 1rem; font-size: 0.9rem;">
-                            <div><i class="fas fa-sign-in-alt" style="color: #10b981;"></i> ${d.checkIn || '-'}</div>
-                            <div><i class="fas fa-sign-out-alt" style="color: #ef4444;"></i> ${d.checkOut || '-'}</div>
-                        </div>
-                    </div>`;
-                }).join('');
+            if (Object.keys(data).length === 0) data = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+            const html = Object.keys(data).length === 0 ? '<p style="text-align: center; color: #999; padding: 2rem;">Belum ada riwayat</p>' : Object.keys(data).sort().reverse().slice(0, limitCount).map(date => {
+                const d = data[date];
+                const dateObj = new Date(date + 'T00:00:00');
+                const formatted = dateObj.toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+                return `<div style="padding: 1rem; border-bottom: 1px solid var(--beige); display: flex; justify-content: space-between; align-items: center;"><div><div style="font-weight: 600; color: var(--dark-forest);">${formatted}</div><span style="font-size: 0.85rem; color: ${d.checkOut ? '#666' : '#ef4444'};">${d.checkOut ? 'Durasi: ' + calcHours(d.checkIn, d.checkOut) : 'Belum Check Out'}</span>${d.distance ? `<div style="font-size: 0.75rem; color: #999; margin-top: 0.2rem;"><i class="fas fa-wifi me-1"></i>Jarak WiFi: ${d.distance}m</div>` : ''}${d.approved ? '<div style="margin-top: 0.3rem;"><span class="status-badge status-approved" style="font-size: 0.75rem;">Disetujui</span></div>' : ''}</div><div style="display: flex; gap: 1rem; font-size: 0.9rem;"><div><i class="fas fa-sign-in-alt" style="color: #10b981;"></i> ${d.checkIn || '-'}</div><div><i class="fas fa-sign-out-alt" style="color: #ef4444;"></i> ${d.checkOut || '-'}</div></div></div>`;
+            }).join('');
             document.getElementById(elementId).innerHTML = html;
         }
 
         async function checkIn() {
-            // Final validation check
             const isValid = await validateAttendanceConditions();
-            
-            if (!isValid) {
-                showAlert('❌ Tidak dapat Check In! Pastikan WiFi dan lokasi sudah sesuai.', 'danger');
-                return;
-            }
-            
-            const distance = getDistance(
-                currentLocation.lat, 
-                currentLocation.lon, 
-                GEOFENCE_CENTER.lat, 
-                GEOFENCE_CENTER.lon
-            );
-            
+            if (!isValid) { showAlert('❌ Tidak dapat Check In! Pastikan WiFi dan lokasi sudah sesuai.', 'danger'); return; }
+            const distance = getDistance(currentLocation.lat, currentLocation.lon, GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon);
             const now = new Date();
             const date = now.toISOString().split('T')[0];
             const time = now.toLocaleTimeString('id-ID');
-            const data = { 
-                username: currentUser.username, 
-                fullName: currentUser.fullName, 
-                date, 
-                checkIn: time, 
-                checkOut: null, 
-                approved: false,
-                location: currentLocation,
-                distance: Math.round(distance)
-            };
-            
+            const data = { username: currentUser.username, fullName: currentUser.fullName, date, checkIn: time, checkOut: null, approved: false, location: currentLocation, distance: Math.round(distance) };
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
                     const { doc, setDoc, serverTimestamp } = window.firebaseModules;
                     await setDoc(doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`), { ...data, timestamp: serverTimestamp() });
                     showAlert('✅ Check In berhasil! (Cloud)', 'success');
-                } catch (e) {
-                    console.log('Firebase error, using local');
-                    saveLocal(data);
-                    showAlert('✅ Check In berhasil! (Local)', 'success');
-                }
-            } else {
-                saveLocal(data);
-                showAlert('✅ Check In berhasil! (Local)', 'success');
-            }
+                } catch (e) { console.log('Firebase error, using local'); saveLocal(data); showAlert('✅ Check In berhasil! (Local)', 'success'); }
+            } else { saveLocal(data); showAlert('✅ Check In berhasil! (Local)', 'success'); }
             setTimeout(() => loadAbsensi(currentUser), 1000);
         }
 
         async function checkOut() {
-            // Final validation check
             const isValid = await validateAttendanceConditions();
-            
-            if (!isValid) {
-                showAlert('❌ Tidak dapat Check Out! Pastikan WiFi dan lokasi sudah sesuai.', 'danger');
-                return;
-            }
-            
-            const distance = getDistance(
-                currentLocation.lat, 
-                currentLocation.lon, 
-                GEOFENCE_CENTER.lat, 
-                GEOFENCE_CENTER.lon
-            );
-            
+            if (!isValid) { showAlert('❌ Tidak dapat Check Out! Pastikan WiFi dan lokasi sudah sesuai.', 'danger'); return; }
+            const distance = getDistance(currentLocation.lat, currentLocation.lon, GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon);
             const now = new Date();
             const date = now.toISOString().split('T')[0];
             const time = now.toLocaleTimeString('id-ID');
-            
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
                     const { doc, updateDoc, serverTimestamp } = window.firebaseModules;
-                    await updateDoc(doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`), { 
-                        checkOut: time, 
-                        checkOutTimestamp: serverTimestamp(),
-                        checkOutLocation: currentLocation,
-                        checkOutDistance: Math.round(distance)
-                    });
+                    await updateDoc(doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`), { checkOut: time, checkOutTimestamp: serverTimestamp(), checkOutLocation: currentLocation, checkOutDistance: Math.round(distance) });
                     showAlert('✅ Check Out berhasil! (Cloud)', 'success');
-                } catch (e) {
-                    console.log('Firebase error, using local');
-                    updateLocal(date, time, distance);
-                    showAlert('✅ Check Out berhasil! (Local)', 'success');
-                }
-            } else {
-                updateLocal(date, time, distance);
-                showAlert('✅ Check Out berhasil! (Local)', 'success');
-            }
+                } catch (e) { console.log('Firebase error, using local'); updateLocal(date, time, distance); showAlert('✅ Check Out berhasil! (Local)', 'success'); }
+            } else { updateLocal(date, time, distance); showAlert('✅ Check Out berhasil! (Local)', 'success'); }
             setTimeout(() => loadAbsensi(currentUser), 1000);
         }
 
@@ -1156,12 +1121,7 @@
 
         function updateLocal(date, time, distance) {
             const local = JSON.parse(localStorage.getItem('attendance_' + currentUser.username) || '{}');
-            if (local[date]) {
-                local[date].checkOut = time;
-                local[date].checkOutLocation = currentLocation;
-                local[date].checkOutDistance = Math.round(distance);
-                localStorage.setItem('attendance_' + currentUser.username, JSON.stringify(local));
-            }
+            if (local[date]) { local[date].checkOut = time; local[date].checkOutLocation = currentLocation; local[date].checkOutDistance = Math.round(distance); localStorage.setItem('attendance_' + currentUser.username, JSON.stringify(local)); }
         }
 
         function calcHours(checkIn, checkOut) {
@@ -1180,10 +1140,7 @@
             stopValidationMonitoring();
             document.getElementById('absensiContainer').classList.remove('active');
             document.getElementById('appSelectionPage').classList.add('active');
-            if (map) {
-                map.remove();
-                map = null;
-            }
+            if (map) { map.remove(); map = null; }
         }
 
         function showAlert(msg, type) {
@@ -1203,16 +1160,8 @@
                     currentUser = user;
                     showAppSelection(user);
                 }
-                console.log('🚀 Pinuslo Apps - Strict Validation System');
+                console.log('🚀 Pinuslo Apps - With Animated Logo');
                 console.log(window.firebaseEnabled ? '✅ Firebase Connected' : '⚠️ Firebase Offline');
-                console.log('');
-                console.log('🔒 VALIDASI KETAT - Check In/Out HANYA jika:');
-                console.log('   1. Terhubung ke WiFi Cafepinuslo');
-                console.log('   2. Dalam radius 50m dari titik WiFi');
-                console.log('   3. Lokasi GPS aktif dan valid');
-                console.log('');
-                console.log('📍 WiFi Location:', GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon);
-                console.log('📶 WiFi SSID:', REQUIRED_WIFI.ssid);
             }, 500);
         });
     </script>
