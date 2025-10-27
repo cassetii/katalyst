@@ -34,6 +34,7 @@
             window.firebaseAnalytics = analytics;
             window.firebaseEnabled = true;
             window.firebaseModules = { collection, doc, setDoc, getDoc, updateDoc, query, where, orderBy, limit, getDocs, serverTimestamp };
+            window.serverTimestamp = serverTimestamp;
         } catch (error) {
             console.error('❌ Firebase failed:', error);
             window.firebaseEnabled = false;
