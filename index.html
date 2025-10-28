@@ -595,17 +595,34 @@
         let validationInterval = null;
         let isValidForAttendance = false;
         
-        const GEOFENCE_CENTER = {
-            lat: -5.367065295968101,
-            lon: 119.6489802711651
+        // Konfigurasi 2 lokasi
+        const LOCATIONS = {
+            pinuslo: {
+                name: "Kawasan Pinuslo",
+                center: { lat: -5.367065295968101, lon: 119.6489802711651 },
+                radius: 500,
+                wifi: {
+                    ssid: "Cafepinuslo",
+                    bssid: "96:3c:80:6a:83:6d",
+                    security: "WPA2/WP3 Personal"
+                }
+            },
+            testing: {
+                name: "Kawasan Testing",
+                center: { lat: -5.150256854076427, lon: 119.41546986471782 },
+                radius: 500,
+                wifi: {
+                    ssid: "Div--SIMO_5G",
+                    bssid: null, // akan di-detect otomatis
+                    security: "WPA2/WP3 Personal"
+                }
+            }
         };
-        const GEOFENCE_RADIUS = 500;
         
-        const REQUIRED_WIFI = {
-            ssid: "Cafepinuslo",
-            bssid: "96:3c:80:6a:83:6d",
-            security: "WPA2/WP3 Personal"
-        };
+        let selectedLocation = 'pinuslo'; // default location
+        let GEOFENCE_CENTER = LOCATIONS[selectedLocation].center;
+        let GEOFENCE_RADIUS = LOCATIONS[selectedLocation].radius;
+        let REQUIRED_WIFI = LOCATIONS[selectedLocation].wifi;
 
         const allUsers = [
             { username: 'iqbal', password: 'iqbal123', role: 'admin', fullName: 'Iqbal', apps: ['pinus', 'pinewater', 'bbm', 'cafe', 'glamping', 'absensi'] },
@@ -896,7 +913,35 @@
             const todayData = await loadData(user.username, today);
             const isIn = todayData && todayData.checkIn && !todayData.checkOut;
             const isDone = todayData && todayData.checkOut;
-            container.innerHTML = `<div style="min-height: 100vh; background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%); padding: 2rem;"><div style="max-width: 1400px; margin: 0 auto;"><div style="background: white; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;"><div style="display: flex; align-items: center; gap: 1rem;"><div style="width: 60px; height: 60px; background: linear-gradient(135deg, #a855f7, #9333ea); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;"><i class="fas fa-shield-alt"></i></div><div><h2 style="margin: 0; color: var(--dark-forest);">Sistem Absensi • Validasi Ketat</h2><p style="margin: 0; color: var(--sage-green); font-size: 0.9rem;">${user.fullName} • WiFi + Lokasi Protected</p></div></div><button onclick="backToSelection()" style="padding: 0.8rem 1.5rem; background: var(--sage-green); color: white; border: none; border-radius: 10px; cursor: pointer;"><i class="fas fa-arrow-left me-2"></i>Kembali</button></div><div class="wifi-requirement"><h4 style="color: #1e40af; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-lock"></i> Persyaratan Koneksi Wajib</h4><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;"><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-wifi me-2"></i>WiFi SSID:</div><div style="background: white; padding: 0.5rem; border-radius: 8px; font-family: monospace;">${REQUIRED_WIFI.ssid}</div></div><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-lock me-2"></i>Security:</div><div style="background: white; padding: 0.5rem; border-radius: 8px;">${REQUIRED_WIFI.security}</div></div><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-map-marker-alt me-2"></i>Radius Maksimal:</div><div style="background: white; padding: 0.5rem; border-radius: 8px; font-weight: bold;">${GEOFENCE_RADIUS} meter dari titik WiFi</div></div></div></div><div id="validationWarning" class="validation-warning" style="display: none;"></div><div class="tab-menu"><button class="tab-btn active" onclick="switchTab('check')"><i class="fas fa-fingerprint me-2"></i>Check In/Out</button><button class="tab-btn" onclick="switchTab('history')"><i class="fas fa-history me-2"></i>Riwayat</button>${user.role === 'admin' ? '<button class="tab-btn" onclick="switchTab(\'reports\')"><i class="fas fa-chart-bar me-2"></i>Laporan</button>' : ''}</div><div id="checkView" class="tab-content"><div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem;"><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="color: var(--dark-forest); margin-bottom: 1rem;"><i class="fas fa-map-marked-alt me-2"></i>Monitor Lokasi & WiFi</h3><div id="wifiStatus" class="wifi-status wifi-checking"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i><div><strong>Memeriksa WiFi...</strong></div></div><div id="locationStatus" class="location-status loading"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i><div><strong>Memuat Lokasi...</strong><br><small>Mohon tunggu</small></div></div><div id="map"></div><button onclick="refreshLocation()" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; border: none; border-radius: 12px; font-size: 1rem; cursor: pointer; margin-top: 1rem;"><i class="fas fa-sync-alt me-2"></i>Refresh Lokasi & WiFi</button></div><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="text-align: center; color: var(--dark-forest); margin-bottom: 1rem;"><i class="fas fa-clock me-2"></i>Absensi Hari Ini</h3><div id="clock" style="text-align: center; font-size: 2.5rem; font-weight: bold; color: var(--dark-forest); margin: 1.5rem 0; font-family: monospace;">00:00:00</div><div id="date" style="text-align: center; font-size: 1rem; color: var(--sage-green); margin-bottom: 1.5rem;"></div><div style="text-align: center; margin-bottom: 1.5rem;"><span style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600; background: ${isDone ? 'rgba(168,85,247,0.15)' : isIn ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; color: ${isDone ? '#a855f7' : isIn ? '#059669' : '#dc2626'};"><i class="fas fa-${isDone ? 'check-circle' : isIn ? 'sign-in-alt' : 'clock'} me-2"></i>${isDone ? 'Selesai' : isIn ? 'Sudah Check In' : 'Belum Check In'}</span></div>${todayData ? `<div style="background: var(--cream); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 1rem;"><span><i class="fas fa-sign-in-alt me-2" style="color: #10b981;"></i>Check In:</span><strong style="color: var(--dark-forest);">${todayData.checkIn || '-'}</strong></div><div style="display: flex; justify-content: space-between; margin-bottom: 1rem;"><span><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span><strong style="color: var(--dark-forest);">${todayData.checkOut || '-'}</strong></div>${todayData.distance ? `<div style="padding-top: 1rem; border-top: 1px solid var(--beige);"><div style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem;"><i class="fas fa-map-pin me-1"></i>Jarak dari WiFi: ${todayData.distance}m</div></div>` : ''}${todayData.checkOut ? `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;"><span style="color: #666;">Total Jam:</span><strong style="display: block; color: var(--dark-forest); font-size: 1.2rem; margin-top: 0.5rem;">${calcHours(todayData.checkIn, todayData.checkOut)}</strong></div>` : ''}</div>` : ''}<button id="checkInBtn" onclick="checkIn()" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 15px; font-size: 1.1rem; cursor: pointer; margin-bottom: 1rem;" disabled class="btn-disabled-custom"><i class="fas fa-sign-in-alt me-2"></i>Check In</button><button id="checkOutBtn" onclick="checkOut()" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 15px; font-size: 1.1rem; cursor: pointer;" disabled class="btn-disabled-custom"><i class="fas fa-sign-out-alt me-2"></i>Check Out</button></div></div></div><div id="historyView" class="tab-content" style="display: none;"><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="color: var(--dark-forest); margin-bottom: 1.5rem;"><i class="fas fa-history me-2"></i>Riwayat Absensi Lengkap</h3><div id="historyFull" style="max-height: 600px; overflow-y: auto;"><p style="text-align: center; color: #999; padding: 2rem;">Memuat...</p></div></div></div>${user.role === 'admin' ? `<div id="reportsView" class="tab-content" style="display: none;"><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="color: var(--dark-forest); margin-bottom: 1.5rem;"><i class="fas fa-chart-bar me-2"></i>Laporan Absensi</h3><div class="filter-section"><select id="reportType" class="filter-input" onchange="loadReports()"><option value="daily">Laporan Harian</option><option value="weekly">Laporan Mingguan</option><option value="monthly">Laporan Bulanan</option></select><input type="date" id="reportDate" class="filter-input" value="${new Date().toISOString().split('T')[0]}" onchange="loadReports()"><select id="reportUser" class="filter-input" onchange="loadReports()"><option value="all">Semua User</option>${allUsers.filter(u => u.apps.includes('absensi')).map(u => `<option value="${u.username}">${u.fullName}</option>`).join('')}</select><button class="filter-btn" onclick="loadReports()"><i class="fas fa-search me-2"></i>Filter</button><button class="export-btn" onclick="exportReport()"><i class="fas fa-download me-2"></i>Export Excel</button></div><div id="reportContent" style="overflow-x: auto;"></div></div></div>` : ''}</div></div>`;
+            container.innerHTML = `<div style="min-height: 100vh; background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%); padding: 2rem;"><div style="max-width: 1400px; margin: 0 auto;"><div style="background: white; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;"><div style="display: flex; align-items: center; gap: 1rem;"><div style="width: 60px; height: 60px; background: linear-gradient(135deg, #a855f7, #9333ea); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;"><i class="fas fa-shield-alt"></i></div><div><h2 style="margin: 0; color: var(--dark-forest);">Sistem Absensi • Validasi Ketat</h2><p style="margin: 0; color: var(--sage-green); font-size: 0.9rem;">${user.fullName} • WiFi + Lokasi Protected</p></div></div><button onclick="backToSelection()" style="padding: 0.8rem 1.5rem; background: var(--sage-green); color: white; border: none; border-radius: 10px; cursor: pointer;"><i class="fas fa-arrow-left me-2"></i>Kembali</button></div>
+            
+            <div style="background: white; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <h4 style="color: var(--dark-forest); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-map-marker-alt"></i> Pilih Lokasi Absensi
+                </h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                    <button onclick="switchLocation('pinuslo')" id="locBtn_pinuslo" class="location-btn ${selectedLocation === 'pinuslo' ? 'active' : ''}" style="padding: 1.2rem; border-radius: 12px; border: 2px solid; cursor: pointer; transition: all 0.3s; background: ${selectedLocation === 'pinuslo' ? 'linear-gradient(135deg, var(--pine-green), var(--dark-forest))' : 'white'}; color: ${selectedLocation === 'pinuslo' ? 'white' : 'var(--dark-forest)'}; border-color: ${selectedLocation === 'pinuslo' ? 'var(--pine-green)' : '#e5e7eb'};">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-tree" style="font-size: 2rem;"></i>
+                            <div style="text-align: left;">
+                                <div style="font-weight: 700; font-size: 1.1rem;">Kawasan Pinuslo</div>
+                                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">WiFi: Cafepinuslo</div>
+                            </div>
+                        </div>
+                    </button>
+                    <button onclick="switchLocation('testing')" id="locBtn_testing" class="location-btn ${selectedLocation === 'testing' ? 'active' : ''}" style="padding: 1.2rem; border-radius: 12px; border: 2px solid; cursor: pointer; transition: all 0.3s; background: ${selectedLocation === 'testing' ? 'linear-gradient(135deg, #0891b2, #06b6d4)' : 'white'}; color: ${selectedLocation === 'testing' ? 'white' : 'var(--dark-forest)'}; border-color: ${selectedLocation === 'testing' ? '#0891b2' : '#e5e7eb'};">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-vial" style="font-size: 2rem;"></i>
+                            <div style="text-align: left;">
+                                <div style="font-weight: 700; font-size: 1.1rem;">Kawasan Testing</div>
+                                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">WiFi: Div--SIMO_5G</div>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="wifi-requirement"><h4 style="color: #1e40af; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-lock"></i> Persyaratan Koneksi Wajib</h4><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;"><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-wifi me-2"></i>WiFi SSID:</div><div style="background: white; padding: 0.5rem; border-radius: 8px; font-family: monospace;">${REQUIRED_WIFI.ssid}</div></div><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-lock me-2"></i>Security:</div><div style="background: white; padding: 0.5rem; border-radius: 8px;">${REQUIRED_WIFI.security}</div></div><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-map-marker-alt me-2"></i>Radius Maksimal:</div><div style="background: white; padding: 0.5rem; border-radius: 8px; font-weight: bold;">${GEOFENCE_RADIUS} meter dari titik WiFi</div></div></div></div><div id="validationWarning" class="validation-warning" style="display: none;"></div><div class="tab-menu"><button class="tab-btn active" onclick="switchTab('check')"><i class="fas fa-fingerprint me-2"></i>Check In/Out</button><button class="tab-btn" onclick="switchTab('history')"><i class="fas fa-history me-2"></i>Riwayat</button>${user.role === 'admin' ? '<button class="tab-btn" onclick="switchTab(\'reports\')"><i class="fas fa-chart-bar me-2"></i>Laporan</button>' : ''}</div><div id="checkView" class="tab-content"><div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem;"><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="color: var(--dark-forest); margin-bottom: 1rem;"><i class="fas fa-map-marked-alt me-2"></i>Monitor Lokasi & WiFi</h3><div id="wifiStatus" class="wifi-status wifi-checking"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i><div><strong>Memeriksa WiFi...</strong></div></div><div id="locationStatus" class="location-status loading"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i><div><strong>Memuat Lokasi...</strong><br><small>Mohon tunggu</small></div></div><div id="map"></div><button onclick="refreshLocation()" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; border: none; border-radius: 12px; font-size: 1rem; cursor: pointer; margin-top: 1rem;"><i class="fas fa-sync-alt me-2"></i>Refresh Lokasi & WiFi</button></div><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="text-align: center; color: var(--dark-forest); margin-bottom: 1rem;"><i class="fas fa-clock me-2"></i>Absensi Hari Ini</h3><div id="clock" style="text-align: center; font-size: 2.5rem; font-weight: bold; color: var(--dark-forest); margin: 1.5rem 0; font-family: monospace;">00:00:00</div><div id="date" style="text-align: center; font-size: 1rem; color: var(--sage-green); margin-bottom: 1.5rem;"></div><div style="text-align: center; margin-bottom: 1.5rem;"><span style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600; background: ${isDone ? 'rgba(168,85,247,0.15)' : isIn ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; color: ${isDone ? '#a855f7' : isIn ? '#059669' : '#dc2626'};"><i class="fas fa-${isDone ? 'check-circle' : isIn ? 'sign-in-alt' : 'clock'} me-2"></i>${isDone ? 'Selesai' : isIn ? 'Sudah Check In' : 'Belum Check In'}</span></div>${todayData ? `<div style="background: var(--cream); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 1rem;"><span><i class="fas fa-sign-in-alt me-2" style="color: #10b981;"></i>Check In:</span><strong style="color: var(--dark-forest);">${todayData.checkIn || '-'}</strong></div><div style="display: flex; justify-content: space-between; margin-bottom: 1rem;"><span><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span><strong style="color: var(--dark-forest);">${todayData.checkOut || '-'}</strong></div>${todayData.distance ? `<div style="padding-top: 1rem; border-top: 1px solid var(--beige);"><div style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem;"><i class="fas fa-map-pin me-1"></i>Jarak dari WiFi: ${todayData.distance}m</div></div>` : ''}${todayData.checkOut ? `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;"><span style="color: #666;">Total Jam:</span><strong style="display: block; color: var(--dark-forest); font-size: 1.2rem; margin-top: 0.5rem;">${calcHours(todayData.checkIn, todayData.checkOut)}</strong></div>` : ''}</div>` : ''}<button id="checkInBtn" onclick="checkIn()" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 15px; font-size: 1.1rem; cursor: pointer; margin-bottom: 1rem;" disabled class="btn-disabled-custom"><i class="fas fa-sign-in-alt me-2"></i>Check In</button><button id="checkOutBtn" onclick="checkOut()" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 15px; font-size: 1.1rem; cursor: pointer;" disabled class="btn-disabled-custom"><i class="fas fa-sign-out-alt me-2"></i>Check Out</button></div></div></div><div id="historyView" class="tab-content" style="display: none;"><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="color: var(--dark-forest); margin-bottom: 1.5rem;"><i class="fas fa-history me-2"></i>Riwayat Absensi Lengkap</h3><div id="historyFull" style="max-height: 600px; overflow-y: auto;"><p style="text-align: center; color: #999; padding: 2rem;">Memuat...</p></div></div></div>${user.role === 'admin' ? `<div id="reportsView" class="tab-content" style="display: none;"><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="color: var(--dark-forest); margin-bottom: 1.5rem;"><i class="fas fa-chart-bar me-2"></i>Laporan Absensi</h3><div class="filter-section"><select id="reportType" class="filter-input" onchange="loadReports()"><option value="daily">Laporan Harian</option><option value="weekly">Laporan Mingguan</option><option value="monthly">Laporan Bulanan</option></select><input type="date" id="reportDate" class="filter-input" value="${new Date().toISOString().split('T')[0]}" onchange="loadReports()"><select id="reportUser" class="filter-input" onchange="loadReports()"><option value="all">Semua User</option>${allUsers.filter(u => u.apps.includes('absensi')).map(u => `<option value="${u.username}">${u.fullName}</option>`).join('')}</select><button class="filter-btn" onclick="loadReports()"><i class="fas fa-search me-2"></i>Filter</button><button class="export-btn" onclick="exportReport()"><i class="fas fa-download me-2"></i>Export Excel</button></div><div id="reportContent" style="overflow-x: auto;"></div></div></div>` : ''}</div></div>`;
             setTimeout(() => {
                 initMap();
                 getCurrentLocation().then(() => startValidationMonitoring()).catch(err => { console.error('Location error:', err); showAlert('Gagal mendapatkan lokasi. Aktifkan GPS dan izinkan akses lokasi.', 'warning'); });
@@ -913,6 +958,59 @@
 
         function refreshLocation() {
             getCurrentLocation().then(() => { showAlert('✅ Lokasi dan WiFi diperbarui!', 'success'); validateAttendanceConditions(); }).catch(err => showAlert('Gagal mendapatkan lokasi: ' + err.message, 'danger'));
+        }
+        
+        function switchLocation(locationKey) {
+            selectedLocation = locationKey;
+            GEOFENCE_CENTER = LOCATIONS[locationKey].center;
+            GEOFENCE_RADIUS = LOCATIONS[locationKey].radius;
+            REQUIRED_WIFI = LOCATIONS[locationKey].wifi;
+            
+            // Update button states
+            document.querySelectorAll('.location-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById('locBtn_' + locationKey);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                if (locationKey === 'pinuslo') {
+                    activeBtn.style.background = 'linear-gradient(135deg, var(--pine-green), var(--dark-forest))';
+                    activeBtn.style.color = 'white';
+                    activeBtn.style.borderColor = 'var(--pine-green)';
+                } else {
+                    activeBtn.style.background = 'linear-gradient(135deg, #0891b2, #06b6d4)';
+                    activeBtn.style.color = 'white';
+                    activeBtn.style.borderColor = '#0891b2';
+                }
+            }
+            
+            // Update inactive buttons
+            document.querySelectorAll('.location-btn:not(.active)').forEach(btn => {
+                btn.style.background = 'white';
+                btn.style.color = 'var(--dark-forest)';
+                btn.style.borderColor = '#e5e7eb';
+            });
+            
+            // Update WiFi requirement display
+            const wifiRequirementDiv = document.querySelector('.wifi-requirement');
+            if (wifiRequirementDiv) {
+                wifiRequirementDiv.innerHTML = `<h4 style="color: #1e40af; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-lock"></i> Persyaratan Koneksi Wajib (${LOCATIONS[locationKey].name})</h4><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;"><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-wifi me-2"></i>WiFi SSID:</div><div style="background: white; padding: 0.5rem; border-radius: 8px; font-family: monospace;">${REQUIRED_WIFI.ssid}</div></div><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-lock me-2"></i>Security:</div><div style="background: white; padding: 0.5rem; border-radius: 8px;">${REQUIRED_WIFI.security}</div></div><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-map-marker-alt me-2"></i>Radius Maksimal:</div><div style="background: white; padding: 0.5rem; border-radius: 8px; font-weight: bold;">${GEOFENCE_RADIUS} meter dari titik WiFi</div></div></div>`;
+            }
+            
+            // Reinitialize map
+            if (map) {
+                map.remove();
+                map = null;
+            }
+            initMap();
+            
+            // Refresh location and validation
+            getCurrentLocation().then(() => {
+                validateAttendanceConditions();
+                showAlert(`✅ Beralih ke ${LOCATIONS[locationKey].name}`, 'success');
+            }).catch(err => {
+                console.error('Location error:', err);
+            });
         }
 
         function switchTab(tab) {
@@ -1082,35 +1180,78 @@
         async function checkIn() {
             const isValid = await validateAttendanceConditions();
             if (!isValid) { showAlert('❌ Tidak dapat Check In! Pastikan WiFi dan lokasi sudah sesuai.', 'danger'); return; }
+            
             const distance = getDistance(currentLocation.lat, currentLocation.lon, GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon);
             const now = new Date();
             const date = now.toISOString().split('T')[0];
             const time = now.toLocaleTimeString('id-ID');
-            const data = { username: currentUser.username, fullName: currentUser.fullName, date, checkIn: time, checkOut: null, approved: false, location: currentLocation, distance: Math.round(distance) };
+            
+            const data = { 
+                username: currentUser.username, 
+                fullName: currentUser.fullName, 
+                date, 
+                checkIn: time, 
+                checkOut: null, 
+                approved: false, 
+                location: currentLocation, 
+                distance: Math.round(distance),
+                locationName: LOCATIONS[selectedLocation].name,
+                wifiSSID: REQUIRED_WIFI.ssid
+            };
+            
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
-                    const { doc, setDoc, serverTimestamp } = window.firebaseModules;
-                    await setDoc(doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`), { ...data, timestamp: serverTimestamp() });
+                    const { doc, setDoc } = window.firebaseModules;
+                    const docData = { ...data, timestamp: new Date() };
+                    await setDoc(doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`), docData);
+                    console.log('✅ Data tersimpan ke Firebase:', docData);
                     showAlert('✅ Check In berhasil! (Cloud)', 'success');
-                } catch (e) { console.log('Firebase error, using local'); saveLocal(data); showAlert('✅ Check In berhasil! (Local)', 'success'); }
-            } else { saveLocal(data); showAlert('✅ Check In berhasil! (Local)', 'success'); }
+                } catch (e) { 
+                    console.error('Firebase error:', e); 
+                    saveLocal(data); 
+                    showAlert('✅ Check In berhasil! (Local)', 'success'); 
+                }
+            } else { 
+                saveLocal(data); 
+                showAlert('✅ Check In berhasil! (Local)', 'success'); 
+            }
+            
             setTimeout(() => loadAbsensi(currentUser), 1000);
         }
 
         async function checkOut() {
             const isValid = await validateAttendanceConditions();
             if (!isValid) { showAlert('❌ Tidak dapat Check Out! Pastikan WiFi dan lokasi sudah sesuai.', 'danger'); return; }
+            
             const distance = getDistance(currentLocation.lat, currentLocation.lon, GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon);
             const now = new Date();
             const date = now.toISOString().split('T')[0];
             const time = now.toLocaleTimeString('id-ID');
+            
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
-                    const { doc, updateDoc, serverTimestamp } = window.firebaseModules;
-                    await updateDoc(doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`), { checkOut: time, checkOutTimestamp: serverTimestamp(), checkOutLocation: currentLocation, checkOutDistance: Math.round(distance) });
+                    const { doc, updateDoc } = window.firebaseModules;
+                    const updateData = { 
+                        checkOut: time, 
+                        checkOutTimestamp: new Date(), 
+                        checkOutLocation: currentLocation, 
+                        checkOutDistance: Math.round(distance),
+                        checkOutLocationName: LOCATIONS[selectedLocation].name,
+                        checkOutWifiSSID: REQUIRED_WIFI.ssid
+                    };
+                    await updateDoc(doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`), updateData);
+                    console.log('✅ Data checkout tersimpan ke Firebase:', updateData);
                     showAlert('✅ Check Out berhasil! (Cloud)', 'success');
-                } catch (e) { console.log('Firebase error, using local'); updateLocal(date, time, distance); showAlert('✅ Check Out berhasil! (Local)', 'success'); }
-            } else { updateLocal(date, time, distance); showAlert('✅ Check Out berhasil! (Local)', 'success'); }
+                } catch (e) { 
+                    console.error('Firebase error:', e); 
+                    updateLocal(date, time, distance); 
+                    showAlert('✅ Check Out berhasil! (Local)', 'success'); 
+                }
+            } else { 
+                updateLocal(date, time, distance); 
+                showAlert('✅ Check Out berhasil! (Local)', 'success'); 
+            }
+            
             setTimeout(() => loadAbsensi(currentUser), 1000);
         }
 
