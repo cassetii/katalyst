@@ -362,9 +362,32 @@
         .status-approved { background: #d1fae5; color: #065f46; }
         .status-pending { background: #fef3c7; color: #92400e; }
         .status-incomplete { background: #fee2e2; color: #991b1b; }
-        .approve-btn { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease; }
+        .approve-btn { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease; margin-right: 0.5rem; }
         .approve-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
         .approve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .reject-btn { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease; }
+        .reject-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); }
+        .reject-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        
+        /* Modal Styles */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 10000; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
+        .modal-overlay.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-box { background: white; border-radius: 20px; padding: 2rem; width: 90%; max-width: 500px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid var(--beige); }
+        .modal-header h3 { margin: 0; color: var(--dark-forest); font-size: 1.5rem; }
+        .modal-body { margin-bottom: 1.5rem; }
+        .modal-label { display: block; font-weight: 600; color: var(--dark-forest); margin-bottom: 0.5rem; font-size: 0.95rem; }
+        .modal-textarea { width: 100%; min-height: 120px; padding: 1rem; border: 2px solid var(--beige); border-radius: 12px; font-size: 0.95rem; font-family: 'Segoe UI', sans-serif; resize: vertical; }
+        .modal-textarea:focus { border-color: var(--pine-green); outline: none; box-shadow: 0 0 0 3px rgba(110, 151, 38, 0.1); }
+        .modal-footer { display: flex; gap: 1rem; justify-content: flex-end; }
+        .modal-btn-cancel { padding: 0.8rem 1.5rem; background: var(--beige); color: var(--dark-forest); border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+        .modal-btn-cancel:hover { background: var(--tan); }
+        .modal-btn-submit { padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+        .modal-btn-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); }
+        .rejection-reason { font-size: 0.75rem; color: #dc2626; margin-top: 0.3rem; padding: 0.5rem; background: #fee2e2; border-radius: 6px; border-left: 3px solid #dc2626; }
         .filter-section { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: center; }
         .filter-input { padding: 0.8rem; border: 2px solid var(--beige); border-radius: 10px; font-size: 0.95rem; background: white; }
         .filter-btn { padding: 0.8rem 1.5rem; background: var(--pine-green); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
@@ -586,6 +609,36 @@
 
     <div id="absensiContainer" class="page-section"></div>
 
+    <!-- Modal Penolakan -->
+    <div id="rejectModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <i class="fas fa-times-circle" style="font-size: 2rem; color: #ef4444;"></i>
+                <div>
+                    <h3>Tolak Absensi</h3>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--sage-green);" id="rejectModalUsername"></p>
+                </div>
+            </div>
+            <div class="modal-body">
+                <label class="modal-label">
+                    <i class="fas fa-comment-alt me-2"></i>Alasan Penolakan <span style="color: #ef4444;">*</span>
+                </label>
+                <textarea id="rejectionReason" class="modal-textarea" placeholder="Contoh: Data lokasi tidak sesuai, Waktu check in terlambat, dll..." required></textarea>
+                <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">
+                    <i class="fas fa-info-circle me-1"></i>Alasan ini akan dilihat oleh karyawan
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn-cancel" onclick="closeRejectModal()">
+                    <i class="fas fa-times me-2"></i>Batal
+                </button>
+                <button class="modal-btn-submit" onclick="confirmRejectAttendance()">
+                    <i class="fas fa-ban me-2"></i>Tolak Absensi
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentUser = null;
         let map = null;
@@ -594,6 +647,7 @@
         let geofenceCircle = null;
         let validationInterval = null;
         let isValidForAttendance = false;
+        let currentRejectData = null; // Untuk menyimpan data yang akan ditolak
         
         // Konfigurasi 2 lokasi
         const LOCATIONS = {
@@ -654,6 +708,7 @@
         };
 
         let currentAbsensiView = 'check';
+        let tempRejectData = { username: '', date: '' }; // untuk menyimpan data sementara saat modal dibuka
 
         function getDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3;
@@ -1135,13 +1190,16 @@
                     // ✅ FIXED: Gunakan fungsi calculateWorkingHours yang baru
                     const totalHours = calculateWorkingHours(data.checkIn, data.checkOut);
                     
-                    // ✅ FIXED: Status approval yang benar
+                    // ✅ FIXED: Status approval yang benar + tambah status rejected
                     let status = 'incomplete';
                     let statusText = 'Belum Selesai';
                     
                     if (data.checkOut) {
-                        // Jika sudah checkout, cek apakah sudah disetujui
-                        if (data.approved === true) {
+                        // Jika sudah checkout, cek status
+                        if (data.rejected === true) {
+                            status = 'rejected';
+                            statusText = 'Ditolak';
+                        } else if (data.approved === true) {
                             status = 'approved';
                             statusText = 'Disetujui';
                         } else {
@@ -1151,12 +1209,22 @@
                     }
                     
                     const distanceText = data.distance ? data.distance + 'm' : '-';
-                    html += `<tr><td>${index + 1}</td><td><strong>${data.fullName}</strong></td><td>${formattedDate}</td><td>${dayName}</td><td><span style="color: #10b981;"><i class="fas fa-sign-in-alt me-1"></i>${data.checkIn || '-'}</span></td><td><span style="color: #ef4444;"><i class="fas fa-sign-out-alt me-1"></i>${data.checkOut || '-'}</span></td><td style="font-size: 0.85rem;"><i class="fas fa-wifi me-1"></i>${distanceText}</td><td><strong>${totalHours}</strong></td><td><span class="status-badge status-${status}">${statusText}</span></td>`;
+                    html += `<tr><td>${index + 1}</td><td><strong>${data.fullName}</strong>`;
+                    
+                    // Tampilkan alasan penolakan jika ditolak
+                    if (data.rejected && data.rejectionReason) {
+                        html += `<div class="rejection-reason"><i class="fas fa-info-circle me-1"></i><strong>Alasan:</strong> ${data.rejectionReason}</div>`;
+                    }
+                    
+                    html += `</td><td>${formattedDate}</td><td>${dayName}</td><td><span style="color: #10b981;"><i class="fas fa-sign-in-alt me-1"></i>${data.checkIn || '-'}</span></td><td><span style="color: #ef4444;"><i class="fas fa-sign-out-alt me-1"></i>${data.checkOut || '-'}</span></td><td style="font-size: 0.85rem;"><i class="fas fa-wifi me-1"></i>${distanceText}</td><td><strong>${totalHours}</strong></td><td><span class="status-badge status-${status}">${statusText}</span></td>`;
                     
                     if (currentUser.role === 'admin') { 
-                        // ✅ FIXED: Tombol approve hanya enabled jika sudah checkout dan belum disetujui
-                        const canApprove = data.checkOut && !data.approved;
-                        html += `<td><button class="approve-btn" onclick="approveAttendance('${data.username}', '${data.date}')" ${!canApprove ? 'disabled' : ''}><i class="fas fa-check me-1"></i>Setujui</button></td>`;
+                        // ✅ Tombol approve & reject hanya enabled jika sudah checkout dan belum disetujui/ditolak
+                        const canTakeAction = data.checkOut && !data.approved && !data.rejected;
+                        html += `<td style="white-space: nowrap;">`;
+                        html += `<button class="approve-btn" onclick="approveAttendance('${data.username}', '${data.date}')" ${!canTakeAction ? 'disabled' : ''}><i class="fas fa-check me-1"></i>Setujui</button>`;
+                        html += `<button class="reject-btn" onclick="openRejectModal('${data.username}', '${data.date}', '${data.fullName}')" ${!canTakeAction ? 'disabled' : ''}><i class="fas fa-times me-1"></i>Tolak</button>`;
+                        html += `</td>`;
                     }
                     html += '</tr>';
                 });
@@ -1375,6 +1443,107 @@
             document.getElementById('appSelectionPage').classList.add('active');
             if (map) { map.remove(); map = null; }
         }
+
+        // ========== FUNGSI REJECT ABSENSI ==========
+        
+        function openRejectModal(username, date, fullName) {
+            currentRejectData = { username, date, fullName };
+            
+            // Set data ke modal
+            document.getElementById('rejectModalUsername').textContent = `${fullName} - ${date}`;
+            document.getElementById('rejectionReason').value = '';
+            
+            // Tampilkan modal
+            const modal = document.getElementById('rejectModal');
+            modal.classList.add('active');
+            
+            // Focus ke textarea
+            setTimeout(() => {
+                document.getElementById('rejectionReason').focus();
+            }, 300);
+        }
+
+        function closeRejectModal() {
+            const modal = document.getElementById('rejectModal');
+            modal.classList.remove('active');
+            currentRejectData = null;
+            document.getElementById('rejectionReason').value = '';
+        }
+
+        async function confirmRejectAttendance() {
+            if (!currentRejectData) {
+                showAlert('❌ Data tidak valid!', 'danger');
+                return;
+            }
+            
+            const reason = document.getElementById('rejectionReason').value.trim();
+            
+            // Validasi alasan
+            if (!reason) {
+                showAlert('❌ Alasan penolakan harus diisi!', 'danger');
+                return;
+            }
+            
+            if (reason.length < 10) {
+                showAlert('❌ Alasan penolakan minimal 10 karakter!', 'danger');
+                return;
+            }
+            
+            const { username, date, fullName } = currentRejectData;
+            
+            // Konfirmasi
+            if (!confirm(`Yakin ingin menolak absensi ${fullName} pada tanggal ${date}?`)) {
+                return;
+            }
+            
+            // Proses reject
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
+                    const { doc, updateDoc } = window.firebaseModules;
+                    await updateDoc(doc(window.firebaseDb, 'attendance', `${username}_${date}`), {
+                        rejected: true,
+                        approved: false,
+                        rejectionReason: reason,
+                        rejectedBy: currentUser.fullName,
+                        rejectedAt: new Date().toISOString()
+                    });
+                    showAlert('✅ Absensi berhasil ditolak!', 'success');
+                } catch (e) {
+                    console.log('Firebase error, using local');
+                    rejectLocal(username, date, reason);
+                    showAlert('✅ Absensi ditolak! (Local)', 'success');
+                }
+            } else {
+                rejectLocal(username, date, reason);
+                showAlert('✅ Absensi ditolak! (Local)', 'success');
+            }
+            
+            // Tutup modal dan reload
+            closeRejectModal();
+            setTimeout(() => loadReports(), 500);
+        }
+
+        function rejectLocal(username, date, reason) {
+            const local = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+            if (local[date]) {
+                local[date].rejected = true;
+                local[date].approved = false;
+                local[date].rejectionReason = reason;
+                local[date].rejectedBy = currentUser.fullName;
+                local[date].rejectedAt = new Date().toISOString();
+                localStorage.setItem('attendance_' + username, JSON.stringify(local));
+            }
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('rejectModal');
+            if (event.target === modal) {
+                closeRejectModal();
+            }
+        });
+
+        // ========== END FUNGSI REJECT ==========
 
         function showAlert(msg, type) {
             document.querySelectorAll('.alert-custom').forEach(el => el.remove());
