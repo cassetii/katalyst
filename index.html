@@ -107,19 +107,28 @@
             -webkit-tap-highlight-color: transparent;
         }
         
+        html {
+            height: 100%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
             background: var(--cream);
             color: #333;
             line-height: 1.6;
+            min-height: 100vh;
             overflow-x: hidden;
+            overflow-y: auto;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
         }
         
         /* ========================================
            MOBILE NAVIGATION (Bottom Tab Bar)
-           Following Jakob's Law - Familiar Pattern
         ======================================== */
         .mobile-nav {
             position: fixed;
@@ -595,6 +604,7 @@
             height: 200px;
             border-radius: var(--radius-md);
             margin-bottom: var(--spacing-md);
+            touch-action: pan-x pan-y;
         }
         
         .time-display {
@@ -1029,6 +1039,7 @@
             overflow-y: auto;
             animation: slideUpModal 0.3s ease;
             z-index: calc(var(--z-modal) + 1);
+            -webkit-overflow-scrolling: touch;
         }
         
         @keyframes slideUpModal {
@@ -1610,6 +1621,7 @@
         let isValidForAttendance = false;
         let currentRejectData = null;
         let selectedLocation = 'pinuslo';
+        let touchStartY = 0;
 
         const LOCATIONS = {
             pinuslo: {
@@ -1742,26 +1754,28 @@
             }
         }
 
-        function showToast(message, type) {
-            if (type === void 0) { type = 'success'; }
-            
+        function showToast(message, type = 'success') {
             // Remove existing toasts
-            document.querySelectorAll('.toast').forEach(function(el) { 
-                el.remove(); 
-            });
+            document.querySelectorAll('.toast').forEach(el => el.remove());
             
             const toast = document.createElement('div');
-            toast.className = 'toast ' + type;
+            toast.className = `toast ${type}`;
             
             const icon = type === 'success' ? 'fa-check-circle' : 
                         type === 'error' ? 'fa-exclamation-triangle' : 
                         'fa-info-circle';
             
-            toast.innerHTML = '<i class="fas ' + icon + '"></i><div class="toast-content">' + message + '</div><button class="toast-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>';
+            toast.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <div class="toast-content">${message}</div>
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
             
             document.body.appendChild(toast);
             
-            setTimeout(function() {
+            setTimeout(() => {
                 if (toast.parentElement) toast.remove();
             }, 5000);
         }
@@ -1771,23 +1785,19 @@
         // ============================================
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
-            loginForm.addEventListener('submit', function(e) {
+            loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value;
                 
-                const user = allUsers.find(function(u) { 
-                    return u.username === username && u.password === password; 
-                });
+                const user = allUsers.find(u => u.username === username && u.password === password);
                 
                 if (user) {
                     currentUser = user;
                     localStorage.setItem('pinuslo_user', JSON.stringify(user));
-                    showToast('Selamat datang, ' + user.fullName + '!', 'success');
-                    setTimeout(function() { 
-                        showAppSelection(user); 
-                    }, 500);
+                    showToast(`Selamat datang, ${user.fullName}!`, 'success');
+                    setTimeout(() => showAppSelection(user), 500);
                 } else {
                     showToast('Username atau password salah!', 'error');
                 }
@@ -1814,34 +1824,33 @@
         }
 
         function showAppSelection(user) {
-            // Hide login page
             document.getElementById('loginPage').classList.remove('active');
             document.getElementById('appSelectionPage').classList.add('active');
             
-            // Update user info
             document.getElementById('userAvatar').textContent = user.fullName.charAt(0).toUpperCase();
             document.getElementById('userName').textContent = user.fullName;
             document.getElementById('userRole').textContent = user.role === 'admin' ? 'Administrator' : 'Staff';
             
-            // Generate app cards
             const appsGrid = document.getElementById('appsGrid');
             appsGrid.innerHTML = '';
             
-            Object.keys(appConfig).forEach(function(appKey) {
+            Object.keys(appConfig).forEach(appKey => {
                 if (user.apps.includes(appKey)) {
                     const app = appConfig[appKey];
                     const card = document.createElement('div');
-                    card.className = 'app-card ' + appKey;
-                    card.innerHTML = '<div class="app-icon"><i class="fas ' + app.icon + '"></i></div><div class="app-name">' + app.name + '</div><div class="app-desc">' + app.desc + '</div>';
+                    card.className = `app-card ${appKey}`;
+                    card.innerHTML = `
+                        <div class="app-icon"><i class="fas ${app.icon}"></i></div>
+                        <div class="app-name">${app.name}</div>
+                        <div class="app-desc">${app.desc}</div>
+                    `;
                     
-                    card.addEventListener('click', function() {
+                    card.addEventListener('click', () => {
                         if (appKey === 'absensi') {
                             loadAbsensi(user);
                         } else if (appUrls[appKey]) {
-                            showToast('Membuka ' + app.name + '...', 'success');
-                            setTimeout(function() { 
-                                window.open(appUrls[appKey], '_blank'); 
-                            }, 500);
+                            showToast(`Membuka ${app.name}...`, 'success');
+                            setTimeout(() => window.open(appUrls[appKey], '_blank'), 500);
                         }
                     });
                     
@@ -1856,10 +1865,7 @@
                 currentUser = null;
                 localStorage.removeItem('pinuslo_user');
                 
-                // Reset all pages
-                document.querySelectorAll('.page-section').forEach(function(s) { 
-                    s.classList.remove('active'); 
-                });
+                document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
                 document.getElementById('loginPage').classList.add('active');
                 document.getElementById('loginForm').reset();
                 
@@ -1874,32 +1880,24 @@
             document.getElementById('appSelectionPage').classList.remove('active');
             document.getElementById('absensiPage').classList.add('active');
             
-            // Show reports nav for admin
             if (user.role === 'admin') {
                 document.getElementById('navReports').style.display = 'flex';
             }
             
-            // Initialize map and location
-            setTimeout(function() {
+            setTimeout(() => {
                 initMap();
                 getCurrentLocation()
-                    .then(function() { 
-                        return startValidationMonitoring(); 
-                    })
-                    .catch(function(err) {
+                    .then(() => startValidationMonitoring())
+                    .catch(err => {
                         console.error('Location error:', err);
                         showToast('Gagal mendapatkan lokasi. Aktifkan GPS Anda.', 'warning');
                     });
             }, 300);
             
-            // Start clock
             updateClock();
             setInterval(updateClock, 1000);
             
-            // Load today's attendance
             await loadTodayAttendance();
-            
-            // Load history
             await loadHistory(user.username);
         }
 
@@ -1931,20 +1929,43 @@
             if (todayData) {
                 const totalHours = calculateWorkingHours(todayData.checkIn, todayData.checkOut);
                 
-                let html = '<div class="info-row"><div class="info-label"><i class="fas fa-sign-in-alt" style="color: #10b981;"></i>Check In</div><div class="info-value">' + (todayData.checkIn || '-') + '</div></div>';
-                html += '<div class="info-row"><div class="info-label"><i class="fas fa-sign-out-alt" style="color: #ef4444;"></i>Check Out</div><div class="info-value">' + (todayData.checkOut || '-') + '</div></div>';
+                let html = `
+                    <div class="info-row">
+                        <div class="info-label"><i class="fas fa-sign-in-alt" style="color: #10b981;"></i>Check In</div>
+                        <div class="info-value">${todayData.checkIn || '-'}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label"><i class="fas fa-sign-out-alt" style="color: #ef4444;"></i>Check Out</div>
+                        <div class="info-value">${todayData.checkOut || '-'}</div>
+                    </div>
+                `;
                 
                 if (todayData.distance) {
-                    html += '<div class="info-row"><div class="info-label"><i class="fas fa-map-pin"></i>Jarak WiFi</div><div class="info-value">' + todayData.distance + 'm</div></div>';
+                    html += `
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-map-pin"></i>Jarak WiFi</div>
+                            <div class="info-value">${todayData.distance}m</div>
+                        </div>
+                    `;
                 }
                 
                 if (todayData.checkOut) {
-                    html += '<div class="info-row"><div class="info-label"><i class="fas fa-clock"></i>Total Jam Kerja</div><div class="info-value" style="color: #6e9726;">' + totalHours + '</div></div>';
+                    html += `
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-clock"></i>Total Jam Kerja</div>
+                            <div class="info-value" style="color: #6e9726;">${totalHours}</div>
+                        </div>
+                    `;
                 }
                 
                 attendanceInfo.innerHTML = html;
             } else {
-                attendanceInfo.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-times"></i><p>Belum ada data absensi hari ini</p></div>';
+                attendanceInfo.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>Belum ada data absensi hari ini</p>
+                    </div>
+                `;
             }
             
             validateAttendanceConditions();
@@ -1967,7 +1988,7 @@
                 weight: 2
             }).addTo(map);
             
-            geofenceCircle.bindPopup('<strong>' + LOCATIONS[selectedLocation].name + '</strong><br>Radius: ' + GEOFENCE_RADIUS + 'm');
+            geofenceCircle.bindPopup(`<strong>${LOCATIONS[selectedLocation].name}</strong><br>Radius: ${GEOFENCE_RADIUS}m`);
             
             const centerIcon = L.divIcon({
                 html: '<div style="background: #dc2626; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
@@ -1981,7 +2002,7 @@
         }
 
         function getCurrentLocation() {
-            return new Promise(function(resolve, reject) {
+            return new Promise((resolve, reject) => {
                 if (!navigator.geolocation) {
                     reject(new Error('Geolocation tidak didukung'));
                     return;
@@ -1990,21 +2011,33 @@
                 const locationStatus = document.getElementById('locationStatus');
                 if (locationStatus) {
                     locationStatus.className = 'status-item warning';
-                    locationStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i><div class="status-content"><strong>Mendapatkan lokasi...</strong><small>Mohon tunggu</small></div>';
+                    locationStatus.innerHTML = `
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <div class="status-content">
+                            <strong>Mendapatkan lokasi...</strong>
+                            <small>Mohon tunggu</small>
+                        </div>
+                    `;
                 }
                 
                 navigator.geolocation.getCurrentPosition(
-                    function(position) {
+                    (position) => {
                         const lat = position.coords.latitude;
                         const lon = position.coords.longitude;
                         updateUserLocation(lat, lon);
-                        resolve({ lat: lat, lon: lon });
+                        resolve({ lat, lon });
                     },
-                    function(error) {
+                    (error) => {
                         const locationStatus = document.getElementById('locationStatus');
                         if (locationStatus) {
                             locationStatus.className = 'status-item error';
-                            locationStatus.innerHTML = '<i class="fas fa-times-circle"></i><div class="status-content"><strong>Gagal mendapatkan lokasi</strong><small>Aktifkan GPS Anda</small></div>';
+                            locationStatus.innerHTML = `
+                                <i class="fas fa-times-circle"></i>
+                                <div class="status-content">
+                                    <strong>Gagal mendapatkan lokasi</strong>
+                                    <small>Aktifkan GPS Anda</small>
+                                </div>
+                            `;
                         }
                         reject(error);
                     },
@@ -2014,7 +2047,7 @@
         }
 
         function updateUserLocation(lat, lon) {
-            currentLocation = { lat: lat, lon: lon };
+            currentLocation = { lat, lon };
             
             if (userMarker) map.removeLayer(userMarker);
             
@@ -2022,13 +2055,13 @@
             const isInside = distance <= GEOFENCE_RADIUS;
             
             const icon = L.divIcon({
-                html: '<div style="background: ' + (isInside ? '#10b981' : '#ef4444') + '; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>',
+                html: `<div style="background: ${isInside ? '#10b981' : '#ef4444'}; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>`,
                 iconSize: [16, 16],
                 className: ''
             });
             
-            userMarker = L.marker([lat, lon], { icon: icon }).addTo(map);
-            userMarker.bindPopup('<strong>Lokasi Anda</strong><br>' + (isInside ? '✅ Di dalam area' : '❌ Di luar area') + '<br>Jarak: ' + Math.round(distance) + 'm');
+            userMarker = L.marker([lat, lon], { icon }).addTo(map);
+            userMarker.bindPopup(`<strong>Lokasi Anda</strong><br>${isInside ? '✅ Di dalam area' : '❌ Di luar area'}<br>Jarak: ${Math.round(distance)}m`);
             
             map.setView([lat, lon], 17);
             
@@ -2036,10 +2069,22 @@
             if (locationStatus) {
                 if (isInside) {
                     locationStatus.className = 'status-item success';
-                    locationStatus.innerHTML = '<i class="fas fa-check-circle"></i><div class="status-content"><strong>Lokasi Valid ✅</strong><small>Jarak: ' + Math.round(distance) + 'm dari WiFi</small></div>';
+                    locationStatus.innerHTML = `
+                        <i class="fas fa-check-circle"></i>
+                        <div class="status-content">
+                            <strong>Lokasi Valid ✅</strong>
+                            <small>Jarak: ${Math.round(distance)}m dari WiFi</small>
+                        </div>
+                    `;
                 } else {
                     locationStatus.className = 'status-item error';
-                    locationStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i><div class="status-content"><strong>Lokasi Tidak Valid ❌</strong><small>Anda ' + Math.round(distance) + 'm dari area (max ' + GEOFENCE_RADIUS + 'm)</small></div>';
+                    locationStatus.innerHTML = `
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="status-content">
+                            <strong>Lokasi Tidak Valid ❌</strong>
+                            <small>Anda ${Math.round(distance)}m dari area (max ${GEOFENCE_RADIUS}m)</small>
+                        </div>
+                    `;
                 }
             }
             
@@ -2052,16 +2097,34 @@
             if (!wifiStatus) return;
             
             wifiStatus.className = 'status-item warning';
-            wifiStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i><div class="status-content"><strong>Memeriksa WiFi...</strong><small>Mohon tunggu</small></div>';
+            wifiStatus.innerHTML = `
+                <i class="fas fa-spinner fa-spin"></i>
+                <div class="status-content">
+                    <strong>Memeriksa WiFi...</strong>
+                    <small>Mohon tunggu</small>
+                </div>
+            `;
             
             const wifiCheck = await checkWiFiConnection();
             
             if (wifiCheck.connected) {
                 wifiStatus.className = 'status-item success';
-                wifiStatus.innerHTML = '<i class="fas fa-wifi"></i><div class="status-content"><strong>WiFi Terhubung ✅</strong><small>' + REQUIRED_WIFI.ssid + '</small></div>';
+                wifiStatus.innerHTML = `
+                    <i class="fas fa-wifi"></i>
+                    <div class="status-content">
+                        <strong>WiFi Terhubung ✅</strong>
+                        <small>${REQUIRED_WIFI.ssid}</small>
+                    </div>
+                `;
             } else {
                 wifiStatus.className = 'status-item error';
-                wifiStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i><div class="status-content"><strong>WiFi Tidak Terhubung ❌</strong><small>' + wifiCheck.reason + '</small></div>';
+                wifiStatus.innerHTML = `
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div class="status-content">
+                        <strong>WiFi Tidak Terhubung ❌</strong>
+                        <small>${wifiCheck.reason}</small>
+                    </div>
+                `;
             }
         }
 
@@ -2087,7 +2150,7 @@
                 } else {
                     return { 
                         connected: false, 
-                        reason: 'Terlalu jauh (' + Math.round(distance) + 'm)',
+                        reason: `Terlalu jauh (${Math.round(distance)}m)`,
                         distance: Math.round(distance)
                     };
                 }
@@ -2117,14 +2180,12 @@
             const isIn = todayData && todayData.checkIn && !todayData.checkOut;
             const isDone = todayData && todayData.checkOut;
             
-            // Check In button
             if (!isValidForAttendance || isIn || isDone) {
                 checkInBtn.disabled = true;
             } else {
                 checkInBtn.disabled = false;
             }
             
-            // Check Out button
             if (!isValidForAttendance || !isIn || isDone) {
                 checkOutBtn.disabled = true;
             } else {
@@ -2135,9 +2196,7 @@
         function startValidationMonitoring() {
             if (validationInterval) clearInterval(validationInterval);
             validateAttendanceConditions();
-            validationInterval = setInterval(function() { 
-                return validateAttendanceConditions(); 
-            }, 5000);
+            validationInterval = setInterval(() => validateAttendanceConditions(), 5000);
         }
 
         function stopValidationMonitoring() {
@@ -2149,13 +2208,11 @@
 
         function refreshLocation() {
             getCurrentLocation()
-                .then(function() {
+                .then(() => {
                     showToast('✅ Lokasi diperbarui!', 'success');
                     validateAttendanceConditions();
                 })
-                .catch(function(err) { 
-                    return showToast('Gagal: ' + err.message, 'error'); 
-                });
+                .catch(err => showToast(`Gagal: ${err.message}`, 'error'));
         }
 
         function switchLocation(locationKey) {
@@ -2164,13 +2221,9 @@
             GEOFENCE_RADIUS = LOCATIONS[locationKey].radius;
             REQUIRED_WIFI = LOCATIONS[locationKey].wifi;
             
-            // Update UI
-            document.querySelectorAll('.location-btn').forEach(function(btn) {
-                btn.classList.remove('active');
-            });
-            document.getElementById('locBtn_' + locationKey).classList.add('active');
+            document.querySelectorAll('.location-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`locBtn_${locationKey}`).classList.add('active');
             
-            // Re-initialize map
             if (map) {
                 map.remove();
                 map = null;
@@ -2178,13 +2231,11 @@
             initMap();
             
             getCurrentLocation()
-                .then(function() {
+                .then(() => {
                     validateAttendanceConditions();
-                    showToast('✅ Beralih ke ' + LOCATIONS[locationKey].name, 'success');
+                    showToast(`✅ Beralih ke ${LOCATIONS[locationKey].name}`, 'success');
                 })
-                .catch(function(err) { 
-                    return console.error('Location error:', err); 
-                });
+                .catch(err => console.error('Location error:', err));
         }
 
         async function checkIn() {
@@ -2208,7 +2259,7 @@
             const data = {
                 username: currentUser.username,
                 fullName: currentUser.fullName,
-                date: date,
+                date,
                 checkIn: time,
                 checkOut: null,
                 approved: false,
@@ -2221,9 +2272,9 @@
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
                     const modules = window.firebaseModules;
-                    const docData = Object.assign({}, data, { timestamp: new Date() });
+                    const docData = { ...data, timestamp: new Date() };
                     await modules.setDoc(
-                        modules.doc(window.firebaseDb, 'attendance', currentUser.username + '_' + date),
+                        modules.doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`),
                         docData
                     );
                     showToast('✅ Check In berhasil!', 'success');
@@ -2237,9 +2288,7 @@
                 showToast('✅ Check In berhasil! (Local)', 'success');
             }
             
-            setTimeout(function() { 
-                return loadTodayAttendance(); 
-            }, 500);
+            setTimeout(() => loadTodayAttendance(), 500);
         }
 
         async function checkOut() {
@@ -2264,7 +2313,7 @@
                 try {
                     const modules = window.firebaseModules;
                     await modules.updateDoc(
-                        modules.doc(window.firebaseDb, 'attendance', currentUser.username + '_' + date),
+                        modules.doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`),
                         {
                             checkOut: time,
                             checkOutTimestamp: new Date(),
@@ -2285,25 +2334,25 @@
                 showToast('✅ Check Out berhasil! (Local)', 'success');
             }
             
-            setTimeout(function() {
+            setTimeout(() => {
                 loadTodayAttendance();
                 loadHistory(currentUser.username);
             }, 500);
         }
 
         function saveLocal(data) {
-            const local = JSON.parse(localStorage.getItem('attendance_' + currentUser.username) || '{}');
+            const local = JSON.parse(localStorage.getItem(`attendance_${currentUser.username}`) || '{}');
             local[data.date] = data;
-            localStorage.setItem('attendance_' + currentUser.username, JSON.stringify(local));
+            localStorage.setItem(`attendance_${currentUser.username}`, JSON.stringify(local));
         }
 
         function updateLocal(date, time, distance) {
-            const local = JSON.parse(localStorage.getItem('attendance_' + currentUser.username) || '{}');
+            const local = JSON.parse(localStorage.getItem(`attendance_${currentUser.username}`) || '{}');
             if (local[date]) {
                 local[date].checkOut = time;
                 local[date].checkOutLocation = currentLocation;
                 local[date].checkOutDistance = Math.round(distance);
-                localStorage.setItem('attendance_' + currentUser.username, JSON.stringify(local));
+                localStorage.setItem(`attendance_${currentUser.username}`, JSON.stringify(local));
             }
         }
 
@@ -2312,7 +2361,7 @@
                 try {
                     const modules = window.firebaseModules;
                     const docSnap = await modules.getDoc(
-                        modules.doc(window.firebaseDb, 'attendance', username + '_' + date)
+                        modules.doc(window.firebaseDb, 'attendance', `${username}_${date}`)
                     );
                     return docSnap.exists() ? docSnap.data() : null;
                 } catch (e) {
@@ -2320,13 +2369,11 @@
                 }
             }
             
-            const local = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+            const local = JSON.parse(localStorage.getItem(`attendance_${username}`) || '{}');
             return local[date] || null;
         }
 
-        async function loadHistory(username, limitCount) {
-            if (limitCount === void 0) { limitCount = 30; }
-            
+        async function loadHistory(username, limitCount = 30) {
             let data = {};
             
             if (window.firebaseEnabled && window.firebaseDb) {
@@ -2339,7 +2386,7 @@
                         modules.limit(limitCount)
                     );
                     const snap = await modules.getDocs(q);
-                    snap.forEach(function(doc) {
+                    snap.forEach(doc => {
                         const d = doc.data();
                         data[d.date] = d;
                     });
@@ -2349,20 +2396,25 @@
             }
             
             if (Object.keys(data).length === 0) {
-                data = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+                data = JSON.parse(localStorage.getItem(`attendance_${username}`) || '{}');
             }
             
             const historyList = document.getElementById('historyList');
             if (!historyList) return;
             
             if (Object.keys(data).length === 0) {
-                historyList.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-times"></i><p>Belum ada riwayat absensi</p></div>';
+                historyList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>Belum ada riwayat absensi</p>
+                    </div>
+                `;
                 return;
             }
             
             const dates = Object.keys(data).sort().reverse().slice(0, limitCount);
             
-            historyList.innerHTML = dates.map(function(date) {
+            historyList.innerHTML = dates.map(date => {
                 const d = data[date];
                 const dateObj = new Date(date + 'T00:00:00');
                 const formatted = dateObj.toLocaleDateString('id-ID', {
@@ -2385,10 +2437,27 @@
                     statusBadge = '<span class="status-badge status-incomplete">Belum Selesai</span>';
                 }
                 
-                let html = '<div class="history-item"><div class="history-date">' + formatted + '</div><div class="history-times"><div class="time-badge in"><i class="fas fa-sign-in-alt"></i><span>' + (d.checkIn || '-') + '</span></div><div class="time-badge out"><i class="fas fa-sign-out-alt"></i><span>' + (d.checkOut || '-') + '</span></div></div><div class="history-meta"><span><i class="fas fa-clock"></i> ' + workHours + '</span>' + statusBadge + '</div>';
+                let html = `
+                    <div class="history-item">
+                        <div class="history-date">${formatted}</div>
+                        <div class="history-times">
+                            <div class="time-badge in">
+                                <i class="fas fa-sign-in-alt"></i>
+                                <span>${d.checkIn || '-'}</span>
+                            </div>
+                            <div class="time-badge out">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>${d.checkOut || '-'}</span>
+                            </div>
+                        </div>
+                        <div class="history-meta">
+                            <span><i class="fas fa-clock"></i> ${workHours}</span>
+                            ${statusBadge}
+                        </div>
+                `;
                 
                 if (d.rejected && d.rejectionReason) {
-                    html += '<div class="rejection-reason"><strong>Alasan:</strong> ' + d.rejectionReason + '</div>';
+                    html += `<div class="rejection-reason"><strong>Alasan:</strong> ${d.rejectionReason}</div>`;
                 }
                 
                 html += '</div>';
@@ -2409,7 +2478,6 @@
                 document.getElementById('absensiPage').classList.remove('active');
                 document.getElementById('reportsPage').classList.add('active');
                 
-                // Set today's date
                 document.getElementById('reportDate').value = new Date().toISOString().split('T')[0];
                 loadReports();
             }
@@ -2440,9 +2508,7 @@
             const reportDate = new Date(document.getElementById('reportDate').value);
             
             let allData = {};
-            for (const user of allUsers.filter(function(u) { 
-                return u.apps.includes('absensi'); 
-            })) {
+            for (const user of allUsers.filter(u => u.apps.includes('absensi'))) {
                 const userData = await loadAllUserData(user.username);
                 Object.assign(allData, userData);
             }
@@ -2453,38 +2519,43 @@
             if (reportType === 'daily') {
                 const targetDate = reportDate.toISOString().split('T')[0];
                 filteredData = dates
-                    .filter(function(d) { return d === targetDate; })
-                    .map(function(d) { return allData[d]; });
+                    .filter(d => d === targetDate)
+                    .map(d => allData[d]);
             } else if (reportType === 'weekly') {
                 const weekStart = new Date(reportDate);
                 weekStart.setDate(weekStart.getDate() - weekStart.getDay());
                 const weekEnd = new Date(weekStart);
                 weekEnd.setDate(weekEnd.getDate() + 6);
                 filteredData = dates
-                    .filter(function(d) {
+                    .filter(d => {
                         const date = new Date(d);
                         return date >= weekStart && date <= weekEnd;
                     })
-                    .map(function(d) { return allData[d]; });
+                    .map(d => allData[d]);
             } else if (reportType === 'monthly') {
                 const month = reportDate.getMonth();
                 const year = reportDate.getFullYear();
                 filteredData = dates
-                    .filter(function(d) {
+                    .filter(d => {
                         const date = new Date(d);
                         return date.getMonth() === month && date.getFullYear() === year;
                     })
-                    .map(function(d) { return allData[d]; });
+                    .map(d => allData[d]);
             }
             
             const reportsList = document.getElementById('reportsList');
             
             if (filteredData.length === 0) {
-                reportsList.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>Tidak ada data untuk periode ini</p></div>';
+                reportsList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>Tidak ada data untuk periode ini</p>
+                    </div>
+                `;
                 return;
             }
             
-            reportsList.innerHTML = filteredData.map(function(data) {
+            reportsList.innerHTML = filteredData.map(data => {
                 const date = new Date(data.date);
                 const formattedDate = date.toLocaleDateString('id-ID', {
                     weekday: 'short',
@@ -2513,13 +2584,50 @@
                 
                 const canTakeAction = data.checkOut && !data.approved && !data.rejected;
                 
-                let html = '<div class="report-item"><div class="report-header"><div class="report-user"><h4>' + data.fullName + '</h4><p>' + formattedDate + '</p></div><span class="status-badge status-' + status + '">' + statusText + '</span></div><div class="report-details"><div class="detail-item"><span class="detail-label">Check In</span><span class="detail-value">' + (data.checkIn || '-') + '</span></div><div class="detail-item"><span class="detail-label">Check Out</span><span class="detail-value">' + (data.checkOut || '-') + '</span></div><div class="detail-item"><span class="detail-label">Jarak WiFi</span><span class="detail-value">' + (data.distance ? data.distance + 'm' : '-') + '</span></div><div class="detail-item"><span class="detail-label">Total Jam</span><span class="detail-value">' + totalHours + '</span></div></div>';
+                let html = `
+                    <div class="report-item">
+                        <div class="report-header">
+                            <div class="report-user">
+                                <h4>${data.fullName}</h4>
+                                <p>${formattedDate}</p>
+                            </div>
+                            <span class="status-badge status-${status}">${statusText}</span>
+                        </div>
+                        <div class="report-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Check In</span>
+                                <span class="detail-value">${data.checkIn || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Check Out</span>
+                                <span class="detail-value">${data.checkOut || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Jarak WiFi</span>
+                                <span class="detail-value">${data.distance ? data.distance + 'm' : '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Total Jam</span>
+                                <span class="detail-value">${totalHours}</span>
+                            </div>
+                        </div>
+                `;
                 
                 if (data.rejected && data.rejectionReason) {
-                    html += '<div class="rejection-reason"><strong>Alasan Penolakan:</strong> ' + data.rejectionReason + '</div>';
+                    html += `<div class="rejection-reason"><strong>Alasan Penolakan:</strong> ${data.rejectionReason}</div>`;
                 }
                 
-                html += '<div class="report-actions"><button class="btn-approve" onclick="approveAttendance(\'' + data.username + '\', \'' + data.date + '\')" ' + (!canTakeAction ? 'disabled' : '') + '><i class="fas fa-check"></i>Setujui</button><button class="btn-reject" onclick="openRejectModal(\'' + data.username + '\', \'' + data.date + '\', \'' + data.fullName + '\')" ' + (!canTakeAction ? 'disabled' : '') + '><i class="fas fa-times"></i>Tolak</button></div></div>';
+                html += `
+                        <div class="report-actions">
+                            <button class="btn-approve" onclick="approveAttendance('${data.username}', '${data.date}')" ${!canTakeAction ? 'disabled' : ''}>
+                                <i class="fas fa-check"></i>Setujui
+                            </button>
+                            <button class="btn-reject" onclick="openRejectModal('${data.username}', '${data.date}', '${data.fullName}')" ${!canTakeAction ? 'disabled' : ''}>
+                                <i class="fas fa-times"></i>Tolak
+                            </button>
+                        </div>
+                    </div>
+                `;
                 
                 return html;
             }).join('');
@@ -2536,7 +2644,7 @@
                         modules.where('username', '==', username)
                     );
                     const snap = await modules.getDocs(q);
-                    snap.forEach(function(doc) {
+                    snap.forEach(doc => {
                         const d = doc.data();
                         data[d.date] = d;
                     });
@@ -2546,7 +2654,7 @@
             }
             
             if (Object.keys(data).length === 0) {
-                data = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+                data = JSON.parse(localStorage.getItem(`attendance_${username}`) || '{}');
             }
             
             return data;
@@ -2557,7 +2665,7 @@
                 try {
                     const modules = window.firebaseModules;
                     await modules.updateDoc(
-                        modules.doc(window.firebaseDb, 'attendance', username + '_' + date),
+                        modules.doc(window.firebaseDb, 'attendance', `${username}_${date}`),
                         {
                             approved: true,
                             approvedBy: currentUser.fullName,
@@ -2575,30 +2683,28 @@
                 showToast('✅ Absensi disetujui! (Local)', 'success');
             }
             
-            setTimeout(function() { 
-                return loadReports(); 
-            }, 500);
+            setTimeout(() => loadReports(), 500);
         }
 
         function approveLocal(username, date) {
-            const local = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+            const local = JSON.parse(localStorage.getItem(`attendance_${username}`) || '{}');
             if (local[date]) {
                 local[date].approved = true;
                 local[date].approvedBy = currentUser.fullName;
                 local[date].approvedAt = new Date().toISOString();
-                localStorage.setItem('attendance_' + username, JSON.stringify(local));
+                localStorage.setItem(`attendance_${username}`, JSON.stringify(local));
             }
         }
 
         function openRejectModal(username, date, fullName) {
-            currentRejectData = { username: username, date: date, fullName: fullName };
+            currentRejectData = { username, date, fullName };
             
-            document.getElementById('rejectModalUser').textContent = fullName + ' - ' + date;
+            document.getElementById('rejectModalUser').textContent = `${fullName} - ${date}`;
             document.getElementById('rejectionReason').value = '';
             
             document.getElementById('rejectModal').classList.add('active');
             
-            setTimeout(function() {
+            setTimeout(() => {
                 document.getElementById('rejectionReason').focus();
             }, 300);
         }
@@ -2627,11 +2733,9 @@
                 return;
             }
             
-            const username = currentRejectData.username;
-            const date = currentRejectData.date;
-            const fullName = currentRejectData.fullName;
+            const { username, date, fullName } = currentRejectData;
             
-            if (!confirm('Yakin menolak absensi ' + fullName + '?')) {
+            if (!confirm(`Yakin menolak absensi ${fullName}?`)) {
                 return;
             }
             
@@ -2639,7 +2743,7 @@
                 try {
                     const modules = window.firebaseModules;
                     await modules.updateDoc(
-                        modules.doc(window.firebaseDb, 'attendance', username + '_' + date),
+                        modules.doc(window.firebaseDb, 'attendance', `${username}_${date}`),
                         {
                             rejected: true,
                             approved: false,
@@ -2660,20 +2764,18 @@
             }
             
             closeRejectModal();
-            setTimeout(function() { 
-                return loadReports(); 
-            }, 500);
+            setTimeout(() => loadReports(), 500);
         }
 
         function rejectLocal(username, date, reason) {
-            const local = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+            const local = JSON.parse(localStorage.getItem(`attendance_${username}`) || '{}');
             if (local[date]) {
                 local[date].rejected = true;
                 local[date].approved = false;
                 local[date].rejectionReason = reason;
                 local[date].rejectedBy = currentUser.fullName;
                 local[date].rejectedAt = new Date().toISOString();
-                localStorage.setItem('attendance_' + username, JSON.stringify(local));
+                localStorage.setItem(`attendance_${username}`, JSON.stringify(local));
             }
         }
 
@@ -2681,7 +2783,7 @@
             const reportType = document.getElementById('reportType').value;
             const reportDate = document.getElementById('reportDate').value;
             
-            const filename = 'Laporan_Absensi_' + reportType + '_' + reportDate + '.csv';
+            const filename = `Laporan_Absensi_${reportType}_${reportDate}.csv`;
             
             const reportsList = document.getElementById('reportsList');
             if (!reportsList || reportsList.children.length === 0) {
@@ -2692,7 +2794,7 @@
             let csv = 'Nama,Tanggal,Check In,Check Out,Total Jam,Jarak WiFi,Status\n';
             
             const items = reportsList.querySelectorAll('.report-item');
-            items.forEach(function(item) {
+            items.forEach(item => {
                 const name = item.querySelector('.report-user h4').textContent;
                 const date = item.querySelector('.report-user p').textContent;
                 const details = item.querySelectorAll('.detail-value');
@@ -2702,7 +2804,7 @@
                 const totalHours = details[3].textContent;
                 const status = item.querySelector('.status-badge').textContent;
                 
-                csv += '"' + name + '","' + date + '","' + checkIn + '","' + checkOut + '","' + totalHours + '","' + distance + '","' + status + '"\n';
+                csv += `"${name}","${date}","${checkIn}","${checkOut}","${totalHours}","${distance}","${status}"\n`;
             });
             
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -2719,18 +2821,43 @@
         // ============================================
         const rejectModal = document.getElementById('rejectModal');
         if (rejectModal) {
-            rejectModal.addEventListener('click', function(e) {
-                if (e.target === this) {
+            rejectModal.addEventListener('click', (e) => {
+                if (e.target === rejectModal) {
                     closeRejectModal();
                 }
             });
         }
 
         // ============================================
+        // IMPROVED PULL-TO-REFRESH PREVENTION
+        // ============================================
+        document.body.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.body.addEventListener('touchmove', (e) => {
+            // Allow scrolling in modal sheets and maps
+            if (e.target.closest('.modal-sheet') || 
+                e.target.closest('#map') ||
+                e.target.closest('.history-list') ||
+                e.target.closest('#reportsList')) {
+                return;
+            }
+            
+            const touchY = e.touches[0].clientY;
+            const touchDiff = touchY - touchStartY;
+            
+            // Only prevent pull-to-refresh when at top AND pulling down
+            if (window.scrollY === 0 && touchDiff > 0 && touchDiff < 150) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // ============================================
         // INITIALIZATION
         // ============================================
-        window.addEventListener('load', function() {
-            setTimeout(function() {
+        window.addEventListener('load', () => {
+            setTimeout(() => {
                 const saved = localStorage.getItem('pinuslo_user');
                 if (saved) {
                     const user = JSON.parse(saved);
@@ -2738,20 +2865,21 @@
                     showAppSelection(user);
                 }
                 
-                console.log('🚀 Pinuslo Apps - Mobile Optimized');
+                console.log('🚀 Pinuslo Apps - Mobile Optimized (FIXED)');
                 console.log(window.firebaseEnabled ? '✅ Firebase Connected' : '⚠️ Firebase Offline');
+                console.log('✅ Scroll functionality restored');
             }, 500);
         });
 
-        // Prevent pull-to-refresh on iOS
-        document.body.addEventListener('touchmove', function(e) {
-            if (e.target.closest('.modal-sheet') || e.target.closest('#map')) {
-                return;
-            }
-            if (document.body.scrollTop === 0) {
+        // Prevent zoom on double-tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
                 e.preventDefault();
             }
-        }, { passive: false });
+            lastTouchEnd = now;
+        }, false);
     </script>
 </body>
 </html>
