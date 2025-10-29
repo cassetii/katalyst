@@ -2,8 +2,16 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#6e9726">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Pinuslo Apps - Management System</title>
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://www.gstatic.com">
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" rel="stylesheet">
@@ -42,7 +50,11 @@
     </script>
     
     <style>
+        /* ========================================
+           MOBILE-FIRST CSS VARIABLES & RESET
+        ======================================== */
         :root {
+            /* Color Palette */
             --cream: #F5F5F0;
             --beige: #E6D8C3;
             --tan: #C2A68C;
@@ -50,596 +62,1545 @@
             --pine-green: #6e9726;
             --sage-green: #7d8b70;
             --dark-forest: #465c35;
+            
+            /* Spacing System (Mobile-First) */
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 0.75rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            
+            /* Typography Scale */
+            --font-xs: 0.75rem;
+            --font-sm: 0.875rem;
+            --font-base: 1rem;
+            --font-lg: 1.125rem;
+            --font-xl: 1.25rem;
+            --font-2xl: 1.5rem;
+            --font-3xl: 2rem;
+            
+            /* Mobile Touch Targets */
+            --touch-target: 44px;
+            
+            /* Border Radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 20px rgba(0,0,0,0.15);
+            
+            /* Z-index Scale */
+            --z-base: 1;
+            --z-header: 100;
+            --z-modal: 1000;
+            --z-toast: 2000;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%); min-height: 100vh; }
-        .login-container { 
-            min-height: 100vh; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            padding: 1rem; 
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: var(--cream);
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* ========================================
+           MOBILE NAVIGATION (Bottom Tab Bar)
+           Following Jakob's Law - Familiar Pattern
+        ======================================== */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: var(--spacing-xs) 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: var(--z-header);
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .mobile-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: var(--spacing-xs);
+            color: #9ca3af;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            min-height: var(--touch-target);
+            justify-content: center;
+        }
+        
+        .mobile-nav-item.active {
+            color: var(--pine-green);
+        }
+        
+        .mobile-nav-item i {
+            font-size: 1.5rem;
+        }
+        
+        .mobile-nav-item span {
+            font-size: var(--font-xs);
+            font-weight: 500;
+        }
+        
+        /* ========================================
+           MOBILE HEADER (Top Bar)
+        ======================================== */
+        .mobile-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            z-index: var(--z-header);
+            min-height: 56px;
+        }
+        
+        .mobile-header-title {
+            font-size: var(--font-lg);
+            font-weight: 700;
+            color: var(--dark-forest);
+        }
+        
+        .mobile-header-back {
+            width: var(--touch-target);
+            height: var(--touch-target);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--cream);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .mobile-header-back:active {
+            transform: scale(0.95);
+            background: var(--beige);
+        }
+        
+        /* ========================================
+           LOGIN PAGE - MOBILE OPTIMIZED
+        ======================================== */
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
             background: linear-gradient(135deg, var(--dark-forest) 0%, var(--sage-green) 50%, var(--pine-green) 100%);
             position: relative;
             overflow: hidden;
+            padding: var(--spacing-lg);
         }
         
-        /* Nature Background Animations */
-        .nature-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden;
+        .login-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: var(--z-base);
         }
         
-        /* Floating Leaves */
-        .leaf {
-            position: absolute;
-            opacity: 0.6;
-            animation: float 15s infinite ease-in-out;
+        .login-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto var(--spacing-lg);
         }
         
-        .leaf:nth-child(1) {
-            left: 10%;
-            top: -10%;
-            animation-delay: 0s;
-            animation-duration: 18s;
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            animation: slideUp 0.5s ease-out;
         }
         
-        .leaf:nth-child(2) {
-            left: 30%;
-            top: -10%;
-            animation-delay: 3s;
-            animation-duration: 20s;
-        }
-        
-        .leaf:nth-child(3) {
-            left: 50%;
-            top: -10%;
-            animation-delay: 6s;
-            animation-duration: 16s;
-        }
-        
-        .leaf:nth-child(4) {
-            left: 70%;
-            top: -10%;
-            animation-delay: 9s;
-            animation-duration: 22s;
-        }
-        
-        .leaf:nth-child(5) {
-            left: 85%;
-            top: -10%;
-            animation-delay: 12s;
-            animation-duration: 19s;
-        }
-        
-        @keyframes float {
-            0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.6;
-            }
-            90% {
-                opacity: 0.6;
-            }
-            100% {
-                transform: translateY(110vh) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
-        /* Mountain Silhouettes */
-        .mountains {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 300px;
-            opacity: 0.2;
-        }
-        
-        /* Birds Flying */
-        .bird {
-            position: absolute;
-            animation: fly 25s linear infinite;
-            opacity: 0.3;
-        }
-        
-        .bird:nth-child(1) {
-            top: 15%;
-            left: -5%;
-            animation-delay: 0s;
-        }
-        
-        .bird:nth-child(2) {
-            top: 25%;
-            left: -5%;
-            animation-delay: 8s;
-        }
-        
-        .bird:nth-child(3) {
-            top: 35%;
-            left: -5%;
-            animation-delay: 16s;
-        }
-        
-        @keyframes fly {
-            0% {
-                left: -5%;
-                transform: scale(0.5);
-            }
-            50% {
-                transform: scale(1);
-            }
-            100% {
-                left: 105%;
-                transform: scale(0.5);
-            }
-        }
-        
-        /* Welcome Text */
-        .welcome-text {
-            position: absolute;
-            top: 15%;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            color: white;
-            z-index: 1;
-            animation: fadeInDown 1.5s ease-out;
-        }
-        
-        .welcome-text h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            letter-spacing: 2px;
-        }
-        
-        .welcome-text h2 {
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 0.3rem;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            color: #ffffff;
-        }
-        
-        .welcome-text p {
-            font-size: 1.2rem;
-            opacity: 0.95;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-            letter-spacing: 1px;
-        }
-        
-        @keyframes fadeInDown {
+        @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateX(-50%) translateY(-30px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
-                transform: translateX(-50%) translateY(0);
+                transform: translateY(0);
             }
         }
-        .login-card { 
-            background: rgba(255, 255, 255, 0.15); 
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 25px; 
-            padding: 2.5rem; 
-            box-shadow: 0 20px 60px rgba(70, 92, 53, 0.4); 
-            width: 100%; 
-            max-width: 420px; 
-            animation: slideIn 0.8s ease-out;
+        
+        .login-title {
+            font-size: var(--font-2xl);
+            font-weight: 700;
+            color: var(--dark-forest);
+            text-align: center;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .login-subtitle {
+            font-size: var(--font-sm);
+            color: var(--sage-green);
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .input-group {
             position: relative;
-            z-index: 2;
-        }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Logo Styles */
-        .login-logo { 
-            width: 150px; 
-            height: 150px; 
-            margin: 0 auto 1rem; 
+            margin-bottom: var(--spacing-lg);
         }
         
-        /* Animasi pohon bergoyang seperti tertiup angin */
-        @keyframes tree-sway-left {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-2deg); }
-            75% { transform: rotate(2deg); }
+        .input-group input {
+            width: 100%;
+            height: var(--touch-target);
+            padding: 0 var(--spacing-md) 0 3rem;
+            border: 2px solid #e5e7eb;
+            border-radius: var(--radius-md);
+            font-size: var(--font-base);
+            transition: all 0.2s ease;
+            background: white;
         }
-
-        @keyframes tree-sway-center {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-3deg); }
-            75% { transform: rotate(3deg); }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--pine-green);
+            box-shadow: 0 0 0 3px rgba(110, 151, 38, 0.1);
         }
-
-        @keyframes tree-sway-right {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(2deg); }
-            75% { transform: rotate(-2deg); }
+        
+        .input-icon {
+            position: absolute;
+            left: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--sage-green);
+            font-size: var(--font-lg);
+            pointer-events: none;
         }
-
-        .tree-left {
-            animation: tree-sway-left 3s ease-in-out infinite;
-            transform-origin: bottom center;
+        
+        .input-toggle {
+            position: absolute;
+            right: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--sage-green);
+            cursor: pointer;
+            padding: var(--spacing-xs);
         }
-
-        .tree-center {
-            animation: tree-sway-center 2.5s ease-in-out infinite;
-            transform-origin: bottom center;
+        
+        .btn-primary {
+            width: 100%;
+            height: var(--touch-target);
+            background: linear-gradient(135deg, var(--pine-green), var(--dark-forest));
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: var(--font-base);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-md);
         }
-
-        .tree-right {
-            animation: tree-sway-right 3.2s ease-in-out infinite;
-            transform-origin: bottom center;
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+            box-shadow: var(--shadow-sm);
         }
-
-        /* Animasi flash highlight untuk teks PINUSLO */
-        @keyframes text-flash {
-            0%, 100% { 
-                fill: #ffffff;
+        
+        /* ========================================
+           APP SELECTION - CARD GRID
+        ======================================== */
+        .app-page {
+            padding-top: 56px;
+            padding-bottom: 70px;
+            min-height: 100vh;
+        }
+        
+        .user-profile {
+            background: white;
+            margin: var(--spacing-md);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .user-avatar {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--pine-green), var(--dark-forest));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: var(--font-2xl);
+            font-weight: 700;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-size: var(--font-lg);
+            font-weight: 700;
+            color: var(--dark-forest);
+            margin-bottom: 2px;
+        }
+        
+        .user-role {
+            font-size: var(--font-sm);
+            color: var(--sage-green);
+        }
+        
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-md);
+            padding: 0 var(--spacing-md) var(--spacing-md);
+        }
+        
+        .app-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: var(--spacing-sm);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            min-height: 140px;
+            justify-content: center;
+        }
+        
+        .app-card:active {
+            transform: scale(0.97);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .app-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-2xl);
+            color: white;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .app-card.pinus .app-icon {
+            background: linear-gradient(135deg, var(--pine-green), var(--dark-forest));
+        }
+        
+        .app-card.pinewater .app-icon {
+            background: linear-gradient(135deg, #0891b2, #06b6d4);
+        }
+        
+        .app-card.bbm .app-icon {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .app-card.cafe .app-icon {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+        }
+        
+        .app-card.glamping .app-icon {
+            background: linear-gradient(135deg, #ea580c, #c2410c);
+        }
+        
+        .app-card.absensi .app-icon {
+            background: linear-gradient(135deg, #a855f7, #9333ea);
+        }
+        
+        .app-name {
+            font-size: var(--font-base);
+            font-weight: 700;
+            color: var(--dark-forest);
+        }
+        
+        .app-desc {
+            font-size: var(--font-xs);
+            color: var(--sage-green);
+            line-height: 1.4;
+        }
+        
+        /* ========================================
+           ABSENSI - MOBILE OPTIMIZED
+        ======================================== */
+        .absensi-page {
+            padding-top: 56px;
+            padding-bottom: 70px;
+            min-height: 100vh;
+        }
+        
+        .location-selector {
+            background: white;
+            margin: var(--spacing-md);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .location-title {
+            font-size: var(--font-base);
+            font-weight: 700;
+            color: var(--dark-forest);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+        
+        .location-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-sm);
+        }
+        
+        .location-btn {
+            padding: var(--spacing-md);
+            border: 2px solid #e5e7eb;
+            border-radius: var(--radius-md);
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .location-btn.active {
+            border-color: var(--pine-green);
+            background: linear-gradient(135deg, rgba(110, 151, 38, 0.1), rgba(70, 92, 53, 0.1));
+        }
+        
+        .location-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .location-btn i {
+            font-size: var(--font-2xl);
+            color: var(--pine-green);
+        }
+        
+        .location-info h4 {
+            font-size: var(--font-base);
+            font-weight: 700;
+            color: var(--dark-forest);
+            margin-bottom: 2px;
+        }
+        
+        .location-info p {
+            font-size: var(--font-xs);
+            color: var(--sage-green);
+            margin: 0;
+        }
+        
+        .status-card {
+            background: white;
+            margin: 0 var(--spacing-md) var(--spacing-md);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .status-header i {
+            font-size: var(--font-xl);
+        }
+        
+        .status-header h3 {
+            font-size: var(--font-lg);
+            font-weight: 700;
+            color: var(--dark-forest);
+            margin: 0;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .status-item.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-item.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-item.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-item i {
+            font-size: var(--font-xl);
+        }
+        
+        .status-content {
+            flex: 1;
+        }
+        
+        .status-content strong {
+            display: block;
+            margin-bottom: 2px;
+        }
+        
+        .status-content small {
+            font-size: var(--font-xs);
+            opacity: 0.9;
+        }
+        
+        #map {
+            height: 200px;
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .time-display {
+            text-align: center;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+        
+        #clock {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--dark-forest);
+            font-family: 'SF Mono', 'Monaco', monospace;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        #date {
+            font-size: var(--font-sm);
+            color: var(--sage-green);
+        }
+        
+        .attendance-info {
+            background: var(--cream);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--beige);
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .info-label {
+            font-size: var(--font-sm);
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+        
+        .info-value {
+            font-size: var(--font-base);
+            font-weight: 700;
+            color: var(--dark-forest);
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-sm);
+            padding: 0 var(--spacing-md) var(--spacing-md);
+        }
+        
+        .btn-check-in {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            font-size: var(--font-base);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-check-in:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        
+        .btn-check-in:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-check-out {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            font-size: var(--font-base);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-check-out:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        
+        .btn-check-out:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-refresh {
+            background: linear-gradient(135deg, #0891b2, #06b6d4);
+            color: white;
+            border: none;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            font-size: var(--font-base);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-refresh:active {
+            transform: scale(0.98);
+        }
+        
+        /* ========================================
+           HISTORY VIEW
+        ======================================== */
+        .history-list {
+            padding: 0 var(--spacing-md) var(--spacing-md);
+        }
+        
+        .history-item {
+            background: white;
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-sm);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .history-date {
+            font-size: var(--font-sm);
+            font-weight: 700;
+            color: var(--dark-forest);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .history-times {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .time-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: var(--font-xs);
+        }
+        
+        .time-badge.in {
+            color: #10b981;
+        }
+        
+        .time-badge.out {
+            color: #ef4444;
+        }
+        
+        .history-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: var(--font-xs);
+            color: #666;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: var(--font-xs);
+            font-weight: 600;
+        }
+        
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-incomplete {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        /* ========================================
+           REPORTS VIEW (ADMIN)
+        ======================================== */
+        .filter-bar {
+            background: white;
+            margin: var(--spacing-md);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .filter-group {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .filter-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .filter-label {
+            font-size: var(--font-sm);
+            font-weight: 600;
+            color: var(--dark-forest);
+            margin-bottom: var(--spacing-xs);
+            display: block;
+        }
+        
+        .filter-input {
+            width: 100%;
+            height: var(--touch-target);
+            padding: 0 var(--spacing-md);
+            border: 2px solid #e5e7eb;
+            border-radius: var(--radius-md);
+            font-size: var(--font-base);
+        }
+        
+        .filter-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-sm);
+        }
+        
+        .btn-filter {
+            background: var(--pine-green);
+            color: white;
+            border: none;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            font-size: var(--font-sm);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+        }
+        
+        .btn-export {
+            background: #0891b2;
+            color: white;
+            border: none;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            font-size: var(--font-sm);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+        }
+        
+        .report-item {
+            background: white;
+            margin: 0 var(--spacing-md) var(--spacing-sm);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .report-user {
+            flex: 1;
+        }
+        
+        .report-user h4 {
+            font-size: var(--font-base);
+            font-weight: 700;
+            color: var(--dark-forest);
+            margin-bottom: 2px;
+        }
+        
+        .report-user p {
+            font-size: var(--font-xs);
+            color: var(--sage-green);
+            margin: 0;
+        }
+        
+        .report-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .detail-item {
+            font-size: var(--font-xs);
+        }
+        
+        .detail-label {
+            color: #666;
+            display: block;
+            margin-bottom: 2px;
+        }
+        
+        .detail-value {
+            font-weight: 700;
+            color: var(--dark-forest);
+        }
+        
+        .report-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-sm);
+        }
+        
+        .btn-approve {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-sm);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        
+        .btn-approve:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-reject {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-sm);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        
+        .btn-reject:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .rejection-reason {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-xs);
+            margin-top: var(--spacing-sm);
+            border-left: 3px solid #dc2626;
+        }
+        
+        /* ========================================
+           MODAL (Bottom Sheet Style)
+        ======================================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: var(--z-modal);
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            padding: var(--spacing-xl);
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUpModal 0.3s ease;
+            z-index: calc(var(--z-modal) + 1);
+        }
+        
+        @keyframes slideUpModal {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            background: #d1d5db;
+            border-radius: 2px;
+            margin: 0 auto var(--spacing-lg);
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .modal-header i {
+            font-size: var(--font-2xl);
+            color: #ef4444;
+        }
+        
+        .modal-header h3 {
+            font-size: var(--font-lg);
+            font-weight: 700;
+            color: var(--dark-forest);
+            margin: 0;
+        }
+        
+        .modal-body {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .modal-label {
+            font-size: var(--font-sm);
+            font-weight: 600;
+            color: var(--dark-forest);
+            margin-bottom: var(--spacing-sm);
+            display: block;
+        }
+        
+        .modal-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: var(--spacing-md);
+            border: 2px solid #e5e7eb;
+            border-radius: var(--radius-md);
+            font-size: var(--font-base);
+            font-family: inherit;
+            resize: vertical;
+        }
+        
+        .modal-textarea:focus {
+            outline: none;
+            border-color: var(--pine-green);
+            box-shadow: 0 0 0 3px rgba(110, 151, 38, 0.1);
+        }
+        
+        .modal-footer {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-sm);
+        }
+        
+        .btn-modal-cancel {
+            padding: var(--spacing-md);
+            background: var(--cream);
+            color: var(--dark-forest);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: var(--font-base);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .btn-modal-submit {
+            padding: var(--spacing-md);
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: var(--font-base);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        /* ========================================
+           TOAST NOTIFICATIONS
+        ======================================== */
+        .toast {
+            position: fixed;
+            top: var(--spacing-md);
+            left: var(--spacing-md);
+            right: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            z-index: var(--z-toast);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
                 opacity: 1;
-            }
-            50% { 
-                fill: #6e9726;
-                opacity: 0.8;
-                filter: drop-shadow(0 0 8px #6e9726);
+                transform: translateY(0);
             }
         }
-
-        .text-pinuslo {
-            animation: text-flash 2s ease-in-out infinite;
+        
+        .toast.success {
+            background: #d1fae5;
+            color: #065f46;
         }
-
-        /* Animasi untuk brush stroke */
-        @keyframes rotate-brush {
-            from { transform: rotate(0deg); }
+        
+        .toast.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .toast.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .toast i {
+            font-size: var(--font-lg);
+        }
+        
+        .toast-content {
+            flex: 1;
+        }
+        
+        .toast-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: var(--spacing-xs);
+        }
+        
+        /* ========================================
+           UTILITY CLASSES
+        ======================================== */
+        .page-section {
+            display: none;
+        }
+        
+        .page-section.active {
+            display: block;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: #9ca3af;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+            opacity: 0.5;
+        }
+        
+        .empty-state p {
+            font-size: var(--font-sm);
+        }
+        
+        /* ========================================
+           LOADING STATES
+        ======================================== */
+        .skeleton {
+            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: var(--radius-sm);
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
-        .brush-stroke {
-            animation: rotate-brush 30s linear infinite;
-            transform-origin: center;
+        
+        /* ========================================
+           RESPONSIVE DESIGN
+        ======================================== */
+        @media (min-width: 768px) {
+            .apps-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .login-card {
+                max-width: 400px;
+                margin: 0 auto;
+            }
+            
+            .mobile-nav {
+                display: none;
+            }
         }
         
-        .login-title { color: #ffffff; font-weight: 700; font-size: 1.8rem; text-align: center; margin-bottom: 0.5rem; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
-        .login-subtitle { color: rgba(255, 255, 255, 0.9); font-size: 0.95rem; text-align: center; margin-bottom: 2rem; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2); }
-        .login-input-container { position: relative; margin-bottom: 1.5rem; }
-        .login-input { width: 100%; padding: 1rem 1rem 1rem 3rem; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.9); }
-        .login-input:focus { border-color: var(--pine-green); box-shadow: 0 0 0 0.2rem rgba(110, 151, 38, 0.25); outline: none; background: white; }
-        .login-input-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--dark-forest); font-size: 1.1rem; }
-        .password-toggle { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--sage-green); cursor: pointer; }
-        .login-btn { width: 100%; padding: 1.1rem; background: linear-gradient(135deg, var(--pine-green) 0%, var(--dark-forest) 100%); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(70, 92, 53, 0.4); }
-        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(70, 92, 53, 0.5); }
-        .app-selection-container { min-height: 100vh; padding: 2rem; background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%); }
-        .user-welcome { background: white; border-radius: 15px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto 3rem; }
-        .user-avatar { width: 60px; height: 60px; background: linear-gradient(135deg, var(--pine-green) 0%, var(--dark-forest) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold; }
-        .logout-btn { background: var(--sage-green); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; }
-        .logout-btn:hover { background: var(--dark-forest); transform: translateY(-2px); }
-        .apps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
-        .app-card { background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s ease; cursor: pointer; border: 3px solid transparent; }
-        .app-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-color: var(--pine-green); }
-        .app-icon { width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem; color: white; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-        .app-card.pinus { background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); }
-        .app-card.pinus .app-icon { background: linear-gradient(135deg, var(--pine-green) 0%, var(--dark-forest) 100%); }
-        .app-card.pinewater { background: linear-gradient(135deg, #ffffff 0%, #ecfeff 100%); }
-        .app-card.pinewater .app-icon { background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%); }
-        .app-card.bbm { background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%); }
-        .app-card.bbm .app-icon { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-        .app-card.absensi { background: linear-gradient(135deg, #ffffff 0%, #f3e8ff 100%); }
-        .app-card.absensi .app-icon { background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); }
-        .app-card.cafe { background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%); }
-        .app-card.cafe .app-icon { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); }
-        .app-card.glamping { background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%); }
-        .app-card.glamping .app-icon { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); }
-        .page-section { display: none; }
-        .page-section.active { display: block; }
-        .alert-custom { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; min-width: 300px; max-width: 90%; border-radius: 12px; padding: 1rem 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideDown 0.5s ease-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-        .alert-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-        .alert-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-        .tab-menu { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 2px solid var(--beige); }
-        .tab-btn { padding: 1rem 2rem; background: none; border: none; color: var(--tan); cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent; transition: all 0.3s ease; }
-        .tab-btn.active { color: var(--dark-forest); border-bottom-color: var(--pine-green); }
-        .tab-btn:hover { color: var(--dark-forest); }
-        .report-table { width: 100%; border-collapse: collapse; }
-        .report-table th { background: var(--dark-forest); color: white; padding: 1rem; text-align: left; font-weight: 600; }
-        .report-table td { padding: 1rem; border-bottom: 1px solid var(--beige); }
-        .report-table tr:hover { background: var(--cream); }
-        .status-badge { display: inline-block; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
-        .status-approved { background: #d1fae5; color: #065f46; }
-        .status-pending { background: #fef3c7; color: #92400e; }
-        .status-incomplete { background: #fee2e2; color: #991b1b; }
-        .approve-btn { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease; margin-right: 0.5rem; }
-        .approve-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
-        .approve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .reject-btn { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease; }
-        .reject-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); }
-        .reject-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .status-rejected { background: #fee2e2; color: #991b1b; }
+        @media (min-width: 1024px) {
+            .apps-grid {
+                grid-template-columns: repeat(4, 1fr);
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: var(--spacing-xl);
+            }
+            
+            .status-card,
+            .location-selector,
+            .user-profile {
+                max-width: 800px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
         
-        /* Modal Styles */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 10000; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
-        .modal-overlay.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal-box { background: white; border-radius: 20px; padding: 2rem; width: 90%; max-width: 500px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .modal-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid var(--beige); }
-        .modal-header h3 { margin: 0; color: var(--dark-forest); font-size: 1.5rem; }
-        .modal-body { margin-bottom: 1.5rem; }
-        .modal-label { display: block; font-weight: 600; color: var(--dark-forest); margin-bottom: 0.5rem; font-size: 0.95rem; }
-        .modal-textarea { width: 100%; min-height: 120px; padding: 1rem; border: 2px solid var(--beige); border-radius: 12px; font-size: 0.95rem; font-family: 'Segoe UI', sans-serif; resize: vertical; }
-        .modal-textarea:focus { border-color: var(--pine-green); outline: none; box-shadow: 0 0 0 3px rgba(110, 151, 38, 0.1); }
-        .modal-footer { display: flex; gap: 1rem; justify-content: flex-end; }
-        .modal-btn-cancel { padding: 0.8rem 1.5rem; background: var(--beige); color: var(--dark-forest); border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
-        .modal-btn-cancel:hover { background: var(--tan); }
-        .modal-btn-submit { padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
-        .modal-btn-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); }
-        .rejection-reason { font-size: 0.75rem; color: #dc2626; margin-top: 0.3rem; padding: 0.5rem; background: #fee2e2; border-radius: 6px; border-left: 3px solid #dc2626; }
-        .filter-section { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: center; }
-        .filter-input { padding: 0.8rem; border: 2px solid var(--beige); border-radius: 10px; font-size: 0.95rem; background: white; }
-        .filter-btn { padding: 0.8rem 1.5rem; background: var(--pine-green); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
-        .filter-btn:hover { background: var(--dark-forest); transform: translateY(-2px); }
-        .export-btn { padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
-        .export-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(8, 145, 178, 0.3); }
-        #map { height: 350px; border-radius: 15px; margin-bottom: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .location-status { padding: 1rem; background: var(--cream); border-radius: 10px; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-        .location-status.inside { background: #d1fae5; color: #065f46; }
-        .location-status.outside { background: #fee2e2; color: #991b1b; }
-        .location-status.loading { background: #fef3c7; color: #92400e; }
-        .wifi-requirement { background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 2px solid #3b82f6; border-radius: 15px; padding: 1.5rem; margin-bottom: 1.5rem; }
-        .wifi-status { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
-        .wifi-connected { background: #d1fae5; color: #065f46; }
-        .wifi-disconnected { background: #fee2e2; color: #991b1b; }
-        .wifi-checking { background: #fef3c7; color: #92400e; }
-        .validation-warning { background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 2px solid #ef4444; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
-        .btn-disabled-custom { opacity: 0.4 !important; cursor: not-allowed !important; position: relative; }
-        .btn-disabled-custom::after { content: '🔒'; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 1.2rem; }
+        /* ========================================
+           ACCESSIBILITY & DARK MODE PREP
+        ======================================== */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* Focus visible for keyboard navigation */
+        *:focus-visible {
+            outline: 2px solid var(--pine-green);
+            outline-offset: 2px;
+        }
     </style>
 </head>
 <body>
+    <!-- ============================================
+         LOGIN PAGE
+    ============================================ -->
     <div id="loginPage" class="page-section active">
-        <div class="login-container">
-            <!-- Nature Background Animations -->
-            <div class="nature-bg">
-                <!-- Floating Leaves -->
-                <svg class="leaf" width="30" height="30" viewBox="0 0 30 30">
-                    <path d="M15 2 Q 5 8, 5 15 Q 5 25, 15 28 Q 25 25, 25 15 Q 25 8, 15 2" fill="#6e9726" opacity="0.8"/>
-                </svg>
-                <svg class="leaf" width="25" height="25" viewBox="0 0 30 30">
-                    <path d="M15 2 Q 5 8, 5 15 Q 5 25, 15 28 Q 25 25, 25 15 Q 25 8, 15 2" fill="#7d8b70" opacity="0.8"/>
-                </svg>
-                <svg class="leaf" width="35" height="35" viewBox="0 0 30 30">
-                    <path d="M15 2 Q 5 8, 5 15 Q 5 25, 15 28 Q 25 25, 25 15 Q 25 8, 15 2" fill="#465c35" opacity="0.8"/>
-                </svg>
-                <svg class="leaf" width="28" height="28" viewBox="0 0 30 30">
-                    <path d="M15 2 Q 5 8, 5 15 Q 5 25, 15 28 Q 25 25, 25 15 Q 25 8, 15 2" fill="#6e9726" opacity="0.8"/>
-                </svg>
-                <svg class="leaf" width="32" height="32" viewBox="0 0 30 30">
-                    <path d="M15 2 Q 5 8, 5 15 Q 5 25, 15 28 Q 25 25, 25 15 Q 25 8, 15 2" fill="#7d8b70" opacity="0.8"/>
-                </svg>
-                
-                <!-- Flying Birds -->
-                <svg class="bird" width="40" height="30" viewBox="0 0 40 30">
-                    <path d="M5 15 Q 10 10, 20 15 Q 30 10, 35 15" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
-                </svg>
-                <svg class="bird" width="40" height="30" viewBox="0 0 40 30">
-                    <path d="M5 15 Q 10 10, 20 15 Q 30 10, 35 15" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
-                </svg>
-                <svg class="bird" width="40" height="30" viewBox="0 0 40 30">
-                    <path d="M5 15 Q 10 10, 20 15 Q 30 10, 35 15" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
-                </svg>
-                
-                <!-- Mountain Silhouettes -->
-                <svg class="mountains" viewBox="0 0 1200 300">
-                    <path d="M0 300 L 0 150 L 200 80 L 400 150 L 600 50 L 800 120 L 1000 90 L 1200 180 L 1200 300 Z" fill="rgba(70, 92, 53, 0.3)"/>
-                    <path d="M0 300 L 0 200 L 300 130 L 600 100 L 900 150 L 1200 120 L 1200 300 Z" fill="rgba(110, 151, 38, 0.2)"/>
-                </svg>
-            </div>
-            
-            <div class="login-card">
+        <div class="login-page">
+            <div class="login-content">
                 <div class="login-logo">
                     <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Background circle -->
                         <circle cx="250" cy="250" r="220" fill="#465c35"/>
-                        
-                        <!-- Brush stroke decoration (rotating slowly) -->
-                        <g class="brush-stroke">
-                            <!-- Top left brush -->
-                            <path d="M 80 100 Q 70 80, 100 70" stroke="#6e9726" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.9"/>
-                            <path d="M 90 110 Q 75 95, 110 85" stroke="#7d8b70" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
-                            
-                            <!-- Top right brush -->
-                            <path d="M 400 100 Q 410 80, 380 70" stroke="#6e9726" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.9"/>
-                            <path d="M 390 110 Q 405 95, 370 85" stroke="#7d8b70" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
-                            
-                            <!-- Bottom left brush -->
-                            <path d="M 100 420 Q 70 430, 80 400" stroke="#6e9726" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.9"/>
-                            <path d="M 110 410 Q 85 425, 95 390" stroke="#7d8b70" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
-                            
-                            <!-- Bottom right brush -->
-                            <path d="M 400 420 Q 430 430, 420 400" stroke="#6e9726" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.9"/>
-                            <path d="M 390 410 Q 415 425, 405 390" stroke="#7d8b70" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
-                        </g>
-
-                        <!-- Ground/hill -->
                         <ellipse cx="250" cy="300" rx="180" ry="30" fill="#7d8b70"/>
                         <path d="M 70 300 Q 250 280, 430 300" stroke="#6e9726" stroke-width="3" fill="none"/>
-
-                        <!-- Fence posts -->
                         <rect x="160" y="260" width="8" height="40" fill="#ffffff" rx="2"/>
                         <rect x="245" y="240" width="10" height="60" fill="#ffffff" rx="2"/>
                         <rect x="335" y="260" width="8" height="40" fill="#ffffff" rx="2"/>
-
-                        <!-- Left Tree (animated) -->
-                        <g class="tree-left">
-                            <!-- Trunk -->
-                            <rect x="165" y="200" width="12" height="60" fill="#465c35"/>
-                            
-                            <!-- Tree layers -->
-                            <path d="M 171 210 L 155 225 L 187 225 Z" fill="#5a7047"/>
-                            <path d="M 171 200 L 150 220 L 192 220 Z" fill="#5a7047"/>
-                            <path d="M 171 190 L 145 215 L 197 215 Z" fill="#6e9726"/>
-                            <path d="M 171 180 L 140 210 L 202 210 Z" fill="#6e9726"/>
-                            <path d="M 171 170 L 150 195 L 192 195 Z" fill="#7da030"/>
+                        <g transform="translate(171, 200)">
+                            <rect x="-6" y="0" width="12" height="60" fill="#465c35"/>
+                            <path d="M 0 10 L -16 25 L 16 25 Z" fill="#5a7047"/>
+                            <path d="M 0 0 L -21 20 L 21 20 Z" fill="#6e9726"/>
+                            <path d="M 0 -10 L -26 15 L 26 15 Z" fill="#7da030"/>
                         </g>
-
-                        <!-- Center Tree (animated - tallest) -->
-                        <g class="tree-center">
-                            <!-- Trunk -->
-                            <rect x="245" y="160" width="15" height="80" fill="#465c35"/>
-                            
-                            <!-- Tree layers -->
-                            <path d="M 252 180 L 230 200 L 274 200 Z" fill="#5a7047"/>
-                            <path d="M 252 168 L 220 195 L 284 195 Z" fill="#5a7047"/>
-                            <path d="M 252 156 L 210 190 L 294 190 Z" fill="#6e9726"/>
-                            <path d="M 252 144 L 205 180 L 299 180 Z" fill="#6e9726"/>
-                            <path d="M 252 132 L 200 170 L 304 170 Z" fill="#7da030"/>
-                            <path d="M 252 120 L 210 155 L 294 155 Z" fill="#7da030"/>
-                            <path d="M 252 110 L 220 145 L 284 145 Z" fill="#8cb03a"/>
+                        <g transform="translate(252, 160)">
+                            <rect x="-7.5" y="0" width="15" height="80" fill="#465c35"/>
+                            <path d="M 0 20 L -22 40 L 22 40 Z" fill="#5a7047"/>
+                            <path d="M 0 8 L -32 35 L 32 35 Z" fill="#5a7047"/>
+                            <path d="M 0 -4 L -42 30 L 42 30 Z" fill="#6e9726"/>
+                            <path d="M 0 -16 L -47 20 L 47 20 Z" fill="#7da030"/>
                         </g>
-
-                        <!-- Right Tree (animated) -->
-                        <g class="tree-right">
-                            <!-- Trunk -->
-                            <rect x="330" y="200" width="12" height="60" fill="#465c35"/>
-                            
-                            <!-- Tree layers -->
-                            <path d="M 336 210 L 320 225 L 352 225 Z" fill="#5a7047"/>
-                            <path d="M 336 200 L 315 220 L 357 220 Z" fill="#5a7047"/>
-                            <path d="M 336 190 L 310 215 L 362 215 Z" fill="#6e9726"/>
-                            <path d="M 336 180 L 305 210 L 367 210 Z" fill="#6e9726"/>
-                            <path d="M 336 170 L 315 195 L 357 195 Z" fill="#7da030"/>
+                        <g transform="translate(336, 200)">
+                            <rect x="-6" y="0" width="12" height="60" fill="#465c35"/>
+                            <path d="M 0 10 L -16 25 L 16 25 Z" fill="#5a7047"/>
+                            <path d="M 0 0 L -21 20 L 21 20 Z" fill="#6e9726"/>
+                            <path d="M 0 -10 L -26 15 L 26 15 Z" fill="#7da030"/>
                         </g>
-
-                        <!-- Text PINUSLO (with flash animation) -->
-                        <g class="text-pinuslo">
-                            <text x="250" y="345" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="#ffffff" letter-spacing="8">
-                                PINUSLO
-                            </text>
-                        </g>
-
-                        <!-- Tagline -->
-                        <text x="250" y="370" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#ffffff" letter-spacing="2">
-                            Camping Feels Like Home
-                        </text>
+                        <text x="250" y="345" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="#ffffff" letter-spacing="8">PINUSLO</text>
+                        <text x="250" y="370" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#ffffff" letter-spacing="2">Camping Feels Like Home</text>
                     </svg>
                 </div>
-                <h2 class="login-title">Pinuslo Apps</h2>
-                <p class="login-subtitle">Silahkan Login</p>
-                <form onsubmit="return handleLogin(event)">
-                    <div class="login-input-container">
-                        <input type="text" class="login-input" id="username" placeholder="Username" required>
-                        <div class="login-input-icon"><i class="fas fa-user"></i></div>
-                    </div>
-                    <div class="login-input-container">
-                        <input type="password" class="login-input" id="password" placeholder="Password" required>
-                        <div class="login-input-icon"><i class="fas fa-lock"></i></div>
-                        <div class="password-toggle" onclick="togglePassword()"><i class="fas fa-eye" id="passwordToggleIcon"></i></div>
-                    </div>
-                    <button type="submit" class="login-btn"><i class="fas fa-sign-in-alt me-2"></i>Masuk</button>
-                </form>
+                
+                <div class="login-card">
+                    <h2 class="login-title">Selamat Datang</h2>
+                    <p class="login-subtitle">Silakan masuk untuk melanjutkan</p>
+                    
+                    <form id="loginForm">
+                        <div class="input-group">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" id="username" placeholder="Username" required autocomplete="username">
+                        </div>
+                        
+                        <div class="input-group">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
+                            <i class="fas fa-eye input-toggle" id="passwordToggle"></i>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Masuk</span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- ============================================
+         APP SELECTION PAGE
+    ============================================ -->
     <div id="appSelectionPage" class="page-section">
-        <div class="app-selection-container">
-            <div class="user-welcome">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div class="user-avatar" id="userAvatar">I</div>
-                    <div>
-                        <h3 id="userName" style="color: var(--dark-forest); margin: 0;">User</h3>
-                        <p id="userRole" style="color: var(--sage-green); margin: 0; font-size: 0.9rem;">Staff</p>
+        <div class="app-page">
+            <div class="mobile-header">
+                <h1 class="mobile-header-title">Pinuslo Apps</h1>
+            </div>
+            
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-info">
+                    <div class="user-name" id="userName">User</div>
+                    <div class="user-role" id="userRole">Staff</div>
+                </div>
+            </div>
+            
+            <div class="apps-grid" id="appsGrid">
+                <!-- Apps will be dynamically generated -->
+            </div>
+        </div>
+        
+        <nav class="mobile-nav">
+            <div class="mobile-nav-item active">
+                <i class="fas fa-home"></i>
+                <span>Beranda</span>
+            </div>
+            <div class="mobile-nav-item" onclick="handleLogout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Keluar</span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- ============================================
+         ABSENSI PAGE
+    ============================================ -->
+    <div id="absensiPage" class="page-section">
+        <div class="absensi-page">
+            <div class="mobile-header">
+                <div class="mobile-header-back" onclick="backToSelection()">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <h1 class="mobile-header-title">Absensi</h1>
+            </div>
+            
+            <!-- Location Selector -->
+            <div class="location-selector">
+                <div class="location-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Pilih Lokasi Absensi</span>
+                </div>
+                <div class="location-options">
+                    <button class="location-btn active" onclick="switchLocation('pinuslo')" id="locBtn_pinuslo">
+                        <i class="fas fa-tree"></i>
+                        <div class="location-info">
+                            <h4>Kawasan Pinuslo</h4>
+                            <p>WiFi: Cafepinuslo</p>
+                        </div>
+                    </button>
+                    <button class="location-btn" onclick="switchLocation('testing')" id="locBtn_testing">
+                        <i class="fas fa-vial"></i>
+                        <div class="location-info">
+                            <h4>Kawasan Testing</h4>
+                            <p>WiFi: Div--SIMO_5G</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Status Cards -->
+            <div class="status-card">
+                <div class="status-header">
+                    <i class="fas fa-wifi"></i>
+                    <h3>Status Koneksi</h3>
+                </div>
+                <div id="wifiStatus" class="status-item warning">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <div class="status-content">
+                        <strong>Memeriksa WiFi...</strong>
+                        <small>Mohon tunggu</small>
                     </div>
                 </div>
-                <button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt me-2"></i>Keluar</button>
+                <div id="locationStatus" class="status-item warning">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <div class="status-content">
+                        <strong>Mendapatkan Lokasi...</strong>
+                        <small>Mohon tunggu</small>
+                    </div>
+                </div>
+                <div id="map"></div>
+                <button class="btn-refresh" onclick="refreshLocation()">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Refresh Lokasi & WiFi</span>
+                </button>
             </div>
-            <div style="text-align: center; margin-bottom: 3rem;">
-                <h1 style="color: var(--dark-forest); font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Pilih Aplikasi</h1>
-                <p style="color: var(--sage-green); font-size: 1.1rem;">Silakan pilih aplikasi yang ingin Anda gunakan</p>
+            
+            <!-- Time & Attendance Info -->
+            <div class="status-card">
+                <div class="time-display">
+                    <div id="clock">00:00:00</div>
+                    <div id="date">Loading...</div>
+                </div>
+                
+                <div class="attendance-info" id="attendanceInfo">
+                    <!-- Attendance info will be dynamically generated -->
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn-check-in" id="checkInBtn" onclick="checkIn()" disabled>
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Check In</span>
+                    </button>
+                    <button class="btn-check-out" id="checkOutBtn" onclick="checkOut()" disabled>
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Check Out</span>
+                    </button>
+                </div>
             </div>
-            <div class="apps-grid">
-                <div class="app-card pinus" data-app="pinus">
-                    <div class="app-icon"><i class="fas fa-tree"></i></div>
-                    <h3 style="color: var(--dark-forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinus Selow Regist</h3>
-                    <p style="color: var(--sage-green); text-align: center; font-size: 0.95rem;">Sistem Pendaftaran & Manajemen Pinus</p>
+            
+            <!-- History Section -->
+            <div class="status-card">
+                <div class="status-header">
+                    <i class="fas fa-history"></i>
+                    <h3>Riwayat Absensi</h3>
                 </div>
-                <div class="app-card pinewater" data-app="pinewater">
-                    <div class="app-icon"><i class="fas fa-water"></i></div>
-                    <h3 style="color: var(--dark-forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinewater</h3>
-                    <p style="color: var(--sage-green); text-align: center; font-size: 0.95rem;">Sistem Manajemen Air & Distribusi</p>
-                </div>
-                <div class="app-card bbm" data-app="bbm">
-                    <div class="app-icon"><i class="fas fa-gas-pump"></i></div>
-                    <h3 style="color: var(--dark-forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">BBM Management</h3>
-                    <p style="color: var(--sage-green); text-align: center; font-size: 0.95rem;">Sistem Manajemen Bahan Bakar Minyak</p>
-                </div>
-                <div class="app-card cafe" data-app="cafe">
-                    <div class="app-icon"><i class="fas fa-coffee"></i></div>
-                    <h3 style="color: var(--dark-forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinuslo Cafe</h3>
-                    <p style="color: var(--sage-green); text-align: center; font-size: 0.95rem;">Sistem Manajemen Cafe & Point of Sale</p>
-                </div>
-                <div class="app-card glamping" data-app="glamping">
-                    <div class="app-icon"><i class="fas fa-campground"></i></div>
-                    <h3 style="color: var(--dark-forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Pinuslo Glamping</h3>
-                    <p style="color: var(--sage-green); text-align: center; font-size: 0.95rem;">Sistem Reservasi & Manajemen Glamping</p>
-                </div>
-                <div class="app-card absensi" data-app="absensi">
-                    <div class="app-icon"><i class="fas fa-fingerprint"></i></div>
-                    <h3 style="color: var(--dark-forest); font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem;">Absensi</h3>
-                    <p style="color: var(--sage-green); text-align: center; font-size: 0.95rem;">Sistem Absensi & Kehadiran Karyawan</p>
+                <div class="history-list" id="historyList">
+                    <!-- History will be dynamically generated -->
                 </div>
             </div>
         </div>
+        
+        <nav class="mobile-nav">
+            <div class="mobile-nav-item active" onclick="switchAbsensiView('check')">
+                <i class="fas fa-fingerprint"></i>
+                <span>Absensi</span>
+            </div>
+            <div class="mobile-nav-item" onclick="switchAbsensiView('history')">
+                <i class="fas fa-history"></i>
+                <span>Riwayat</span>
+            </div>
+            <div class="mobile-nav-item" onclick="switchAbsensiView('reports')" id="navReports" style="display: none;">
+                <i class="fas fa-chart-bar"></i>
+                <span>Laporan</span>
+            </div>
+        </nav>
     </div>
 
-    <div id="absensiContainer" class="page-section"></div>
+    <!-- ============================================
+         REPORTS PAGE (ADMIN)
+    ============================================ -->
+    <div id="reportsPage" class="page-section">
+        <div class="absensi-page">
+            <div class="mobile-header">
+                <div class="mobile-header-back" onclick="backToAbsensi()">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <h1 class="mobile-header-title">Laporan Absensi</h1>
+            </div>
+            
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Tipe Laporan</label>
+                    <select id="reportType" class="filter-input">
+                        <option value="daily">Harian</option>
+                        <option value="weekly">Mingguan</option>
+                        <option value="monthly">Bulanan</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Tanggal</label>
+                    <input type="date" id="reportDate" class="filter-input">
+                </div>
+                <div class="filter-actions">
+                    <button class="btn-filter" onclick="loadReports()">
+                        <i class="fas fa-search"></i>
+                        <span>Filter</span>
+                    </button>
+                    <button class="btn-export" onclick="exportReport()">
+                        <i class="fas fa-download"></i>
+                        <span>Export</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="reportsList">
+                <!-- Reports will be dynamically generated -->
+            </div>
+        </div>
+        
+        <nav class="mobile-nav">
+            <div class="mobile-nav-item" onclick="backToAbsensi()">
+                <i class="fas fa-fingerprint"></i>
+                <span>Absensi</span>
+            </div>
+            <div class="mobile-nav-item" onclick="switchAbsensiView('history')">
+                <i class="fas fa-history"></i>
+                <span>Riwayat</span>
+            </div>
+            <div class="mobile-nav-item active">
+                <i class="fas fa-chart-bar"></i>
+                <span>Laporan</span>
+            </div>
+        </nav>
+    </div>
 
-    <!-- Modal Penolakan -->
+    <!-- ============================================
+         REJECT MODAL (Bottom Sheet)
+    ============================================ -->
     <div id="rejectModal" class="modal-overlay">
-        <div class="modal-box">
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
             <div class="modal-header">
-                <i class="fas fa-times-circle" style="font-size: 2rem; color: #ef4444;"></i>
+                <i class="fas fa-times-circle"></i>
                 <div>
                     <h3>Tolak Absensi</h3>
-                    <p style="margin: 0; font-size: 0.9rem; color: var(--sage-green);" id="rejectModalUsername"></p>
+                    <p id="rejectModalUser" style="font-size: var(--font-sm); color: var(--sage-green); margin: 0;"></p>
                 </div>
             </div>
             <div class="modal-body">
                 <label class="modal-label">
-                    <i class="fas fa-comment-alt me-2"></i>Alasan Penolakan <span style="color: #ef4444;">*</span>
+                    Alasan Penolakan <span style="color: #ef4444;">*</span>
                 </label>
-                <textarea id="rejectionReason" class="modal-textarea" placeholder="Contoh: Data lokasi tidak sesuai, Waktu check in terlambat, dll..." required></textarea>
-                <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">
-                    <i class="fas fa-info-circle me-1"></i>Alasan ini akan dilihat oleh karyawan
+                <textarea id="rejectionReason" class="modal-textarea" placeholder="Masukkan alasan penolakan..." required></textarea>
+                <p style="font-size: var(--font-xs); color: #666; margin-top: var(--spacing-xs);">
+                    <i class="fas fa-info-circle"></i> Karyawan akan melihat alasan ini
                 </p>
             </div>
             <div class="modal-footer">
-                <button class="modal-btn-cancel" onclick="closeRejectModal()">
-                    <i class="fas fa-times me-2"></i>Batal
+                <button class="btn-modal-cancel" onclick="closeRejectModal()">
+                    <i class="fas fa-times"></i> Batal
                 </button>
-                <button class="modal-btn-submit" onclick="confirmRejectAttendance()">
-                    <i class="fas fa-ban me-2"></i>Tolak Absensi
+                <button class="btn-modal-submit" onclick="confirmRejectAttendance()">
+                    <i class="fas fa-ban"></i> Tolak
                 </button>
             </div>
         </div>
     </div>
 
     <script>
+        // ============================================
+        // GLOBAL VARIABLES & CONFIGURATION
+        // ============================================
         let currentUser = null;
         let map = null;
         let userMarker = null;
@@ -647,9 +1608,9 @@
         let geofenceCircle = null;
         let validationInterval = null;
         let isValidForAttendance = false;
-        let currentRejectData = null; // Untuk menyimpan data yang akan ditolak
-        
-        // Konfigurasi 2 lokasi
+        let currentRejectData = null;
+        let selectedLocation = 'pinuslo';
+
         const LOCATIONS = {
             pinuslo: {
                 name: "Kawasan Pinuslo",
@@ -672,8 +1633,7 @@
                 }
             }
         };
-        
-        let selectedLocation = 'pinuslo';
+
         let GEOFENCE_CENTER = LOCATIONS[selectedLocation].center;
         let GEOFENCE_RADIUS = LOCATIONS[selectedLocation].radius;
         let REQUIRED_WIFI = LOCATIONS[selectedLocation].wifi;
@@ -707,16 +1667,27 @@
             'glamping': 'https://pinusloglamping.netlify.app/'
         };
 
-        let currentAbsensiView = 'check';
-        let tempRejectData = { username: '', date: '' }; // untuk menyimpan data sementara saat modal dibuka
+        const appConfig = {
+            'pinus': { name: 'Pinus Selow Regist', icon: 'fa-tree', desc: 'Sistem Pendaftaran & Manajemen Pinus' },
+            'pinewater': { name: 'Pinewater', icon: 'fa-water', desc: 'Sistem Manajemen Air & Distribusi' },
+            'bbm': { name: 'BBM Management', icon: 'fa-gas-pump', desc: 'Sistem Manajemen Bahan Bakar' },
+            'cafe': { name: 'Pinuslo Cafe', icon: 'fa-coffee', desc: 'Sistem Manajemen Cafe & POS' },
+            'glamping': { name: 'Pinuslo Glamping', icon: 'fa-campground', desc: 'Sistem Reservasi Glamping' },
+            'absensi': { name: 'Absensi', icon: 'fa-fingerprint', desc: 'Sistem Absensi Karyawan' }
+        };
 
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
         function getDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3;
             const φ1 = lat1 * Math.PI / 180;
             const φ2 = lat2 * Math.PI / 180;
             const Δφ = (lat2 - lat1) * Math.PI / 180;
             const Δλ = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + 
+                     Math.cos(φ1) * Math.cos(φ2) * 
+                     Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             return R * c;
         }
@@ -726,24 +1697,470 @@
             return distance <= GEOFENCE_RADIUS;
         }
 
+        function calculateWorkingHours(checkInTime, checkOutTime) {
+            if (!checkInTime || !checkOutTime) return '-';
+            
+            try {
+                const parseTime = (timeStr) => {
+                    const parts = timeStr.replace(/\./g, ':').split(':');
+                    return {
+                        hours: parseInt(parts[0], 10),
+                        minutes: parseInt(parts[1], 10),
+                        seconds: parts.length > 2 ? parseInt(parts[2], 10) : 0
+                    };
+                };
+                
+                const checkIn = parseTime(checkInTime);
+                const checkOut = parseTime(checkOutTime);
+                
+                if (isNaN(checkIn.hours) || isNaN(checkIn.minutes) || 
+                    isNaN(checkOut.hours) || isNaN(checkOut.minutes)) {
+                    return '-';
+                }
+                
+                const checkInMinutes = checkIn.hours * 60 + checkIn.minutes + (checkIn.seconds / 60);
+                let checkOutMinutes = checkOut.hours * 60 + checkOut.minutes + (checkOut.seconds / 60);
+                
+                if (checkOutMinutes < checkInMinutes) {
+                    checkOutMinutes += 24 * 60;
+                }
+                
+                const diffMinutes = Math.round(checkOutMinutes - checkInMinutes);
+                const hours = Math.floor(diffMinutes / 60);
+                const minutes = diffMinutes % 60;
+                
+                if (hours === 0) {
+                    return `${minutes} menit`;
+                } else if (minutes === 0) {
+                    return `${hours} jam`;
+                } else {
+                    return `${hours} jam ${minutes} menit`;
+                }
+            } catch (error) {
+                console.error('Error calculating hours:', error);
+                return '-';
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            // Remove existing toasts
+            document.querySelectorAll('.toast').forEach(el => el.remove());
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? 'fa-check-circle' : 
+                        type === 'error' ? 'fa-exclamation-triangle' : 
+                        'fa-info-circle';
+            
+            toast.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <div class="toast-content">${message}</div>
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) toast.remove();
+            }, 5000);
+        }
+
+        // ============================================
+        // AUTHENTICATION
+        // ============================================
+        document.getElementById('loginForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            const user = allUsers.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('pinuslo_user', JSON.stringify(user));
+                showToast(`Selamat datang, ${user.fullName}!`, 'success');
+                setTimeout(() => showAppSelection(user), 500);
+            } else {
+                showToast('Username atau password salah!', 'error');
+            }
+        });
+
+        // Toggle password visibility
+        document.getElementById('passwordToggle')?.addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this;
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        function showAppSelection(user) {
+            // Hide login page
+            document.getElementById('loginPage').classList.remove('active');
+            document.getElementById('appSelectionPage').classList.add('active');
+            
+            // Update user info
+            document.getElementById('userAvatar').textContent = user.fullName.charAt(0).toUpperCase();
+            document.getElementById('userName').textContent = user.fullName;
+            document.getElementById('userRole').textContent = user.role === 'admin' ? 'Administrator' : 'Staff';
+            
+            // Generate app cards
+            const appsGrid = document.getElementById('appsGrid');
+            appsGrid.innerHTML = '';
+            
+            Object.keys(appConfig).forEach(appKey => {
+                if (user.apps.includes(appKey)) {
+                    const app = appConfig[appKey];
+                    const card = document.createElement('div');
+                    card.className = `app-card ${appKey}`;
+                    card.innerHTML = `
+                        <div class="app-icon">
+                            <i class="fas ${app.icon}"></i>
+                        </div>
+                        <div class="app-name">${app.name}</div>
+                        <div class="app-desc">${app.desc}</div>
+                    `;
+                    
+                    card.addEventListener('click', () => {
+                        if (appKey === 'absensi') {
+                            loadAbsensi(user);
+                        } else if (appUrls[appKey]) {
+                            showToast(`Membuka ${app.name}...`, 'success');
+                            setTimeout(() => window.open(appUrls[appKey], '_blank'), 500);
+                        }
+                    });
+                    
+                    appsGrid.appendChild(card);
+                }
+            });
+        }
+
+        function handleLogout() {
+            if (confirm('Yakin ingin keluar?')) {
+                stopValidationMonitoring();
+                currentUser = null;
+                localStorage.removeItem('pinuslo_user');
+                
+                // Reset all pages
+                document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+                document.getElementById('loginPage').classList.add('active');
+                document.getElementById('loginForm').reset();
+                
+                showToast('Berhasil keluar', 'success');
+            }
+        }
+
+        // ============================================
+        // ABSENSI SYSTEM
+        // ============================================
+        async function loadAbsensi(user) {
+            document.getElementById('appSelectionPage').classList.remove('active');
+            document.getElementById('absensiPage').classList.add('active');
+            
+            // Show reports nav for admin
+            if (user.role === 'admin') {
+                document.getElementById('navReports').style.display = 'flex';
+            }
+            
+            // Initialize map and location
+            setTimeout(() => {
+                initMap();
+                getCurrentLocation()
+                    .then(() => startValidationMonitoring())
+                    .catch(err => {
+                        console.error('Location error:', err);
+                        showToast('Gagal mendapatkan lokasi. Aktifkan GPS Anda.', 'warning');
+                    });
+            }, 300);
+            
+            // Start clock
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            // Load today's attendance
+            await loadTodayAttendance();
+            
+            // Load history
+            await loadHistory(user.username);
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const clockEl = document.getElementById('clock');
+            const dateEl = document.getElementById('date');
+            
+            if (clockEl) {
+                clockEl.textContent = now.toLocaleTimeString('id-ID');
+            }
+            
+            if (dateEl) {
+                dateEl.textContent = now.toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+        }
+
+        async function loadTodayAttendance() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayData = await loadData(currentUser.username, today);
+            
+            const attendanceInfo = document.getElementById('attendanceInfo');
+            
+            if (todayData) {
+                const totalHours = calculateWorkingHours(todayData.checkIn, todayData.checkOut);
+                
+                attendanceInfo.innerHTML = `
+                    <div class="info-row">
+                        <div class="info-label">
+                            <i class="fas fa-sign-in-alt" style="color: #10b981;"></i>
+                            Check In
+                        </div>
+                        <div class="info-value">${todayData.checkIn || '-'}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">
+                            <i class="fas fa-sign-out-alt" style="color: #ef4444;"></i>
+                            Check Out
+                        </div>
+                        <div class="info-value">${todayData.checkOut || '-'}</div>
+                    </div>
+                    ${todayData.distance ? `
+                    <div class="info-row">
+                        <div class="info-label">
+                            <i class="fas fa-map-pin"></i>
+                            Jarak WiFi
+                        </div>
+                        <div class="info-value">${todayData.distance}m</div>
+                    </div>
+                    ` : ''}
+                    ${todayData.checkOut ? `
+                    <div class="info-row">
+                        <div class="info-label">
+                            <i class="fas fa-clock"></i>
+                            Total Jam Kerja
+                        </div>
+                        <div class="info-value" style="color: var(--pine-green);">${totalHours}</div>
+                    </div>
+                    ` : ''}
+                `;
+            } else {
+                attendanceInfo.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>Belum ada data absensi hari ini</p>
+                    </div>
+                `;
+            }
+            
+            validateAttendanceConditions();
+        }
+
+        function initMap() {
+            if (map) map.remove();
+            
+            map = L.map('map').setView([GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon], 17);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            geofenceCircle = L.circle([GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon], {
+                color: var(--pine-green),
+                fillColor: var(--pine-green),
+                fillOpacity: 0.2,
+                radius: GEOFENCE_RADIUS,
+                weight: 2
+            }).addTo(map);
+            
+            geofenceCircle.bindPopup(`
+                <strong>${LOCATIONS[selectedLocation].name}</strong><br>
+                Radius: ${GEOFENCE_RADIUS}m
+            `);
+            
+            const centerIcon = L.divIcon({
+                html: '<div style="background: #dc2626; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+                iconSize: [12, 12],
+                className: ''
+            });
+            
+            L.marker([GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon], { icon: centerIcon })
+                .addTo(map)
+                .bindPopup(`<strong>📍 WiFi Center</strong>`);
+        }
+
+        function getCurrentLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation tidak didukung'));
+                    return;
+                }
+                
+                const locationStatus = document.getElementById('locationStatus');
+                if (locationStatus) {
+                    locationStatus.className = 'status-item warning';
+                    locationStatus.innerHTML = `
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <div class="status-content">
+                            <strong>Mendapatkan lokasi...</strong>
+                            <small>Mohon tunggu</small>
+                        </div>
+                    `;
+                }
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        updateUserLocation(lat, lon);
+                        resolve({ lat, lon });
+                    },
+                    (error) => {
+                        const locationStatus = document.getElementById('locationStatus');
+                        if (locationStatus) {
+                            locationStatus.className = 'status-item error';
+                            locationStatus.innerHTML = `
+                                <i class="fas fa-times-circle"></i>
+                                <div class="status-content">
+                                    <strong>Gagal mendapatkan lokasi</strong>
+                                    <small>Aktifkan GPS Anda</small>
+                                </div>
+                            `;
+                        }
+                        reject(error);
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            });
+        }
+
+        function updateUserLocation(lat, lon) {
+            currentLocation = { lat, lon };
+            
+            if (userMarker) map.removeLayer(userMarker);
+            
+            const distance = getDistance(lat, lon, GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon);
+            const isInside = distance <= GEOFENCE_RADIUS;
+            
+            const icon = L.divIcon({
+                html: `<div style="background: ${isInside ? '#10b981' : '#ef4444'}; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>`,
+                iconSize: [16, 16],
+                className: ''
+            });
+            
+            userMarker = L.marker([lat, lon], { icon }).addTo(map);
+            userMarker.bindPopup(`
+                <strong>Lokasi Anda</strong><br>
+                ${isInside ? '✅ Di dalam area' : '❌ Di luar area'}<br>
+                Jarak: ${Math.round(distance)}m
+            `);
+            
+            map.setView([lat, lon], 17);
+            
+            const locationStatus = document.getElementById('locationStatus');
+            if (locationStatus) {
+                if (isInside) {
+                    locationStatus.className = 'status-item success';
+                    locationStatus.innerHTML = `
+                        <i class="fas fa-check-circle"></i>
+                        <div class="status-content">
+                            <strong>Lokasi Valid ✅</strong>
+                            <small>Jarak: ${Math.round(distance)}m dari WiFi</small>
+                        </div>
+                    `;
+                } else {
+                    locationStatus.className = 'status-item error';
+                    locationStatus.innerHTML = `
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="status-content">
+                            <strong>Lokasi Tidak Valid ❌</strong>
+                            <small>Anda ${Math.round(distance)}m dari area (max ${GEOFENCE_RADIUS}m)</small>
+                        </div>
+                    `;
+                }
+            }
+            
+            updateWiFiStatus();
+            validateAttendanceConditions();
+        }
+
+        async function updateWiFiStatus() {
+            const wifiStatus = document.getElementById('wifiStatus');
+            if (!wifiStatus) return;
+            
+            wifiStatus.className = 'status-item warning';
+            wifiStatus.innerHTML = `
+                <i class="fas fa-spinner fa-spin"></i>
+                <div class="status-content">
+                    <strong>Memeriksa WiFi...</strong>
+                    <small>Mohon tunggu</small>
+                </div>
+            `;
+            
+            const wifiCheck = await checkWiFiConnection();
+            
+            if (wifiCheck.connected) {
+                wifiStatus.className = 'status-item success';
+                wifiStatus.innerHTML = `
+                    <i class="fas fa-wifi"></i>
+                    <div class="status-content">
+                        <strong>WiFi Terhubung ✅</strong>
+                        <small>${REQUIRED_WIFI.ssid}</small>
+                    </div>
+                `;
+            } else {
+                wifiStatus.className = 'status-item error';
+                wifiStatus.innerHTML = `
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div class="status-content">
+                        <strong>WiFi Tidak Terhubung ❌</strong>
+                        <small>${wifiCheck.reason}</small>
+                    </div>
+                `;
+            }
+        }
+
         async function checkWiFiConnection() {
             if (!navigator.onLine) {
-                return { connected: false, reason: 'Tidak terhubung ke internet' };
+                return { connected: false, reason: 'Tidak terhubung internet' };
             }
-            if ('connection' in navigator) {
-                const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-                if (connection && connection.type && connection.type !== 'wifi') {
-                    return { connected: false, reason: 'Menggunakan data seluler, bukan WiFi' };
-                }
-            }
+            
             if (currentLocation) {
-                const distance = getDistance(currentLocation.lat, currentLocation.lon, GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon);
+                const distance = getDistance(
+                    currentLocation.lat, 
+                    currentLocation.lon, 
+                    GEOFENCE_CENTER.lat, 
+                    GEOFENCE_CENTER.lon
+                );
+                
                 if (distance <= GEOFENCE_RADIUS) {
-                    return { connected: true, reason: 'Terkoneksi dan berada di lokasi', distance: Math.round(distance) };
+                    return { 
+                        connected: true, 
+                        reason: 'Terkoneksi di area WiFi',
+                        distance: Math.round(distance)
+                    };
                 } else {
-                    return { connected: false, reason: `Terlalu jauh dari WiFi (${Math.round(distance)}m dari area)`, distance: Math.round(distance) };
+                    return { 
+                        connected: false, 
+                        reason: `Terlalu jauh (${Math.round(distance)}m)`,
+                        distance: Math.round(distance)
+                    };
                 }
             }
+            
             return { connected: false, reason: 'Lokasi belum terdeteksi' };
         }
 
@@ -751,52 +2168,35 @@
             const wifiCheck = await checkWiFiConnection();
             const locationValid = currentLocation && isInGeofence(currentLocation.lat, currentLocation.lon);
             isValidForAttendance = wifiCheck.connected && locationValid;
+            
             updateButtonStates();
-            updateValidationWarning(wifiCheck, locationValid);
             return isValidForAttendance;
         }
 
-        function updateButtonStates() {
+        async function updateButtonStates() {
             const checkInBtn = document.getElementById('checkInBtn');
             const checkOutBtn = document.getElementById('checkOutBtn');
+            
             if (!checkInBtn || !checkOutBtn) return;
+            
             const today = new Date().toISOString().split('T')[0];
-            loadData(currentUser.username, today).then(todayData => {
-                const isIn = todayData && todayData.checkIn && !todayData.checkOut;
-                const isDone = todayData && todayData.checkOut;
-                if (!isValidForAttendance || isIn || isDone) {
-                    checkInBtn.disabled = true;
-                    checkInBtn.classList.add('btn-disabled-custom');
-                } else {
-                    checkInBtn.disabled = false;
-                    checkInBtn.classList.remove('btn-disabled-custom');
-                }
-                if (!isValidForAttendance || !isIn || isDone) {
-                    checkOutBtn.disabled = true;
-                    checkOutBtn.classList.add('btn-disabled-custom');
-                } else {
-                    checkOutBtn.disabled = false;
-                    checkOutBtn.classList.remove('btn-disabled-custom');
-                }
-            });
-        }
-
-        function updateValidationWarning(wifiCheck, locationValid) {
-            const warningDiv = document.getElementById('validationWarning');
-            if (!warningDiv) return;
-            if (!isValidForAttendance) {
-                let reasons = [];
-                if (!wifiCheck.connected) {
-                    reasons.push(`<div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;"><i class="fas fa-wifi" style="font-size: 1.2rem;"></i><div><strong>WiFi:</strong> ${wifiCheck.reason}</div></div>`);
-                }
-                if (!locationValid) {
-                    const dist = wifiCheck.distance || 0;
-                    reasons.push(`<div style="display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-map-marker-alt" style="font-size: 1.2rem;"></i><div><strong>Lokasi:</strong> ${dist > 0 ? `Anda berada ${dist}m dari area (maksimal ${GEOFENCE_RADIUS}m)` : 'Di luar area WiFi '+REQUIRED_WIFI.ssid}</div></div>`);
-                }
-                warningDiv.style.display = 'block';
-                warningDiv.innerHTML = `<div style="display: flex; align-items: flex-start; gap: 1rem;"><i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #dc2626;"></i><div style="flex: 1;"><h4 style="color: #991b1b; margin-bottom: 0.8rem; font-size: 1.1rem;">🔒 Check In/Out Tidak Tersedia</h4><p style="margin-bottom: 1rem; color: #7f1d1d;">Anda tidak dapat melakukan absensi karena:</p>${reasons.join('')}<div style="margin-top: 1rem; padding: 0.8rem; background: white; border-radius: 8px; border-left: 4px solid #dc2626;"><strong>Solusi:</strong> Pastikan Anda terhubung ke WiFi <strong>"${REQUIRED_WIFI.ssid}"</strong> dan berada dalam radius ${GEOFENCE_RADIUS}m dari lokasi.</div></div></div>`;
+            const todayData = await loadData(currentUser.username, today);
+            
+            const isIn = todayData && todayData.checkIn && !todayData.checkOut;
+            const isDone = todayData && todayData.checkOut;
+            
+            // Check In button
+            if (!isValidForAttendance || isIn || isDone) {
+                checkInBtn.disabled = true;
             } else {
-                warningDiv.style.display = 'none';
+                checkInBtn.disabled = false;
+            }
+            
+            // Check Out button
+            if (!isValidForAttendance || !isIn || isDone) {
+                checkOutBtn.disabled = true;
+            } else {
+                checkOutBtn.disabled = false;
             }
         }
 
@@ -813,547 +2213,68 @@
             }
         }
 
-        function initMap() {
-            if (map) map.remove();
-            map = L.map('map').setView([GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon], 18);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
-            geofenceCircle = L.circle([GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon], { color: '#5D866C', fillColor: '#5D866C', fillOpacity: 0.2, radius: GEOFENCE_RADIUS, weight: 3 }).addTo(map);
-            geofenceCircle.bindPopup(`<strong>Area WiFi ${REQUIRED_WIFI.ssid}</strong><br>Radius: ${GEOFENCE_RADIUS}m<br>Anda harus berada dalam area ini`);
-            const centerIcon = L.divIcon({ html: '<div style="background: #dc2626; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.4);"></div>', iconSize: [16, 16], className: '' });
-            L.marker([GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon], { icon: centerIcon }).addTo(map).bindPopup(`<strong>📍 ${LOCATIONS[selectedLocation].name}</strong><br>Titik WiFi Center`);
-        }
-
-        function updateUserLocation(lat, lon) {
-            currentLocation = { lat, lon };
-            if (userMarker) map.removeLayer(userMarker);
-            const distance = getDistance(lat, lon, GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon);
-            const isInside = distance <= GEOFENCE_RADIUS;
-            const icon = L.divIcon({ html: `<div style="background: ${isInside ? '#10b981' : '#ef4444'}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`, iconSize: [20, 20], className: '' });
-            userMarker = L.marker([lat, lon], { icon }).addTo(map);
-            userMarker.bindPopup(`<strong>Lokasi Anda</strong><br>${isInside ? '✅ Di dalam area WiFi' : '❌ Di luar area WiFi'}<br>Jarak: ${Math.round(distance)}m`);
-            map.setView([lat, lon], 18);
-            const statusDiv = document.getElementById('locationStatus');
-            if (statusDiv) {
-                if (isInside) {
-                    statusDiv.className = 'location-status inside';
-                    statusDiv.innerHTML = `<i class="fas fa-check-circle" style="font-size: 1.5rem;"></i><div><strong>Lokasi Valid ✅</strong><br><small>Dalam radius ${Math.round(distance)}m dari WiFi ${REQUIRED_WIFI.ssid}</small></div>`;
-                } else {
-                    statusDiv.className = 'location-status outside';
-                    statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle" style="font-size: 1.5rem;"></i><div><strong>Lokasi Tidak Valid ❌</strong><br><small>Anda ${Math.round(distance)}m dari WiFi ${REQUIRED_WIFI.ssid} (maksimal ${GEOFENCE_RADIUS}m)</small></div>`;
-                }
-            }
-            updateWiFiStatus();
-            validateAttendanceConditions();
-        }
-
-        async function updateWiFiStatus() {
-            const wifiStatusDiv = document.getElementById('wifiStatus');
-            if (!wifiStatusDiv) return;
-            wifiStatusDiv.className = 'wifi-status wifi-checking';
-            wifiStatusDiv.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i><div><strong>Memeriksa Koneksi WiFi...</strong></div>';
-            const wifiCheck = await checkWiFiConnection();
-            if (wifiCheck.connected) {
-                wifiStatusDiv.className = 'wifi-status wifi-connected';
-                wifiStatusDiv.innerHTML = `<i class="fas fa-wifi" style="font-size: 1.5rem;"></i><div><strong>WiFi Terhubung ✅</strong><br><small>${wifiCheck.reason}</small></div>`;
-            } else {
-                wifiStatusDiv.className = 'wifi-status wifi-disconnected';
-                wifiStatusDiv.innerHTML = `<i class="fas fa-exclamation-circle" style="font-size: 1.5rem;"></i><div><strong>WiFi Tidak Terhubung ❌</strong><br><small>${wifiCheck.reason}</small></div>`;
-            }
-        }
-
-        function getCurrentLocation() {
-            return new Promise((resolve, reject) => {
-                if (!navigator.geolocation) {
-                    reject(new Error('Geolocation tidak didukung browser Anda'));
-                    return;
-                }
-                const statusDiv = document.getElementById('locationStatus');
-                if (statusDiv) {
-                    statusDiv.className = 'location-status loading';
-                    statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i><div><strong>Mendapatkan Lokasi...</strong><br><small>Mohon tunggu</small></div>';
-                }
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        updateUserLocation(lat, lon);
-                        resolve({ lat, lon });
-                    },
-                    (error) => {
-                        const statusDiv = document.getElementById('locationStatus');
-                        if (statusDiv) {
-                            statusDiv.className = 'location-status outside';
-                            statusDiv.innerHTML = '<i class="fas fa-times-circle" style="font-size: 1.5rem;"></i><div><strong>Error Lokasi</strong><br><small>Izinkan akses lokasi di browser Anda</small></div>';
-                        }
-                        reject(error);
-                    },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                );
-            });
-        }
-
-        function togglePassword() {
-            const input = document.getElementById('password');
-            const icon = document.getElementById('passwordToggleIcon');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.className = 'fas fa-eye-slash';
-            } else {
-                input.type = 'password';
-                icon.className = 'fas fa-eye';
-            }
-        }
-
-        function handleLogin(event) {
-            event.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const user = allUsers.find(u => u.username === username && u.password === password);
-            if (user) {
-                currentUser = user;
-                localStorage.setItem('pinuslo_user', JSON.stringify(user));
-                showAlert('Login berhasil! Selamat datang, ' + user.fullName, 'success');
-                setTimeout(() => showAppSelection(user), 1000);
-            } else {
-                showAlert('Username atau password salah!', 'danger');
-            }
-            return false;
-        }
-
-        function showAppSelection(user) {
-            document.getElementById('loginPage').classList.remove('active');
-            document.getElementById('appSelectionPage').classList.add('active');
-            document.getElementById('userAvatar').textContent = user.fullName.charAt(0).toUpperCase();
-            document.getElementById('userName').textContent = user.fullName;
-            document.getElementById('userRole').textContent = user.role === 'admin' ? 'Administrator' : 'User';
-            setTimeout(() => {
-                document.querySelectorAll('.app-card').forEach(card => {
-                    const appType = card.getAttribute('data-app');
-                    if (!user.apps.includes(appType)) {
-                        card.style.opacity = '0.5';
-                        card.style.cursor = 'not-allowed';
-                        card.onclick = () => showAlert('Anda tidak memiliki akses', 'danger');
-                    } else {
-                        card.onclick = () => {
-                            if (appType === 'absensi') {
-                                loadAbsensi(user);
-                            } else if (appUrls[appType]) {
-                                const appNames = { 'pinus': 'Pinus Selow Regist', 'pinewater': 'Pinewater', 'bbm': 'BBM Management', 'cafe': 'Pinuslo Cafe', 'glamping': 'Pinuslo Glamping' };
-                                showAlert('Membuka ' + appNames[appType] + '...', 'success');
-                                setTimeout(() => window.open(appUrls[appType], '_blank'), 500);
-                            }
-                        };
-                    }
-                });
-            }, 100);
-        }
-
-        function handleLogout() {
-            if (confirm('Yakin ingin keluar?')) {
-                stopValidationMonitoring();
-                currentUser = null;
-                localStorage.removeItem('pinuslo_user');
-                document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-                document.getElementById('loginPage').classList.add('active');
-                document.querySelector('form').reset();
-                showAlert('Berhasil keluar', 'success');
-            }
-        }
-
-        async function loadAbsensi(user) {
-            document.getElementById('appSelectionPage').classList.remove('active');
-            const container = document.getElementById('absensiContainer');
-            container.classList.add('active');
-            currentAbsensiView = 'check';
-            const today = new Date().toISOString().split('T')[0];
-            const todayData = await loadData(user.username, today);
-            const isIn = todayData && todayData.checkIn && !todayData.checkOut;
-            const isDone = todayData && todayData.checkOut;
-            
-            // ✅ FIXED: Hitung total jam dengan benar
-            const totalHoursToday = (todayData && todayData.checkIn && todayData.checkOut) ? 
-                calculateWorkingHours(todayData.checkIn, todayData.checkOut) : '-';
-            
-            container.innerHTML = `<div style="min-height: 100vh; background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%); padding: 2rem;"><div style="max-width: 1400px; margin: 0 auto;"><div style="background: white; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;"><div style="display: flex; align-items: center; gap: 1rem;"><div style="width: 60px; height: 60px; background: linear-gradient(135deg, #a855f7, #9333ea); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;"><i class="fas fa-shield-alt"></i></div><div><h2 style="margin: 0; color: var(--dark-forest);">Sistem Absensi • Validasi Ketat</h2><p style="margin: 0; color: var(--sage-green); font-size: 0.9rem;">${user.fullName} • WiFi + Lokasi Protected</p></div></div><button onclick="backToSelection()" style="padding: 0.8rem 1.5rem; background: var(--sage-green); color: white; border: none; border-radius: 10px; cursor: pointer;"><i class="fas fa-arrow-left me-2"></i>Kembali</button></div>
-            
-            <div style="background: white; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                <h4 style="color: var(--dark-forest); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                    <i class="fas fa-map-marker-alt"></i> Pilih Lokasi Absensi
-                </h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
-                    <button onclick="switchLocation('pinuslo')" id="locBtn_pinuslo" class="location-btn ${selectedLocation === 'pinuslo' ? 'active' : ''}" style="padding: 1.2rem; border-radius: 12px; border: 2px solid; cursor: pointer; transition: all 0.3s; background: ${selectedLocation === 'pinuslo' ? 'linear-gradient(135deg, var(--pine-green), var(--dark-forest))' : 'white'}; color: ${selectedLocation === 'pinuslo' ? 'white' : 'var(--dark-forest)'}; border-color: ${selectedLocation === 'pinuslo' ? 'var(--pine-green)' : '#e5e7eb'};">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <i class="fas fa-tree" style="font-size: 2rem;"></i>
-                            <div style="text-align: left;">
-                                <div style="font-weight: 700; font-size: 1.1rem;">Kawasan Pinuslo</div>
-                                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">WiFi: Cafepinuslo</div>
-                            </div>
-                        </div>
-                    </button>
-                    <button onclick="switchLocation('testing')" id="locBtn_testing" class="location-btn ${selectedLocation === 'testing' ? 'active' : ''}" style="padding: 1.2rem; border-radius: 12px; border: 2px solid; cursor: pointer; transition: all 0.3s; background: ${selectedLocation === 'testing' ? 'linear-gradient(135deg, #0891b2, #06b6d4)' : 'white'}; color: ${selectedLocation === 'testing' ? 'white' : 'var(--dark-forest)'}; border-color: ${selectedLocation === 'testing' ? '#0891b2' : '#e5e7eb'};">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <i class="fas fa-vial" style="font-size: 2rem;"></i>
-                            <div style="text-align: left;">
-                                <div style="font-weight: 700; font-size: 1.1rem;">Kawasan Testing</div>
-                                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">WiFi: Div--SIMO_5G</div>
-                            </div>
-                        </div>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="wifi-requirement"><h4 style="color: #1e40af; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-lock"></i> Persyaratan Koneksi Wajib</h4><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;"><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-wifi me-2"></i>WiFi SSID:</div><div style="background: white; padding: 0.5rem; border-radius: 8px; font-family: monospace;">${REQUIRED_WIFI.ssid}</div></div><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-lock me-2"></i>Security:</div><div style="background: white; padding: 0.5rem; border-radius: 8px;">${REQUIRED_WIFI.security}</div></div><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-map-marker-alt me-2"></i>Radius Maksimal:</div><div style="background: white; padding: 0.5rem; border-radius: 8px; font-weight: bold;">${GEOFENCE_RADIUS} meter dari titik WiFi</div></div></div></div><div id="validationWarning" class="validation-warning" style="display: none;"></div><div class="tab-menu"><button class="tab-btn active" onclick="switchTab('check')"><i class="fas fa-fingerprint me-2"></i>Check In/Out</button><button class="tab-btn" onclick="switchTab('history')"><i class="fas fa-history me-2"></i>Riwayat</button>${user.role === 'admin' ? '<button class="tab-btn" onclick="switchTab(\'reports\')"><i class="fas fa-chart-bar me-2"></i>Laporan</button>' : ''}</div><div id="checkView" class="tab-content"><div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem;"><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="color: var(--dark-forest); margin-bottom: 1rem;"><i class="fas fa-map-marked-alt me-2"></i>Monitor Lokasi & WiFi</h3><div id="wifiStatus" class="wifi-status wifi-checking"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i><div><strong>Memeriksa WiFi...</strong></div></div><div id="locationStatus" class="location-status loading"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i><div><strong>Memuat Lokasi...</strong><br><small>Mohon tunggu</small></div></div><div id="map"></div><button onclick="refreshLocation()" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; border: none; border-radius: 12px; font-size: 1rem; cursor: pointer; margin-top: 1rem;"><i class="fas fa-sync-alt me-2"></i>Refresh Lokasi & WiFi</button></div><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="text-align: center; color: var(--dark-forest); margin-bottom: 1rem;"><i class="fas fa-clock me-2"></i>Absensi Hari Ini</h3><div id="clock" style="text-align: center; font-size: 2.5rem; font-weight: bold; color: var(--dark-forest); margin: 1.5rem 0; font-family: monospace;">00:00:00</div><div id="date" style="text-align: center; font-size: 1rem; color: var(--sage-green); margin-bottom: 1.5rem;"></div><div style="text-align: center; margin-bottom: 1.5rem;"><span style="display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600; background: ${isDone ? 'rgba(168,85,247,0.15)' : isIn ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; color: ${isDone ? '#a855f7' : isIn ? '#059669' : '#dc2626'};"><i class="fas fa-${isDone ? 'check-circle' : isIn ? 'sign-in-alt' : 'clock'} me-2"></i>${isDone ? 'Selesai' : isIn ? 'Sudah Check In' : 'Belum Check In'}</span></div>${todayData ? `<div style="background: var(--cream); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between; margin-bottom: 1rem;"><span><i class="fas fa-sign-in-alt me-2" style="color: #10b981;"></i>Check In:</span><strong style="color: var(--dark-forest);">${todayData.checkIn || '-'}</strong></div><div style="display: flex; justify-content: space-between; margin-bottom: 1rem;"><span><i class="fas fa-sign-out-alt me-2" style="color: #ef4444;"></i>Check Out:</span><strong style="color: var(--dark-forest);">${todayData.checkOut || '-'}</strong></div>${todayData.distance ? `<div style="padding-top: 1rem; border-top: 1px solid var(--beige);"><div style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem;"><i class="fas fa-map-pin me-1"></i>Jarak dari WiFi: ${todayData.distance}m</div></div>` : ''}${todayData.checkOut ? `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--beige); text-align: center;"><span style="color: #666;">Total Jam Kerja:</span><strong style="display: block; color: var(--dark-forest); font-size: 1.3rem; margin-top: 0.5rem; font-weight: bold;">${totalHoursToday}</strong></div>` : ''}</div>` : ''}<button id="checkInBtn" onclick="checkIn()" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 15px; font-size: 1.1rem; cursor: pointer; margin-bottom: 1rem;" disabled class="btn-disabled-custom"><i class="fas fa-sign-in-alt me-2"></i>Check In</button><button id="checkOutBtn" onclick="checkOut()" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 15px; font-size: 1.1rem; cursor: pointer;" disabled class="btn-disabled-custom"><i class="fas fa-sign-out-alt me-2"></i>Check Out</button></div></div></div><div id="historyView" class="tab-content" style="display: none;"><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="color: var(--dark-forest); margin-bottom: 1.5rem;"><i class="fas fa-history me-2"></i>Riwayat Absensi Lengkap</h3><div id="historyFull" style="max-height: 600px; overflow-y: auto;"><p style="text-align: center; color: #999; padding: 2rem;">Memuat...</p></div></div></div>${user.role === 'admin' ? `<div id="reportsView" class="tab-content" style="display: none;"><div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);"><h3 style="color: var(--dark-forest); margin-bottom: 1.5rem;"><i class="fas fa-chart-bar me-2"></i>Laporan Absensi Semua Karyawan</h3><div class="filter-section"><select id="reportType" class="filter-input" onchange="loadReports()"><option value="daily">Laporan Harian</option><option value="weekly">Laporan Mingguan</option><option value="monthly">Laporan Bulanan</option></select><input type="date" id="reportDate" class="filter-input" value="${new Date().toISOString().split('T')[0]}" onchange="loadReports()"><button class="filter-btn" onclick="loadReports()"><i class="fas fa-search me-2"></i>Filter</button><button class="export-btn" onclick="exportReport()"><i class="fas fa-download me-2"></i>Export Excel</button></div><div id="reportContent" style="overflow-x: auto;"></div></div></div>` : ''}</div></div>`;
-            setTimeout(() => {
-                initMap();
-                getCurrentLocation().then(() => startValidationMonitoring()).catch(err => { console.error('Location error:', err); showAlert('Gagal mendapatkan lokasi. Aktifkan GPS dan izinkan akses lokasi.', 'warning'); });
-            }, 300);
-            setInterval(() => {
-                const now = new Date();
-                const clockEl = document.getElementById('clock');
-                const dateEl = document.getElementById('date');
-                if (clockEl) clockEl.textContent = now.toLocaleTimeString('id-ID');
-                if (dateEl) dateEl.textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            }, 1000);
-            if (user.role === 'admin') loadReports();
-        }
-
         function refreshLocation() {
-            getCurrentLocation().then(() => { showAlert('✅ Lokasi dan WiFi diperbarui!', 'success'); validateAttendanceConditions(); }).catch(err => showAlert('Gagal mendapatkan lokasi: ' + err.message, 'danger'));
+            getCurrentLocation()
+                .then(() => {
+                    showToast('✅ Lokasi diperbarui!', 'success');
+                    validateAttendanceConditions();
+                })
+                .catch(err => showToast('Gagal: ' + err.message, 'error'));
         }
-        
+
         function switchLocation(locationKey) {
             selectedLocation = locationKey;
             GEOFENCE_CENTER = LOCATIONS[locationKey].center;
             GEOFENCE_RADIUS = LOCATIONS[locationKey].radius;
             REQUIRED_WIFI = LOCATIONS[locationKey].wifi;
             
+            // Update UI
             document.querySelectorAll('.location-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            const activeBtn = document.getElementById('locBtn_' + locationKey);
-            if (activeBtn) {
-                activeBtn.classList.add('active');
-                if (locationKey === 'pinuslo') {
-                    activeBtn.style.background = 'linear-gradient(135deg, var(--pine-green), var(--dark-forest))';
-                    activeBtn.style.color = 'white';
-                    activeBtn.style.borderColor = 'var(--pine-green)';
-                } else {
-                    activeBtn.style.background = 'linear-gradient(135deg, #0891b2, #06b6d4)';
-                    activeBtn.style.color = 'white';
-                    activeBtn.style.borderColor = '#0891b2';
-                }
-            }
+            document.getElementById('locBtn_' + locationKey).classList.add('active');
             
-            document.querySelectorAll('.location-btn:not(.active)').forEach(btn => {
-                btn.style.background = 'white';
-                btn.style.color = 'var(--dark-forest)';
-                btn.style.borderColor = '#e5e7eb';
-            });
-            
-            const wifiRequirementDiv = document.querySelector('.wifi-requirement');
-            if (wifiRequirementDiv) {
-                wifiRequirementDiv.innerHTML = `<h4 style="color: #1e40af; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-lock"></i> Persyaratan Koneksi Wajib (${LOCATIONS[locationKey].name})</h4><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;"><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-wifi me-2"></i>WiFi SSID:</div><div style="background: white; padding: 0.5rem; border-radius: 8px; font-family: monospace;">${REQUIRED_WIFI.ssid}</div></div><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-lock me-2"></i>Security:</div><div style="background: white; padding: 0.5rem; border-radius: 8px;">${REQUIRED_WIFI.security}</div></div><div><div style="font-weight: 600; color: #1e3a8a; margin-bottom: 0.3rem;"><i class="fas fa-map-marker-alt me-2"></i>Radius Maksimal:</div><div style="background: white; padding: 0.5rem; border-radius: 8px; font-weight: bold;">${GEOFENCE_RADIUS} meter dari titik WiFi</div></div></div>`;
-            }
-            
+            // Re-initialize map
             if (map) {
                 map.remove();
                 map = null;
             }
             initMap();
             
-            getCurrentLocation().then(() => {
-                validateAttendanceConditions();
-                showAlert(`✅ Beralih ke ${LOCATIONS[locationKey].name}`, 'success');
-            }).catch(err => {
-                console.error('Location error:', err);
-            });
-        }
-
-        function switchTab(tab) {
-            currentAbsensiView = tab;
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
-            if (tab === 'check') {
-                document.querySelectorAll('.tab-btn')[0].classList.add('active');
-                document.getElementById('checkView').style.display = 'block';
-                setTimeout(() => { if (map) map.invalidateSize(); }, 100);
-                startValidationMonitoring();
-            } else {
-                stopValidationMonitoring();
-                if (tab === 'history') {
-                    document.querySelectorAll('.tab-btn')[1].classList.add('active');
-                    document.getElementById('historyView').style.display = 'block';
-                    loadHistory(currentUser.username, 'historyFull', 30);
-                } else if (tab === 'reports') {
-                    document.querySelectorAll('.tab-btn')[2].classList.add('active');
-                    document.getElementById('reportsView').style.display = 'block';
-                    loadReports();
-                }
-            }
-        }
-
-        // ✅ FUNGSI BARU: Menghitung total jam kerja dengan lebih akurat
-        function calculateWorkingHours(checkInTime, checkOutTime) {
-            if (!checkInTime || !checkOutTime) return '-';
-            
-            try {
-                // Parse waktu check in dan check out (format: "HH:MM:SS" atau "HH.MM.SS")
-                const parseTime = (timeStr) => {
-                    const parts = timeStr.replace(/\./g, ':').split(':');
-                    return {
-                        hours: parseInt(parts[0], 10),
-                        minutes: parseInt(parts[1], 10),
-                        seconds: parts.length > 2 ? parseInt(parts[2], 10) : 0
-                    };
-                };
-                
-                const checkIn = parseTime(checkInTime);
-                const checkOut = parseTime(checkOutTime);
-                
-                // Validasi input
-                if (isNaN(checkIn.hours) || isNaN(checkIn.minutes) || 
-                    isNaN(checkOut.hours) || isNaN(checkOut.minutes)) {
-                    return '-';
-                }
-                
-                // Konversi ke total menit
-                const checkInMinutes = checkIn.hours * 60 + checkIn.minutes + (checkIn.seconds / 60);
-                let checkOutMinutes = checkOut.hours * 60 + checkOut.minutes + (checkOut.seconds / 60);
-                
-                // Handle jika checkout melewati midnight
-                if (checkOutMinutes < checkInMinutes) {
-                    checkOutMinutes += 24 * 60; // Tambah 24 jam
-                }
-                
-                // Hitung selisih dalam menit
-                const diffMinutes = Math.round(checkOutMinutes - checkInMinutes);
-                
-                // Konversi ke jam dan menit
-                const hours = Math.floor(diffMinutes / 60);
-                const minutes = diffMinutes % 60;
-                
-                // Format output
-                if (hours === 0) {
-                    return `${minutes} menit`;
-                } else if (minutes === 0) {
-                    return `${hours} jam`;
-                } else {
-                    return `${hours} jam ${minutes} menit`;
-                }
-            } catch (error) {
-                console.error('Error calculating hours:', error);
-                return '-';
-            }
-        }
-
-        async function loadReports() {
-            const reportType = document.getElementById('reportType').value;
-            const reportDate = new Date(document.getElementById('reportDate').value);
-            
-            // ✅ Langsung load semua user tanpa filter
-            let allData = {};
-            for (const user of allUsers.filter(u => u.apps.includes('absensi'))) {
-                const userData = await loadAllUserData(user.username);
-                Object.assign(allData, userData);
-            }
-            
-            let filteredData = [];
-            const dates = Object.keys(allData).sort().reverse();
-            if (reportType === 'daily') {
-                const targetDate = reportDate.toISOString().split('T')[0];
-                filteredData = dates.filter(d => d === targetDate).map(d => allData[d]);
-            } else if (reportType === 'weekly') {
-                const weekStart = new Date(reportDate);
-                weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-                const weekEnd = new Date(weekStart);
-                weekEnd.setDate(weekEnd.getDate() + 6);
-                filteredData = dates.filter(d => { const date = new Date(d); return date >= weekStart && date <= weekEnd; }).map(d => allData[d]);
-            } else if (reportType === 'monthly') {
-                const month = reportDate.getMonth();
-                const year = reportDate.getFullYear();
-                filteredData = dates.filter(d => { const date = new Date(d); return date.getMonth() === month && date.getFullYear() === year; }).map(d => allData[d]);
-            }
-            let html = '<table class="report-table"><thead><tr>';
-            html += '<th>No</th><th>Nama</th><th>Tanggal</th><th>Hari</th><th>Check In</th><th>Check Out</th><th>Jarak WiFi</th><th>Total Jam</th><th>Status</th>';
-            if (currentUser.role === 'admin') html += '<th>Aksi</th>';
-            html += '</tr></thead><tbody>';
-            if (filteredData.length === 0) {
-                html += '<tr><td colspan="10" style="text-align: center; padding: 2rem; color: #999;">Tidak ada data</td></tr>';
-            } else {
-                filteredData.forEach((data, index) => {
-                    const date = new Date(data.date);
-                    const dayName = date.toLocaleDateString('id-ID', { weekday: 'long' });
-                    const formattedDate = date.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
-                    
-                    // ✅ FIXED: Gunakan fungsi calculateWorkingHours yang baru
-                    const totalHours = calculateWorkingHours(data.checkIn, data.checkOut);
-                    
-                    // ✅ FIXED: Status approval yang benar + tambah status rejected
-                    let status = 'incomplete';
-                    let statusText = 'Belum Selesai';
-                    
-                    if (data.checkOut) {
-                        // Jika sudah checkout, cek status
-                        if (data.rejected === true) {
-                            status = 'rejected';
-                            statusText = 'Ditolak';
-                        } else if (data.approved === true) {
-                            status = 'approved';
-                            statusText = 'Disetujui';
-                        } else {
-                            status = 'pending';
-                            statusText = 'Menunggu Persetujuan';
-                        }
-                    }
-                    
-                    const distanceText = data.distance ? data.distance + 'm' : '-';
-                    html += `<tr><td>${index + 1}</td><td><strong>${data.fullName}</strong>`;
-                    
-                    // Tampilkan alasan penolakan jika ditolak
-                    if (data.rejected && data.rejectionReason) {
-                        html += `<div class="rejection-reason"><i class="fas fa-info-circle me-1"></i><strong>Alasan:</strong> ${data.rejectionReason}</div>`;
-                    }
-                    
-                    html += `</td><td>${formattedDate}</td><td>${dayName}</td><td><span style="color: #10b981;"><i class="fas fa-sign-in-alt me-1"></i>${data.checkIn || '-'}</span></td><td><span style="color: #ef4444;"><i class="fas fa-sign-out-alt me-1"></i>${data.checkOut || '-'}</span></td><td style="font-size: 0.85rem;"><i class="fas fa-wifi me-1"></i>${distanceText}</td><td><strong>${totalHours}</strong></td><td><span class="status-badge status-${status}">${statusText}</span></td>`;
-                    
-                    if (currentUser.role === 'admin') { 
-                        // ✅ Tombol approve & reject hanya enabled jika sudah checkout dan belum disetujui/ditolak
-                        const canTakeAction = data.checkOut && !data.approved && !data.rejected;
-                        html += `<td style="white-space: nowrap;">`;
-                        html += `<button class="approve-btn" onclick="approveAttendance('${data.username}', '${data.date}')" ${!canTakeAction ? 'disabled' : ''}><i class="fas fa-check me-1"></i>Setujui</button>`;
-                        html += `<button class="reject-btn" onclick="openRejectModal('${data.username}', '${data.date}', '${data.fullName}')" ${!canTakeAction ? 'disabled' : ''}><i class="fas fa-times me-1"></i>Tolak</button>`;
-                        html += `</td>`;
-                    }
-                    html += '</tr>';
-                });
-            }
-            html += '</tbody></table>';
-            document.getElementById('reportContent').innerHTML = html;
-        }
-
-        async function loadAllUserData(username) {
-            let data = {};
-            if (window.firebaseEnabled && window.firebaseDb) {
-                try {
-                    const { collection, query, where, getDocs } = window.firebaseModules;
-                    const q = query(collection(window.firebaseDb, 'attendance'), where('username', '==', username));
-                    const snap = await getDocs(q);
-                    snap.forEach(doc => { const d = doc.data(); data[d.date] = d; });
-                } catch (e) { console.log('Firebase error:', e); }
-            }
-            if (Object.keys(data).length === 0) data = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
-            return data;
-        }
-
-        async function approveAttendance(username, date) {
-            if (window.firebaseEnabled && window.firebaseDb) {
-                try {
-                    const { doc, updateDoc } = window.firebaseModules;
-                    await updateDoc(doc(window.firebaseDb, 'attendance', `${username}_${date}`), { 
-                        approved: true, 
-                        approvedBy: currentUser.fullName, 
-                        approvedAt: new Date().toISOString() 
-                    });
-                    showAlert('✅ Absensi disetujui!', 'success');
-                } catch (e) { 
-                    console.log('Firebase error, using local'); 
-                    approveLocal(username, date); 
-                    showAlert('✅ Absensi disetujui! (Local)', 'success'); 
-                }
-            } else { 
-                approveLocal(username, date); 
-                showAlert('✅ Absensi disetujui! (Local)', 'success'); 
-            }
-            setTimeout(() => loadReports(), 500);
-        }
-
-        function approveLocal(username, date) {
-            const local = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
-            if (local[date]) { 
-                local[date].approved = true; 
-                local[date].approvedBy = currentUser.fullName; 
-                local[date].approvedAt = new Date().toISOString(); 
-                localStorage.setItem('attendance_' + username, JSON.stringify(local)); 
-            }
-        }
-
-        function exportReport() {
-            const reportType = document.getElementById('reportType').value;
-            const reportDate = document.getElementById('reportDate').value;
-            let filename = `Laporan_Absensi_Semua_Karyawan_${reportType}_${reportDate}`;
-            const table = document.querySelector('.report-table');
-            if (!table) { showAlert('Tidak ada data untuk diekspor', 'danger'); return; }
-            let csv = [];
-            const rows = table.querySelectorAll('tr');
-            rows.forEach(row => {
-                const cols = row.querySelectorAll('td, th');
-                const csvRow = [];
-                cols.forEach((col, idx) => { if (idx < cols.length - 1) csvRow.push('"' + col.textContent.replace(/"/g, '""') + '"'); });
-                csv.push(csvRow.join(','));
-            });
-            const csvContent = csv.join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename + '.csv';
-            link.click();
-            showAlert('✅ Report berhasil diexport!', 'success');
-        }
-
-        async function loadData(username, date) {
-            if (window.firebaseEnabled && window.firebaseDb) {
-                try {
-                    const { doc, getDoc } = window.firebaseModules;
-                    const docSnap = await getDoc(doc(window.firebaseDb, 'attendance', `${username}_${date}`));
-                    return docSnap.exists() ? docSnap.data() : null;
-                } catch (e) { console.log('Firebase error:', e); }
-            }
-            const local = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
-            return local[date] || null;
-        }
-
-        async function loadHistory(username, elementId, limitCount) {
-            let data = {};
-            if (window.firebaseEnabled && window.firebaseDb) {
-                try {
-                    const { collection, query, where, orderBy, limit, getDocs } = window.firebaseModules;
-                    const q = query(collection(window.firebaseDb, 'attendance'), where('username', '==', username), orderBy('date', 'desc'), limit(limitCount));
-                    const snap = await getDocs(q);
-                    snap.forEach(doc => { const d = doc.data(); data[d.date] = d; });
-                } catch (e) { console.log('Firebase error:', e); }
-            }
-            if (Object.keys(data).length === 0) data = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
-            
-            const html = Object.keys(data).length === 0 ? '<p style="text-align: center; color: #999; padding: 2rem;">Belum ada riwayat</p>' : Object.keys(data).sort().reverse().slice(0, limitCount).map(date => {
-                const d = data[date];
-                const dateObj = new Date(date + 'T00:00:00');
-                const formatted = dateObj.toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-                
-                // ✅ FIXED: Gunakan fungsi calculateWorkingHours
-                const workHours = calculateWorkingHours(d.checkIn, d.checkOut);
-                
-                return `<div style="padding: 1rem; border-bottom: 1px solid var(--beige); display: flex; justify-content: space-between; align-items: center;"><div><div style="font-weight: 600; color: var(--dark-forest);">${formatted}</div><span style="font-size: 0.85rem; color: ${d.checkOut ? '#666' : '#ef4444'};">${d.checkOut ? 'Durasi: ' + workHours : 'Belum Check Out'}</span>${d.distance ? `<div style="font-size: 0.75rem; color: #999; margin-top: 0.2rem;"><i class="fas fa-wifi me-1"></i>Jarak WiFi: ${d.distance}m</div>` : ''}${d.approved ? '<div style="margin-top: 0.3rem;"><span class="status-badge status-approved" style="font-size: 0.75rem;">Disetujui</span></div>' : d.checkOut ? '<div style="margin-top: 0.3rem;"><span class="status-badge status-pending" style="font-size: 0.75rem;">Menunggu Persetujuan</span></div>' : ''}</div><div style="display: flex; gap: 1rem; font-size: 0.9rem;"><div><i class="fas fa-sign-in-alt" style="color: #10b981;"></i> ${d.checkIn || '-'}</div><div><i class="fas fa-sign-out-alt" style="color: #ef4444;"></i> ${d.checkOut || '-'}</div></div></div>`;
-            }).join('');
-            document.getElementById(elementId).innerHTML = html;
+            getCurrentLocation()
+                .then(() => {
+                    validateAttendanceConditions();
+                    showToast(`✅ Beralih ke ${LOCATIONS[locationKey].name}`, 'success');
+                })
+                .catch(err => console.error('Location error:', err));
         }
 
         async function checkIn() {
             const isValid = await validateAttendanceConditions();
-            if (!isValid) { showAlert('❌ Tidak dapat Check In! Pastikan WiFi dan lokasi sudah sesuai.', 'danger'); return; }
+            if (!isValid) {
+                showToast('❌ WiFi dan lokasi harus valid!', 'error');
+                return;
+            }
             
-            const distance = getDistance(currentLocation.lat, currentLocation.lon, GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon);
+            const distance = getDistance(
+                currentLocation.lat, 
+                currentLocation.lon, 
+                GEOFENCE_CENTER.lat, 
+                GEOFENCE_CENTER.lon
+            );
+            
             const now = new Date();
             const date = now.toISOString().split('T')[0];
             const time = now.toLocaleTimeString('id-ID');
             
-            const data = { 
-                username: currentUser.username, 
-                fullName: currentUser.fullName, 
-                date, 
-                checkIn: time, 
-                checkOut: null, 
-                approved: false,  // ✅ FIXED: Default false
-                location: currentLocation, 
+            const data = {
+                username: currentUser.username,
+                fullName: currentUser.fullName,
+                date,
+                checkIn: time,
+                checkOut: null,
+                approved: false,
+                location: currentLocation,
                 distance: Math.round(distance),
                 locationName: LOCATIONS[selectedLocation].name,
                 wifiSSID: REQUIRED_WIFI.ssid
@@ -1362,28 +2283,38 @@
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
                     const { doc, setDoc } = window.firebaseModules;
-                    const docData = { ...data, timestamp: new Date() };
-                    await setDoc(doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`), docData);
-                    console.log('✅ Data tersimpan ke Firebase:', docData);
-                    showAlert('✅ Check In berhasil! (Cloud)', 'success');
-                } catch (e) { 
-                    console.error('Firebase error:', e); 
-                    saveLocal(data); 
-                    showAlert('✅ Check In berhasil! (Local)', 'success'); 
+                    await setDoc(
+                        doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`),
+                        { ...data, timestamp: new Date() }
+                    );
+                    showToast('✅ Check In berhasil!', 'success');
+                } catch (e) {
+                    console.error('Firebase error:', e);
+                    saveLocal(data);
+                    showToast('✅ Check In berhasil! (Local)', 'success');
                 }
-            } else { 
-                saveLocal(data); 
-                showAlert('✅ Check In berhasil! (Local)', 'success'); 
+            } else {
+                saveLocal(data);
+                showToast('✅ Check In berhasil! (Local)', 'success');
             }
             
-            setTimeout(() => loadAbsensi(currentUser), 1000);
+            setTimeout(() => loadTodayAttendance(), 500);
         }
 
         async function checkOut() {
             const isValid = await validateAttendanceConditions();
-            if (!isValid) { showAlert('❌ Tidak dapat Check Out! Pastikan WiFi dan lokasi sudah sesuai.', 'danger'); return; }
+            if (!isValid) {
+                showToast('❌ WiFi dan lokasi harus valid!', 'error');
+                return;
+            }
             
-            const distance = getDistance(currentLocation.lat, currentLocation.lon, GEOFENCE_CENTER.lat, GEOFENCE_CENTER.lon);
+            const distance = getDistance(
+                currentLocation.lat,
+                currentLocation.lon,
+                GEOFENCE_CENTER.lat,
+                GEOFENCE_CENTER.lon
+            );
+            
             const now = new Date();
             const date = now.toISOString().split('T')[0];
             const time = now.toLocaleTimeString('id-ID');
@@ -1391,29 +2322,32 @@
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
                     const { doc, updateDoc } = window.firebaseModules;
-                    const updateData = { 
-                        checkOut: time, 
-                        checkOutTimestamp: new Date(), 
-                        checkOutLocation: currentLocation, 
-                        checkOutDistance: Math.round(distance),
-                        checkOutLocationName: LOCATIONS[selectedLocation].name,
-                        checkOutWifiSSID: REQUIRED_WIFI.ssid
-                        // ✅ TIDAK mengubah approved, biarkan tetap false sampai admin menyetujui
-                    };
-                    await updateDoc(doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`), updateData);
-                    console.log('✅ Data checkout tersimpan ke Firebase:', updateData);
-                    showAlert('✅ Check Out berhasil! (Cloud)', 'success');
-                } catch (e) { 
-                    console.error('Firebase error:', e); 
-                    updateLocal(date, time, distance); 
-                    showAlert('✅ Check Out berhasil! (Local)', 'success'); 
+                    await updateDoc(
+                        doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`),
+                        {
+                            checkOut: time,
+                            checkOutTimestamp: new Date(),
+                            checkOutLocation: currentLocation,
+                            checkOutDistance: Math.round(distance),
+                            checkOutLocationName: LOCATIONS[selectedLocation].name,
+                            checkOutWifiSSID: REQUIRED_WIFI.ssid
+                        }
+                    );
+                    showToast('✅ Check Out berhasil!', 'success');
+                } catch (e) {
+                    console.error('Firebase error:', e);
+                    updateLocal(date, time, distance);
+                    showToast('✅ Check Out berhasil! (Local)', 'success');
                 }
-            } else { 
-                updateLocal(date, time, distance); 
-                showAlert('✅ Check Out berhasil! (Local)', 'success'); 
+            } else {
+                updateLocal(date, time, distance);
+                showToast('✅ Check Out berhasil! (Local)', 'success');
             }
             
-            setTimeout(() => loadAbsensi(currentUser), 1000);
+            setTimeout(() => {
+                loadTodayAttendance();
+                loadHistory(currentUser.username);
+            }, 500);
         }
 
         function saveLocal(data) {
@@ -1424,97 +2358,421 @@
 
         function updateLocal(date, time, distance) {
             const local = JSON.parse(localStorage.getItem('attendance_' + currentUser.username) || '{}');
-            if (local[date]) { 
-                local[date].checkOut = time; 
-                local[date].checkOutLocation = currentLocation; 
-                local[date].checkOutDistance = Math.round(distance); 
-                // ✅ TIDAK mengubah approved
-                localStorage.setItem('attendance_' + currentUser.username, JSON.stringify(local)); 
+            if (local[date]) {
+                local[date].checkOut = time;
+                local[date].checkOutLocation = currentLocation;
+                local[date].checkOutDistance = Math.round(distance);
+                localStorage.setItem('attendance_' + currentUser.username, JSON.stringify(local));
+            }
+        }
+
+        async function loadData(username, date) {
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
+                    const { doc, getDoc } = window.firebaseModules;
+                    const docSnap = await getDoc(
+                        doc(window.firebaseDb, 'attendance', `${username}_${date}`)
+                    );
+                    return docSnap.exists() ? docSnap.data() : null;
+                } catch (e) {
+                    console.log('Firebase error:', e);
+                }
+            }
+            
+            const local = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+            return local[date] || null;
+        }
+
+        async function loadHistory(username, limitCount = 30) {
+            let data = {};
+            
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
+                    const { collection, query, where, orderBy, limit, getDocs } = window.firebaseModules;
+                    const q = query(
+                        collection(window.firebaseDb, 'attendance'),
+                        where('username', '==', username),
+                        orderBy('date', 'desc'),
+                        limit(limitCount)
+                    );
+                    const snap = await getDocs(q);
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        data[d.date] = d;
+                    });
+                } catch (e) {
+                    console.log('Firebase error:', e);
+                }
+            }
+            
+            if (Object.keys(data).length === 0) {
+                data = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+            }
+            
+            const historyList = document.getElementById('historyList');
+            if (!historyList) return;
+            
+            if (Object.keys(data).length === 0) {
+                historyList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>Belum ada riwayat absensi</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const dates = Object.keys(data).sort().reverse().slice(0, limitCount);
+            
+            historyList.innerHTML = dates.map(date => {
+                const d = data[date];
+                const dateObj = new Date(date + 'T00:00:00');
+                const formatted = dateObj.toLocaleDateString('id-ID', {
+                    weekday: 'short',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                
+                const workHours = calculateWorkingHours(d.checkIn, d.checkOut);
+                
+                let statusBadge = '';
+                if (d.rejected) {
+                    statusBadge = '<span class="status-badge status-rejected">Ditolak</span>';
+                } else if (d.approved) {
+                    statusBadge = '<span class="status-badge status-approved">Disetujui</span>';
+                } else if (d.checkOut) {
+                    statusBadge = '<span class="status-badge status-pending">Menunggu</span>';
+                } else {
+                    statusBadge = '<span class="status-badge status-incomplete">Belum Selesai</span>';
+                }
+                
+                return `
+                    <div class="history-item">
+                        <div class="history-date">${formatted}</div>
+                        <div class="history-times">
+                            <div class="time-badge in">
+                                <i class="fas fa-sign-in-alt"></i>
+                                <span>${d.checkIn || '-'}</span>
+                            </div>
+                            <div class="time-badge out">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>${d.checkOut || '-'}</span>
+                            </div>
+                        </div>
+                        <div class="history-meta">
+                            <span><i class="fas fa-clock"></i> ${workHours}</span>
+                            ${statusBadge}
+                        </div>
+                        ${d.rejected && d.rejectionReason ? `
+                        <div class="rejection-reason">
+                            <strong>Alasan:</strong> ${d.rejectionReason}
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function switchAbsensiView(view) {
+            if (view === 'check') {
+                document.getElementById('absensiPage').classList.add('active');
+                document.getElementById('reportsPage').classList.remove('active');
+            } else if (view === 'history') {
+                // Scroll to history section
+                document.querySelector('.history-list')?.scrollIntoView({ behavior: 'smooth' });
+            } else if (view === 'reports' && currentUser.role === 'admin') {
+                document.getElementById('absensiPage').classList.remove('active');
+                document.getElementById('reportsPage').classList.add('active');
+                
+                // Set today's date
+                document.getElementById('reportDate').value = new Date().toISOString().split('T')[0];
+                loadReports();
             }
         }
 
         function backToSelection() {
             stopValidationMonitoring();
-            document.getElementById('absensiContainer').classList.remove('active');
+            document.getElementById('absensiPage').classList.remove('active');
+            document.getElementById('reportsPage').classList.remove('active');
             document.getElementById('appSelectionPage').classList.add('active');
-            if (map) { map.remove(); map = null; }
+            
+            if (map) {
+                map.remove();
+                map = null;
+            }
         }
 
-        // ========== FUNGSI REJECT ABSENSI ==========
-        
+        function backToAbsensi() {
+            document.getElementById('reportsPage').classList.remove('active');
+            document.getElementById('absensiPage').classList.add('active');
+        }
+
+        // ============================================
+        // REPORTS (ADMIN)
+        // ============================================
+        async function loadReports() {
+            const reportType = document.getElementById('reportType').value;
+            const reportDate = new Date(document.getElementById('reportDate').value);
+            
+            let allData = {};
+            for (const user of allUsers.filter(u => u.apps.includes('absensi'))) {
+                const userData = await loadAllUserData(user.username);
+                Object.assign(allData, userData);
+            }
+            
+            let filteredData = [];
+            const dates = Object.keys(allData).sort().reverse();
+            
+            if (reportType === 'daily') {
+                const targetDate = reportDate.toISOString().split('T')[0];
+                filteredData = dates
+                    .filter(d => d === targetDate)
+                    .map(d => allData[d]);
+            } else if (reportType === 'weekly') {
+                const weekStart = new Date(reportDate);
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                filteredData = dates
+                    .filter(d => {
+                        const date = new Date(d);
+                        return date >= weekStart && date <= weekEnd;
+                    })
+                    .map(d => allData[d]);
+            } else if (reportType === 'monthly') {
+                const month = reportDate.getMonth();
+                const year = reportDate.getFullYear();
+                filteredData = dates
+                    .filter(d => {
+                        const date = new Date(d);
+                        return date.getMonth() === month && date.getFullYear() === year;
+                    })
+                    .map(d => allData[d]);
+            }
+            
+            const reportsList = document.getElementById('reportsList');
+            
+            if (filteredData.length === 0) {
+                reportsList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>Tidak ada data untuk periode ini</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            reportsList.innerHTML = filteredData.map(data => {
+                const date = new Date(data.date);
+                const formattedDate = date.toLocaleDateString('id-ID', {
+                    weekday: 'short',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                
+                const totalHours = calculateWorkingHours(data.checkIn, data.checkOut);
+                
+                let status = 'incomplete';
+                let statusText = 'Belum Selesai';
+                
+                if (data.checkOut) {
+                    if (data.rejected) {
+                        status = 'rejected';
+                        statusText = 'Ditolak';
+                    } else if (data.approved) {
+                        status = 'approved';
+                        statusText = 'Disetujui';
+                    } else {
+                        status = 'pending';
+                        statusText = 'Menunggu';
+                    }
+                }
+                
+                const canTakeAction = data.checkOut && !data.approved && !data.rejected;
+                
+                return `
+                    <div class="report-item">
+                        <div class="report-header">
+                            <div class="report-user">
+                                <h4>${data.fullName}</h4>
+                                <p>${formattedDate}</p>
+                            </div>
+                            <span class="status-badge status-${status}">${statusText}</span>
+                        </div>
+                        <div class="report-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Check In</span>
+                                <span class="detail-value">${data.checkIn || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Check Out</span>
+                                <span class="detail-value">${data.checkOut || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Jarak WiFi</span>
+                                <span class="detail-value">${data.distance ? data.distance + 'm' : '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Total Jam</span>
+                                <span class="detail-value">${totalHours}</span>
+                            </div>
+                        </div>
+                        ${data.rejected && data.rejectionReason ? `
+                        <div class="rejection-reason">
+                            <strong>Alasan Penolakan:</strong> ${data.rejectionReason}
+                        </div>
+                        ` : ''}
+                        <div class="report-actions">
+                            <button class="btn-approve" 
+                                    onclick="approveAttendance('${data.username}', '${data.date}')"
+                                    ${!canTakeAction ? 'disabled' : ''}>
+                                <i class="fas fa-check"></i>
+                                Setujui
+                            </button>
+                            <button class="btn-reject" 
+                                    onclick="openRejectModal('${data.username}', '${data.date}', '${data.fullName}')"
+                                    ${!canTakeAction ? 'disabled' : ''}>
+                                <i class="fas fa-times"></i>
+                                Tolak
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadAllUserData(username) {
+            let data = {};
+            
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
+                    const { collection, query, where, getDocs } = window.firebaseModules;
+                    const q = query(
+                        collection(window.firebaseDb, 'attendance'),
+                        where('username', '==', username)
+                    );
+                    const snap = await getDocs(q);
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        data[d.date] = d;
+                    });
+                } catch (e) {
+                    console.log('Firebase error:', e);
+                }
+            }
+            
+            if (Object.keys(data).length === 0) {
+                data = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+            }
+            
+            return data;
+        }
+
+        async function approveAttendance(username, date) {
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
+                    const { doc, updateDoc } = window.firebaseModules;
+                    await updateDoc(
+                        doc(window.firebaseDb, 'attendance', `${username}_${date}`),
+                        {
+                            approved: true,
+                            approvedBy: currentUser.fullName,
+                            approvedAt: new Date().toISOString()
+                        }
+                    );
+                    showToast('✅ Absensi disetujui!', 'success');
+                } catch (e) {
+                    console.log('Firebase error, using local');
+                    approveLocal(username, date);
+                    showToast('✅ Absensi disetujui! (Local)', 'success');
+                }
+            } else {
+                approveLocal(username, date);
+                showToast('✅ Absensi disetujui! (Local)', 'success');
+            }
+            
+            setTimeout(() => loadReports(), 500);
+        }
+
+        function approveLocal(username, date) {
+            const local = JSON.parse(localStorage.getItem('attendance_' + username) || '{}');
+            if (local[date]) {
+                local[date].approved = true;
+                local[date].approvedBy = currentUser.fullName;
+                local[date].approvedAt = new Date().toISOString();
+                localStorage.setItem('attendance_' + username, JSON.stringify(local));
+            }
+        }
+
         function openRejectModal(username, date, fullName) {
             currentRejectData = { username, date, fullName };
             
-            // Set data ke modal
-            document.getElementById('rejectModalUsername').textContent = `${fullName} - ${date}`;
+            document.getElementById('rejectModalUser').textContent = `${fullName} - ${date}`;
             document.getElementById('rejectionReason').value = '';
             
-            // Tampilkan modal
-            const modal = document.getElementById('rejectModal');
-            modal.classList.add('active');
+            document.getElementById('rejectModal').classList.add('active');
             
-            // Focus ke textarea
             setTimeout(() => {
                 document.getElementById('rejectionReason').focus();
             }, 300);
         }
 
         function closeRejectModal() {
-            const modal = document.getElementById('rejectModal');
-            modal.classList.remove('active');
+            document.getElementById('rejectModal').classList.remove('active');
             currentRejectData = null;
             document.getElementById('rejectionReason').value = '';
         }
 
         async function confirmRejectAttendance() {
             if (!currentRejectData) {
-                showAlert('❌ Data tidak valid!', 'danger');
+                showToast('❌ Data tidak valid!', 'error');
                 return;
             }
             
             const reason = document.getElementById('rejectionReason').value.trim();
             
-            // Validasi alasan
             if (!reason) {
-                showAlert('❌ Alasan penolakan harus diisi!', 'danger');
+                showToast('❌ Alasan penolakan harus diisi!', 'error');
                 return;
             }
             
             if (reason.length < 10) {
-                showAlert('❌ Alasan penolakan minimal 10 karakter!', 'danger');
+                showToast('❌ Alasan minimal 10 karakter!', 'error');
                 return;
             }
             
             const { username, date, fullName } = currentRejectData;
             
-            // Konfirmasi
-            if (!confirm(`Yakin ingin menolak absensi ${fullName} pada tanggal ${date}?`)) {
+            if (!confirm(`Yakin menolak absensi ${fullName}?`)) {
                 return;
             }
             
-            // Proses reject
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
                     const { doc, updateDoc } = window.firebaseModules;
-                    await updateDoc(doc(window.firebaseDb, 'attendance', `${username}_${date}`), {
-                        rejected: true,
-                        approved: false,
-                        rejectionReason: reason,
-                        rejectedBy: currentUser.fullName,
-                        rejectedAt: new Date().toISOString()
-                    });
-                    showAlert('✅ Absensi berhasil ditolak!', 'success');
+                    await updateDoc(
+                        doc(window.firebaseDb, 'attendance', `${username}_${date}`),
+                        {
+                            rejected: true,
+                            approved: false,
+                            rejectionReason: reason,
+                            rejectedBy: currentUser.fullName,
+                            rejectedAt: new Date().toISOString()
+                        }
+                    );
+                    showToast('✅ Absensi ditolak!', 'success');
                 } catch (e) {
                     console.log('Firebase error, using local');
                     rejectLocal(username, date, reason);
-                    showAlert('✅ Absensi ditolak! (Local)', 'success');
+                    showToast('✅ Absensi ditolak! (Local)', 'success');
                 }
             } else {
                 rejectLocal(username, date, reason);
-                showAlert('✅ Absensi ditolak! (Local)', 'success');
+                showToast('✅ Absensi ditolak! (Local)', 'success');
             }
             
-            // Tutup modal dan reload
             closeRejectModal();
             setTimeout(() => loadReports(), 500);
         }
@@ -1530,26 +2788,56 @@
                 localStorage.setItem('attendance_' + username, JSON.stringify(local));
             }
         }
-        
-        // Close modal when clicking outside
-        document.addEventListener('click', function(event) {
-            const modal = document.getElementById('rejectModal');
-            if (event.target === modal) {
+
+        function exportReport() {
+            const reportType = document.getElementById('reportType').value;
+            const reportDate = document.getElementById('reportDate').value;
+            
+            const filename = `Laporan_Absensi_${reportType}_${reportDate}.csv`;
+            
+            const reportsList = document.getElementById('reportsList');
+            if (!reportsList || reportsList.children.length === 0) {
+                showToast('Tidak ada data untuk diekspor', 'error');
+                return;
+            }
+            
+            let csv = 'Nama,Tanggal,Check In,Check Out,Total Jam,Jarak WiFi,Status\n';
+            
+            const items = reportsList.querySelectorAll('.report-item');
+            items.forEach(item => {
+                const name = item.querySelector('.report-user h4').textContent;
+                const date = item.querySelector('.report-user p').textContent;
+                const details = item.querySelectorAll('.detail-value');
+                const checkIn = details[0].textContent;
+                const checkOut = details[1].textContent;
+                const distance = details[2].textContent;
+                const totalHours = details[3].textContent;
+                const status = item.querySelector('.status-badge').textContent;
+                
+                csv += `"${name}","${date}","${checkIn}","${checkOut}","${totalHours}","${distance}","${status}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            
+            showToast('✅ Report berhasil diexport!', 'success');
+        }
+
+        // ============================================
+        // MODAL EVENT HANDLERS
+        // ============================================
+        document.getElementById('rejectModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
                 closeRejectModal();
             }
         });
 
-        // ========== END FUNGSI REJECT ==========
-
-        function showAlert(msg, type) {
-            document.querySelectorAll('.alert-custom').forEach(el => el.remove());
-            const div = document.createElement('div');
-            div.className = `alert-custom alert-${type}`;
-            div.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between;"><span><i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-triangle'} me-2"></i>${msg}</span><button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: inherit; cursor: pointer; padding: 0; margin-left: 1rem;"><i class="fas fa-times"></i></button></div>`;
-            document.body.appendChild(div);
-            setTimeout(() => { if (div.parentNode) div.remove(); }, 6000);
-        }
-
+        // ============================================
+        // INITIALIZATION
+        // ============================================
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const saved = localStorage.getItem('pinuslo_user');
@@ -1558,10 +2846,21 @@
                     currentUser = user;
                     showAppSelection(user);
                 }
-                console.log('🚀 Pinuslo Apps - Fixed Version');
+                
+                console.log('🚀 Pinuslo Apps - Mobile Optimized');
                 console.log(window.firebaseEnabled ? '✅ Firebase Connected' : '⚠️ Firebase Offline');
             }, 500);
         });
+
+        // Prevent pull-to-refresh on iOS
+        document.body.addEventListener('touchmove', function(e) {
+            if (e.target.closest('.modal-sheet') || e.target.closest('#map')) {
+                return;
+            }
+            if (document.body.scrollTop === 0) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     </script>
 </body>
 </html>
