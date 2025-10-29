@@ -2379,10 +2379,10 @@
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
                     const modules = window.firebaseModules;
+                    // Remove orderBy to avoid composite index requirement
                     const q = modules.query(
                         modules.collection(window.firebaseDb, 'attendance'),
                         modules.where('username', '==', username),
-                        modules.orderBy('date', 'desc'),
                         modules.limit(limitCount)
                     );
                     const snap = await modules.getDocs(q);
@@ -2390,13 +2390,16 @@
                         const d = doc.data();
                         data[d.date] = d;
                     });
+                    console.log('✅ Firebase data loaded:', Object.keys(data).length, 'records');
                 } catch (e) {
-                    console.log('Firebase error:', e);
+                    console.error('❌ Firebase error:', e);
+                    showToast('⚠️ Menggunakan data lokal', 'warning');
                 }
             }
             
             if (Object.keys(data).length === 0) {
                 data = JSON.parse(localStorage.getItem(`attendance_${username}`) || '{}');
+                console.log('📦 Local data loaded:', Object.keys(data).length, 'records');
             }
             
             const historyList = document.getElementById('historyList');
@@ -2501,43 +2504,319 @@
         }
 
         // ============================================
-        // REPORTS (ADMIN) - Simplified for length
+        // REPORTS (ADMIN) - COMPLETE IMPLEMENTATION
         // ============================================
         async function loadReports() {
-            showToast('Loading reports...', 'success');
+            const reportType = document.getElementById('reportType').value;
+            const reportDate = new Date(document.getElementById('reportDate').value);
+            
+            let allData = {};
+            for (const user of allUsers.filter(u => u.apps.includes('absensi'))) {
+                const userData = await loadAllUserData(user.username);
+                Object.assign(allData, userData);
+            }
+            
+            let filteredData = [];
+            const dates = Object.keys(allData).sort().reverse();
+            
+            if (reportType === 'daily') {
+                const targetDate = reportDate.toISOString().split('T')[0];
+                filteredData = dates
+                    .filter(d => d === targetDate)
+                    .map(d => allData[d]);
+            } else if (reportType === 'weekly') {
+                const weekStart = new Date(reportDate);
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                filteredData = dates
+                    .filter(d => {
+                        const date = new Date(d);
+                        return date >= weekStart && date <= weekEnd;
+                    })
+                    .map(d => allData[d]);
+            } else if (reportType === 'monthly') {
+                const month = reportDate.getMonth();
+                const year = reportDate.getFullYear();
+                filteredData = dates
+                    .filter(d => {
+                        const date = new Date(d);
+                        return date.getMonth() === month && date.getFullYear() === year;
+                    })
+                    .map(d => allData[d]);
+            }
+            
+            const reportsList = document.getElementById('reportsList');
+            
+            if (filteredData.length === 0) {
+                reportsList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>Tidak ada data untuk periode ini</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            reportsList.innerHTML = filteredData.map(data => {
+                const date = new Date(data.date);
+                const formattedDate = date.toLocaleDateString('id-ID', {
+                    weekday: 'short',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                
+                const totalHours = calculateWorkingHours(data.checkIn, data.checkOut);
+                
+                let status = 'incomplete';
+                let statusText = 'Belum Selesai';
+                
+                if (data.checkOut) {
+                    if (data.rejected) {
+                        status = 'rejected';
+                        statusText = 'Ditolak';
+                    } else if (data.approved) {
+                        status = 'approved';
+                        statusText = 'Disetujui';
+                    } else {
+                        status = 'pending';
+                        statusText = 'Menunggu';
+                    }
+                }
+                
+                const canTakeAction = data.checkOut && !data.approved && !data.rejected;
+                
+                let html = `
+                    <div class="report-item">
+                        <div class="report-header">
+                            <div class="report-user">
+                                <h4>${data.fullName}</h4>
+                                <p>${formattedDate}</p>
+                            </div>
+                            <span class="status-badge status-${status}">${statusText}</span>
+                        </div>
+                        <div class="report-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Check In</span>
+                                <span class="detail-value">${data.checkIn || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Check Out</span>
+                                <span class="detail-value">${data.checkOut || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Jarak WiFi</span>
+                                <span class="detail-value">${data.distance ? data.distance + 'm' : '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Total Jam</span>
+                                <span class="detail-value">${totalHours}</span>
+                            </div>
+                        </div>
+                `;
+                
+                if (data.rejected && data.rejectionReason) {
+                    html += `<div class="rejection-reason"><strong>Alasan Penolakan:</strong> ${data.rejectionReason}</div>`;
+                }
+                
+                html += `
+                        <div class="report-actions">
+                            <button class="btn-approve" onclick="approveAttendance('${data.username}', '${data.date}')" ${!canTakeAction ? 'disabled' : ''}>
+                                <i class="fas fa-check"></i>Setujui
+                            </button>
+                            <button class="btn-reject" onclick="openRejectModal('${data.username}', '${data.date}', '${data.fullName}')" ${!canTakeAction ? 'disabled' : ''}>
+                                <i class="fas fa-times"></i>Tolak
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                return html;
+            }).join('');
         }
 
         async function loadAllUserData(username) {
-            return {};
+            let data = {};
+            
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
+                    const modules = window.firebaseModules;
+                    const q = modules.query(
+                        modules.collection(window.firebaseDb, 'attendance'),
+                        modules.where('username', '==', username)
+                    );
+                    const snap = await modules.getDocs(q);
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        data[d.date] = d;
+                    });
+                } catch (e) {
+                    console.log('Firebase error:', e);
+                }
+            }
+            
+            if (Object.keys(data).length === 0) {
+                data = JSON.parse(localStorage.getItem(`attendance_${username}`) || '{}');
+            }
+            
+            return data;
         }
 
         async function approveAttendance(username, date) {
-            showToast('✅ Approved!', 'success');
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
+                    const modules = window.firebaseModules;
+                    await modules.updateDoc(
+                        modules.doc(window.firebaseDb, 'attendance', `${username}_${date}`),
+                        {
+                            approved: true,
+                            approvedBy: currentUser.fullName,
+                            approvedAt: new Date().toISOString()
+                        }
+                    );
+                    showToast('✅ Absensi disetujui!', 'success');
+                } catch (e) {
+                    console.log('Firebase error, using local');
+                    approveLocal(username, date);
+                    showToast('✅ Absensi disetujui! (Local)', 'success');
+                }
+            } else {
+                approveLocal(username, date);
+                showToast('✅ Absensi disetujui! (Local)', 'success');
+            }
+            
+            setTimeout(() => loadReports(), 500);
         }
 
-        function approveLocal(username, date) {}
+        function approveLocal(username, date) {
+            const local = JSON.parse(localStorage.getItem(`attendance_${username}`) || '{}');
+            if (local[date]) {
+                local[date].approved = true;
+                local[date].approvedBy = currentUser.fullName;
+                local[date].approvedAt = new Date().toISOString();
+                localStorage.setItem(`attendance_${username}`, JSON.stringify(local));
+            }
+        }
 
         function openRejectModal(username, date, fullName) {
             currentRejectData = { username, date, fullName };
+            
             document.getElementById('rejectModalUser').textContent = `${fullName} - ${date}`;
             document.getElementById('rejectionReason').value = '';
+            
             document.getElementById('rejectModal').classList.add('active');
+            
+            setTimeout(() => {
+                document.getElementById('rejectionReason').focus();
+            }, 300);
         }
 
         function closeRejectModal() {
             document.getElementById('rejectModal').classList.remove('active');
             currentRejectData = null;
+            document.getElementById('rejectionReason').value = '';
         }
 
         async function confirmRejectAttendance() {
+            if (!currentRejectData) {
+                showToast('❌ Data tidak valid!', 'error');
+                return;
+            }
+            
+            const reason = document.getElementById('rejectionReason').value.trim();
+            
+            if (!reason) {
+                showToast('❌ Alasan penolakan harus diisi!', 'error');
+                return;
+            }
+            
+            if (reason.length < 10) {
+                showToast('❌ Alasan minimal 10 karakter!', 'error');
+                return;
+            }
+            
+            const { username, date, fullName } = currentRejectData;
+            
+            if (!confirm(`Yakin menolak absensi ${fullName}?`)) {
+                return;
+            }
+            
+            if (window.firebaseEnabled && window.firebaseDb) {
+                try {
+                    const modules = window.firebaseModules;
+                    await modules.updateDoc(
+                        modules.doc(window.firebaseDb, 'attendance', `${username}_${date}`),
+                        {
+                            rejected: true,
+                            approved: false,
+                            rejectionReason: reason,
+                            rejectedBy: currentUser.fullName,
+                            rejectedAt: new Date().toISOString()
+                        }
+                    );
+                    showToast('✅ Absensi ditolak!', 'success');
+                } catch (e) {
+                    console.log('Firebase error, using local');
+                    rejectLocal(username, date, reason);
+                    showToast('✅ Absensi ditolak! (Local)', 'success');
+                }
+            } else {
+                rejectLocal(username, date, reason);
+                showToast('✅ Absensi ditolak! (Local)', 'success');
+            }
+            
             closeRejectModal();
-            showToast('✅ Rejected!', 'success');
+            setTimeout(() => loadReports(), 500);
         }
 
-        function rejectLocal(username, date, reason) {}
+        function rejectLocal(username, date, reason) {
+            const local = JSON.parse(localStorage.getItem(`attendance_${username}`) || '{}');
+            if (local[date]) {
+                local[date].rejected = true;
+                local[date].approved = false;
+                local[date].rejectionReason = reason;
+                local[date].rejectedBy = currentUser.fullName;
+                local[date].rejectedAt = new Date().toISOString();
+                localStorage.setItem(`attendance_${username}`, JSON.stringify(local));
+            }
+        }
 
         function exportReport() {
-            showToast('✅ Exported!', 'success');
+            const reportType = document.getElementById('reportType').value;
+            const reportDate = document.getElementById('reportDate').value;
+            
+            const filename = `Laporan_Absensi_${reportType}_${reportDate}.csv`;
+            
+            const reportsList = document.getElementById('reportsList');
+            if (!reportsList || reportsList.children.length === 0) {
+                showToast('Tidak ada data untuk diekspor', 'error');
+                return;
+            }
+            
+            let csv = 'Nama,Tanggal,Check In,Check Out,Total Jam,Jarak WiFi,Status\n';
+            
+            const items = reportsList.querySelectorAll('.report-item');
+            items.forEach(item => {
+                const name = item.querySelector('.report-user h4').textContent;
+                const date = item.querySelector('.report-user p').textContent;
+                const details = item.querySelectorAll('.detail-value');
+                const checkIn = details[0].textContent;
+                const checkOut = details[1].textContent;
+                const distance = details[2].textContent;
+                const totalHours = details[3].textContent;
+                const status = item.querySelector('.status-badge').textContent;
+                
+                csv += `"${name}","${date}","${checkIn}","${checkOut}","${totalHours}","${distance}","${status}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            
+            showToast('✅ Report berhasil diexport!', 'success');
         }
 
         // ============================================
@@ -2564,8 +2843,15 @@
                     showAppSelection(user);
                 }
                 
-                console.log('🚀 Pinuslo Apps - SCROLL FIXED');
-                console.log(window.firebaseEnabled ? '✅ Firebase Connected' : '⚠️ Firebase Offline');
+                console.log('🚀 Pinuslo Apps - SCROLL FIXED + FIREBASE RESTORED');
+                console.log('📊 Firebase Status:', window.firebaseEnabled ? '✅ Connected' : '❌ Offline');
+                
+                if (window.firebaseEnabled) {
+                    console.log('🔥 Firebase DB:', window.firebaseDb ? '✅ Ready' : '❌ Not Ready');
+                    console.log('📦 Firebase Modules:', window.firebaseModules ? '✅ Loaded' : '❌ Missing');
+                } else {
+                    console.log('⚠️ App akan menggunakan LocalStorage sebagai fallback');
+                }
             }, 500);
         });
 
