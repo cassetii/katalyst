@@ -451,6 +451,14 @@
             background: linear-gradient(135deg, #a855f7, #9333ea);
         }
         
+        .app-card.inventory .app-icon {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+        
+        .app-card.marketplace .app-icon {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+        }
+        
         .app-name {
             font-size: var(--font-base);
             font-weight: 700;
@@ -461,6 +469,94 @@
             font-size: var(--font-xs);
             color: var(--sage-green);
             line-height: 1.4;
+        }
+        
+        /* ========================================
+           COMING SOON PAGE
+        ======================================== */
+        .coming-soon-page {
+            padding-top: 56px;
+            padding-bottom: 80px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .coming-soon-content {
+            text-align: center;
+            padding: var(--spacing-xl);
+        }
+        
+        .coming-soon-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto var(--spacing-xl);
+            background: linear-gradient(135deg, var(--pine-green), var(--dark-forest));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .coming-soon-icon i {
+            font-size: 3rem;
+            color: white;
+        }
+        
+        .coming-soon-title {
+            font-size: var(--font-2xl);
+            font-weight: 700;
+            color: var(--dark-forest);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .coming-soon-subtitle {
+            font-size: var(--font-base);
+            color: var(--sage-green);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .coming-soon-description {
+            background: white;
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .coming-soon-description h3 {
+            font-size: var(--font-lg);
+            font-weight: 700;
+            color: var(--dark-forest);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .coming-soon-description p {
+            font-size: var(--font-sm);
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .coming-soon-features {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+        
+        .coming-soon-features li {
+            font-size: var(--font-sm);
+            color: #666;
+            padding: var(--spacing-xs) 0;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .coming-soon-features li i {
+            color: var(--pine-green);
         }
         
         /* ========================================
@@ -1407,6 +1503,35 @@
     </div>
 
     <!-- ============================================
+         COMING SOON PAGE
+    ============================================ -->
+    <div id="comingSoonPage" class="page-section">
+        <div class="coming-soon-page">
+            <div class="mobile-header">
+                <div class="mobile-header-back" onclick="backToSelection()">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <h1 class="mobile-header-title" id="comingSoonTitle">Coming Soon</h1>
+            </div>
+            
+            <div class="coming-soon-content" id="comingSoonContent">
+                <!-- Content will be dynamically generated -->
+            </div>
+        </div>
+        
+        <nav class="mobile-nav">
+            <div class="mobile-nav-item" onclick="backToSelection()">
+                <i class="fas fa-home"></i>
+                <span>Beranda</span>
+            </div>
+            <div class="mobile-nav-item" onclick="handleLogout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Keluar</span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- ============================================
          ABSENSI PAGE
     ============================================ -->
     <div id="absensiPage" class="page-section">
@@ -1653,16 +1778,16 @@
         let REQUIRED_WIFI = LOCATIONS[selectedLocation].wifi;
 
         const allUsers = [
-            { username: 'iqbal', password: 'iqbal123', role: 'admin', fullName: 'Iqbal', apps: ['pinus', 'pinewater', 'bbm', 'cafe', 'glamping', 'absensi'] },
-            { username: 'jendra', password: 'jendra123', role: 'admin', fullName: 'Jendra', apps: ['cafe', 'absensi'] },
-            { username: 'selow', password: 'selow123', role: 'admin', fullName: 'Selow', apps: ['pinus', 'pinewater', 'absensi'] },
-            { username: 'komandan', password: 'komandan123', role: 'admin', fullName: 'Komandan', apps: ['pinewater', 'bbm', 'absensi'] },
-            { username: 'agus', password: 'agus123', role: 'user', fullName: 'Agus', apps: ['pinus', 'cafe', 'glamping', 'absensi'] },
-            { username: 'selfi', password: 'selfi123', role: 'user', fullName: 'Selfi', apps: ['pinus', 'cafe', 'glamping', 'absensi'] },
+            { username: 'iqbal', password: 'iqbal123', role: 'admin', fullName: 'Iqbal', apps: ['pinus', 'pinewater', 'bbm', 'cafe', 'glamping', 'absensi', 'inventory', 'marketplace'] },
+            { username: 'jendra', password: 'jendra123', role: 'admin', fullName: 'Jendra', apps: ['cafe', 'absensi', 'inventory'] },
+            { username: 'selow', password: 'selow123', role: 'admin', fullName: 'Selow', apps: ['pinus', 'pinewater', 'absensi', 'inventory'] },
+            { username: 'komandan', password: 'komandan123', role: 'admin', fullName: 'Komandan', apps: ['pinewater', 'bbm', 'absensi', 'inventory'] },
+            { username: 'agus', password: 'agus123', role: 'user', fullName: 'Agus', apps: ['pinus', 'cafe', 'glamping', 'absensi', 'marketplace'] },
+            { username: 'selfi', password: 'selfi123', role: 'user', fullName: 'Selfi', apps: ['pinus', 'cafe', 'glamping', 'absensi', 'marketplace'] },
             { username: 'fadel', password: 'fadel123', role: 'user', fullName: 'Fadel', apps: ['cafe', 'absensi'] },
             { username: 'farel', password: 'farel123', role: 'user', fullName: 'Farel', apps: ['cafe', 'absensi'] },
             { username: 'sadiq', password: 'sadiq123', role: 'user', fullName: 'Sadiq', apps: ['cafe', 'absensi'] },
-            { username: 'sirad', password: 'sirad123', role: 'user', fullName: 'Sirad', apps: ['pinus', 'pinewater', 'cafe', 'glamping', 'absensi'] },
+            { username: 'sirad', password: 'sirad123', role: 'user', fullName: 'Sirad', apps: ['pinus', 'pinewater', 'cafe', 'glamping', 'absensi', 'marketplace'] },
             { username: 'bate', password: 'bate123', role: 'user', fullName: 'Bate', apps: ['pinus', 'cafe', 'absensi'] },
             { username: 'zulkifli', password: 'zulkifli123', role: 'user', fullName: 'Zulkifli', apps: ['pinus', 'pinewater', 'absensi'] },
             { username: 'ikki', password: 'ikki123', role: 'user', fullName: 'Ikki', apps: ['pinus', 'cafe', 'absensi'] },
@@ -1687,7 +1812,33 @@
             'bbm': { name: 'BBM Management', icon: 'fa-gas-pump', desc: 'Sistem Manajemen Bahan Bakar' },
             'cafe': { name: 'Pinuslo Cafe', icon: 'fa-coffee', desc: 'Sistem Manajemen Cafe & POS' },
             'glamping': { name: 'Pinuslo Glamping', icon: 'fa-campground', desc: 'Sistem Reservasi Glamping' },
-            'absensi': { name: 'Absensi', icon: 'fa-fingerprint', desc: 'Sistem Absensi Karyawan' }
+            'absensi': { name: 'Absensi', icon: 'fa-fingerprint', desc: 'Sistem Absensi Karyawan' },
+            'inventory': { 
+                name: 'Pinuslo Inventory', 
+                icon: 'fa-boxes', 
+                desc: 'Sistem Manajemen Inventaris & Stok',
+                comingSoon: true,
+                features: [
+                    'Tracking stok real-time untuk semua unit bisnis',
+                    'Manajemen supplier & purchase order',
+                    'Notifikasi stok minimum & reorder otomatis',
+                    'Laporan inventaris & analisis pergerakan barang',
+                    'Integrasi dengan sistem BBM & Cafe'
+                ]
+            },
+            'marketplace': { 
+                name: 'Pinuslo Marketplace', 
+                icon: 'fa-store', 
+                desc: 'Platform Marketplace Produk Lokal',
+                comingSoon: true,
+                features: [
+                    'Jual produk lokal & souvenir khas daerah',
+                    'Sistem pemesanan online dengan payment gateway',
+                    'Rating & review dari customer',
+                    'Tracking pengiriman & notifikasi status',
+                    'Dashboard penjual untuk kelola produk & pesanan'
+                ]
+            }
         };
 
         // ============================================
@@ -1848,6 +1999,8 @@
                     card.addEventListener('click', () => {
                         if (appKey === 'absensi') {
                             loadAbsensi(user);
+                        } else if (app.comingSoon) {
+                            showComingSoon(app);
                         } else if (appUrls[appKey]) {
                             showToast(`Membuka ${app.name}...`, 'success');
                             setTimeout(() => window.open(appUrls[appKey], '_blank'), 500);
@@ -1857,6 +2010,36 @@
                     appsGrid.appendChild(card);
                 }
             });
+        }
+
+        function showComingSoon(app) {
+            document.getElementById('appSelectionPage').classList.remove('active');
+            document.getElementById('comingSoonPage').classList.add('active');
+            
+            document.getElementById('comingSoonTitle').textContent = app.name;
+            
+            const content = document.getElementById('comingSoonContent');
+            content.innerHTML = `
+                <div class="coming-soon-icon">
+                    <i class="fas ${app.icon}"></i>
+                </div>
+                <h2 class="coming-soon-title">${app.name}</h2>
+                <p class="coming-soon-subtitle">Segera Hadir!</p>
+                
+                <div class="coming-soon-description">
+                    <h3>Tentang Aplikasi Ini</h3>
+                    <p>${app.desc}</p>
+                    
+                    <h3 style="margin-top: 1rem;">Fitur yang Akan Hadir:</h3>
+                    <ul class="coming-soon-features">
+                        ${app.features.map(f => `<li><i class="fas fa-check-circle"></i> ${f}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <p style="color: #7d8b70; font-size: 0.875rem; margin-top: 1rem;">
+                    <i class="fas fa-info-circle"></i> Aplikasi ini sedang dalam tahap pengembangan dan akan segera diluncurkan.
+                </p>
+            `;
         }
 
         function handleLogout() {
@@ -1878,6 +2061,7 @@
         // ============================================
         async function loadAbsensi(user) {
             document.getElementById('appSelectionPage').classList.remove('active');
+            document.getElementById('comingSoonPage').classList.remove('active');
             document.getElementById('absensiPage').classList.add('active');
             
             if (user.role === 'admin') {
@@ -2379,7 +2563,6 @@
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
                     const modules = window.firebaseModules;
-                    // Remove orderBy to avoid composite index requirement
                     const q = modules.query(
                         modules.collection(window.firebaseDb, 'attendance'),
                         modules.where('username', '==', username),
@@ -2490,6 +2673,7 @@
             stopValidationMonitoring();
             document.getElementById('absensiPage').classList.remove('active');
             document.getElementById('reportsPage').classList.remove('active');
+            document.getElementById('comingSoonPage').classList.remove('active');
             document.getElementById('appSelectionPage').classList.add('active');
             
             if (map) {
@@ -2843,7 +3027,7 @@
                     showAppSelection(user);
                 }
                 
-                console.log('🚀 Pinuslo Apps - SCROLL FIXED + FIREBASE RESTORED');
+                console.log('🚀 Pinuslo Apps - WITH INVENTORY & MARKETPLACE');
                 console.log('📊 Firebase Status:', window.firebaseEnabled ? '✅ Connected' : '❌ Offline');
                 
                 if (window.firebaseEnabled) {
@@ -2855,8 +3039,7 @@
             }, 500);
         });
 
-        // CRITICAL: NO TOUCH EVENT BLOCKING
-        console.log('✅ All scroll blocking removed - app should scroll freely now');
+        console.log('✅ Pinuslo Inventory & Marketplace added successfully!');
     </script>
 </body>
 </html>
