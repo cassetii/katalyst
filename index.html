@@ -2694,43 +2694,73 @@
             const reportType = document.getElementById('reportType').value;
             const reportDate = new Date(document.getElementById('reportDate').value);
             
+            // Show loading state
+            const reportsList = document.getElementById('reportsList');
+            reportsList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Memuat data...</p>
+                </div>
+            `;
+            
+            // Load all user data
             let allData = {};
-            for (const user of allUsers.filter(u => u.apps.includes('absensi'))) {
+            const usersWithAbsensi = allUsers.filter(u => u.apps.includes('absensi'));
+            console.log('📊 Loading data for users:', usersWithAbsensi.map(u => u.username));
+            
+            for (const user of usersWithAbsensi) {
                 const userData = await loadAllUserData(user.username);
-                Object.assign(allData, userData);
+                console.log(`✅ Loaded ${Object.keys(userData).length} records for ${user.username}`);
+                // Merge userData dengan prefix username untuk menghindari overwrite
+                Object.keys(userData).forEach(date => {
+                    const key = `${user.username}_${date}`;
+                    allData[key] = userData[date];
+                });
             }
             
+            console.log('📦 Total records loaded:', Object.keys(allData).length);
+            
             let filteredData = [];
-            const dates = Object.keys(allData).sort().reverse();
+            const allKeys = Object.keys(allData);
             
             if (reportType === 'daily') {
                 const targetDate = reportDate.toISOString().split('T')[0];
-                filteredData = dates
-                    .filter(d => d === targetDate)
-                    .map(d => allData[d]);
+                filteredData = allKeys
+                    .filter(k => allData[k].date === targetDate)
+                    .map(k => allData[k]);
             } else if (reportType === 'weekly') {
                 const weekStart = new Date(reportDate);
                 weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                weekStart.setHours(0, 0, 0, 0);
                 const weekEnd = new Date(weekStart);
                 weekEnd.setDate(weekEnd.getDate() + 6);
-                filteredData = dates
-                    .filter(d => {
-                        const date = new Date(d);
-                        return date >= weekStart && date <= weekEnd;
+                weekEnd.setHours(23, 59, 59, 999);
+                
+                filteredData = allKeys
+                    .filter(k => {
+                        const itemDate = new Date(allData[k].date + 'T00:00:00');
+                        return itemDate >= weekStart && itemDate <= weekEnd;
                     })
-                    .map(d => allData[d]);
+                    .map(k => allData[k]);
             } else if (reportType === 'monthly') {
                 const month = reportDate.getMonth();
                 const year = reportDate.getFullYear();
-                filteredData = dates
-                    .filter(d => {
-                        const date = new Date(d);
-                        return date.getMonth() === month && date.getFullYear() === year;
+                filteredData = allKeys
+                    .filter(k => {
+                        const itemDate = new Date(allData[k].date + 'T00:00:00');
+                        return itemDate.getMonth() === month && itemDate.getFullYear() === year;
                     })
-                    .map(d => allData[d]);
+                    .map(k => allData[k]);
             }
             
-            const reportsList = document.getElementById('reportsList');
+            console.log('🔍 Filtered data:', filteredData.length, 'records');
+            
+            // Sort by date descending
+            filteredData.sort((a, b) => {
+                if (a.date > b.date) return -1;
+                if (a.date < b.date) return 1;
+                return 0;
+            });
             
             if (filteredData.length === 0) {
                 reportsList.innerHTML = `
@@ -2825,25 +2855,36 @@
             
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
+                    console.log(`🔥 Fetching Firebase data for: ${username}`);
                     const modules = window.firebaseModules;
                     const q = modules.query(
                         modules.collection(window.firebaseDb, 'attendance'),
-                        modules.where('username', '==', username)
+                        modules.where('username', '==', username),
+                        modules.limit(100) // Increase limit to get more records
                     );
                     const snap = await modules.getDocs(q);
+                    console.log(`📥 Firebase returned ${snap.size} documents for ${username}`);
                     snap.forEach(doc => {
                         const d = doc.data();
                         data[d.date] = d;
                     });
                 } catch (e) {
-                    console.log('Firebase error:', e);
+                    console.error(`❌ Firebase error for ${username}:`, e);
                 }
             }
             
-            if (Object.keys(data).length === 0) {
-                data = JSON.parse(localStorage.getItem(`attendance_${username}`) || '{}');
-            }
+            // Also check localStorage as fallback
+            const localData = JSON.parse(localStorage.getItem(`attendance_${username}`) || '{}');
+            console.log(`📦 Local storage has ${Object.keys(localData).length} records for ${username}`);
             
+            // Merge Firebase and local data (Firebase takes priority)
+            Object.keys(localData).forEach(date => {
+                if (!data[date]) {
+                    data[date] = localData[date];
+                }
+            });
+            
+            console.log(`✅ Total ${Object.keys(data).length} records loaded for ${username}`);
             return data;
         }
 
