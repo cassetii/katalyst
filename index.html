@@ -2566,12 +2566,12 @@
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
                     const modules = window.firebaseModules;
-                    // FIX: Tambah orderBy('date', 'desc') agar limit mengambil data TERBARU
+                    // Tanpa orderBy agar tidak butuh composite index di Firestore
+                    // Sorting dilakukan di sisi JavaScript setelah data terkumpul
                     const q = modules.query(
                         modules.collection(window.firebaseDb, 'attendance'),
                         modules.where('username', '==', username),
-                        modules.orderBy('date', 'desc'),
-                        modules.limit(limitCount)
+                        modules.limit(200)
                     );
                     const snap = await modules.getDocs(q);
                     snap.forEach(doc => {
@@ -2869,12 +2869,11 @@
                 try {
                     console.log(`🔥 Fetching Firebase data for: ${username}`);
                     const modules = window.firebaseModules;
-                    // FIX: Tambah orderBy('date', 'desc') agar limit 100 mengambil data TERBARU
+                    // Tanpa orderBy agar tidak butuh composite index di Firestore
                     const q = modules.query(
                         modules.collection(window.firebaseDb, 'attendance'),
                         modules.where('username', '==', username),
-                        modules.orderBy('date', 'desc'),
-                        modules.limit(100)
+                        modules.limit(200)
                     );
                     const snap = await modules.getDocs(q);
                     console.log(`📥 Firebase returned ${snap.size} documents for ${username}`);
