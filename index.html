@@ -2105,7 +2105,8 @@
         }
 
         async function loadTodayAttendance() {
-            const today = new Date().toISOString().split('T')[0];
+            // FIX: Gunakan local date (WIB) agar konsisten dengan saat check-in
+            const today = new Date().toLocaleDateString('en-CA');
             const todayData = await loadData(currentUser.username, today);
             
             const attendanceInfo = document.getElementById('attendanceInfo');
@@ -2358,7 +2359,7 @@
             
             if (!checkInBtn || !checkOutBtn) return;
             
-            const today = new Date().toISOString().split('T')[0];
+            const today = new Date().toLocaleDateString('en-CA'); // FIX: local timezone (WIB)
             const todayData = await loadData(currentUser.username, today);
             
             const isIn = todayData && todayData.checkIn && !todayData.checkOut;
@@ -2437,7 +2438,8 @@
             );
             
             const now = new Date();
-            const date = now.toISOString().split('T')[0];
+            // FIX: Gunakan local date (WIB) bukan UTC agar tidak bergeser 1 hari
+            const date = now.toLocaleDateString('en-CA'); // Format: YYYY-MM-DD (local timezone)
             const time = now.toLocaleTimeString('id-ID');
             
             const data = {
@@ -2490,7 +2492,8 @@
             );
             
             const now = new Date();
-            const date = now.toISOString().split('T')[0];
+            // FIX: Gunakan local date (WIB) bukan UTC agar tidak bergeser 1 hari
+            const date = now.toLocaleDateString('en-CA'); // Format: YYYY-MM-DD (local timezone)
             const time = now.toLocaleTimeString('id-ID');
             
             if (window.firebaseEnabled && window.firebaseDb) {
@@ -2563,9 +2566,11 @@
             if (window.firebaseEnabled && window.firebaseDb) {
                 try {
                     const modules = window.firebaseModules;
+                    // FIX: Tambah orderBy('date', 'desc') agar limit mengambil data TERBARU
                     const q = modules.query(
                         modules.collection(window.firebaseDb, 'attendance'),
                         modules.where('username', '==', username),
+                        modules.orderBy('date', 'desc'),
                         modules.limit(limitCount)
                     );
                     const snap = await modules.getDocs(q);
@@ -2580,10 +2585,16 @@
                 }
             }
             
-            if (Object.keys(data).length === 0) {
-                data = JSON.parse(localStorage.getItem(`attendance_${username}`) || '{}');
-                console.log('📦 Local data loaded:', Object.keys(data).length, 'records');
-            }
+            // FIX: Selalu merge localStorage (tidak hanya saat Firebase kosong)
+            // agar absen offline tidak hilang
+            const localData = JSON.parse(localStorage.getItem(`attendance_${username}`) || '{}');
+            console.log('📦 Local data found:', Object.keys(localData).length, 'records');
+            Object.keys(localData).forEach(date => {
+                if (!data[date]) {
+                    data[date] = localData[date];
+                }
+            });
+            console.log('📦 Total after merge:', Object.keys(data).length, 'records');
             
             const historyList = document.getElementById('historyList');
             if (!historyList) return;
@@ -2664,7 +2675,7 @@
                 document.getElementById('absensiPage').classList.remove('active');
                 document.getElementById('reportsPage').classList.add('active');
                 
-                document.getElementById('reportDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('reportDate').value = new Date().toLocaleDateString('en-CA'); // FIX: local timezone
                 loadReports();
             }
         }
@@ -2724,7 +2735,8 @@
             const allKeys = Object.keys(allData);
             
             if (reportType === 'daily') {
-                const targetDate = reportDate.toISOString().split('T')[0];
+                // FIX: Ambil langsung dari value input agar tidak terpengaruh timezone UTC
+                const targetDate = document.getElementById('reportDate').value; // Format: YYYY-MM-DD
                 filteredData = allKeys
                     .filter(k => allData[k].date === targetDate)
                     .map(k => allData[k]);
@@ -2857,10 +2869,12 @@
                 try {
                     console.log(`🔥 Fetching Firebase data for: ${username}`);
                     const modules = window.firebaseModules;
+                    // FIX: Tambah orderBy('date', 'desc') agar limit 100 mengambil data TERBARU
                     const q = modules.query(
                         modules.collection(window.firebaseDb, 'attendance'),
                         modules.where('username', '==', username),
-                        modules.limit(100) // Increase limit to get more records
+                        modules.orderBy('date', 'desc'),
+                        modules.limit(100)
                     );
                     const snap = await modules.getDocs(q);
                     console.log(`📥 Firebase returned ${snap.size} documents for ${username}`);
