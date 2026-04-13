@@ -2081,6 +2081,9 @@
             updateClock();
             setInterval(updateClock, 1000);
             
+            // Auto-sync data offline yang pending saat buka halaman
+            syncPendingToFirebase();
+            
             await loadTodayAttendance();
             await loadHistory(user.username);
         }
@@ -2463,17 +2466,22 @@
                         modules.doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`),
                         docData
                     );
+                    // Hapus dari localStorage kalau sudah berhasil ke Firebase
+                    removeLocalPending(date);
                     showToast('✅ Check In berhasil!', 'success');
                 } catch (e) {
                     console.error('Firebase error:', e);
-                    saveLocal(data);
-                    showToast('✅ Check In berhasil! (Local)', 'success');
+                    // Simpan lokal + tandai pending sync
+                    saveLocal(data, true);
+                    showToast('✅ Check In berhasil! (akan sync otomatis)', 'warning');
                 }
             } else {
-                saveLocal(data);
-                showToast('✅ Check In berhasil! (Local)', 'success');
+                saveLocal(data, true);
+                showToast('✅ Check In berhasil! (akan sync otomatis)', 'warning');
             }
             
+            // Coba sync data lokal yang pending setiap kali ada aksi
+            syncPendingToFirebase();
             setTimeout(() => loadTodayAttendance(), 500);
         }
 
@@ -2510,36 +2518,80 @@
                             checkOutWifiSSID: REQUIRED_WIFI.ssid
                         }
                     );
+                    removeLocalPending(date);
                     showToast('✅ Check Out berhasil!', 'success');
                 } catch (e) {
                     console.error('Firebase error:', e);
-                    updateLocal(date, time, distance);
-                    showToast('✅ Check Out berhasil! (Local)', 'success');
+                    updateLocal(date, time, distance, true);
+                    showToast('✅ Check Out berhasil! (akan sync otomatis)', 'warning');
                 }
             } else {
-                updateLocal(date, time, distance);
-                showToast('✅ Check Out berhasil! (Local)', 'success');
+                updateLocal(date, time, distance, true);
+                showToast('✅ Check Out berhasil! (akan sync otomatis)', 'warning');
             }
             
+            syncPendingToFirebase();
             setTimeout(() => {
                 loadTodayAttendance();
                 loadHistory(currentUser.username);
             }, 500);
         }
 
-        function saveLocal(data) {
+        function saveLocal(data, pending = false) {
             const local = JSON.parse(localStorage.getItem(`attendance_${currentUser.username}`) || '{}');
-            local[data.date] = data;
+            local[data.date] = { ...data, _pending: pending };
             localStorage.setItem(`attendance_${currentUser.username}`, JSON.stringify(local));
         }
 
-        function updateLocal(date, time, distance) {
+        function updateLocal(date, time, distance, pending = false) {
             const local = JSON.parse(localStorage.getItem(`attendance_${currentUser.username}`) || '{}');
             if (local[date]) {
                 local[date].checkOut = time;
                 local[date].checkOutLocation = currentLocation;
                 local[date].checkOutDistance = Math.round(distance);
+                if (pending) local[date]._pending = true;
                 localStorage.setItem(`attendance_${currentUser.username}`, JSON.stringify(local));
+            }
+        }
+
+        function removeLocalPending(date) {
+            const local = JSON.parse(localStorage.getItem(`attendance_${currentUser.username}`) || '{}');
+            if (local[date]) {
+                delete local[date]._pending;
+                localStorage.setItem(`attendance_${currentUser.username}`, JSON.stringify(local));
+            }
+        }
+
+        // Sync data lokal yang belum terkirim ke Firebase
+        async function syncPendingToFirebase() {
+            if (!window.firebaseEnabled || !window.firebaseDb || !currentUser) return;
+            
+            const local = JSON.parse(localStorage.getItem(`attendance_${currentUser.username}`) || '{}');
+            const pendingDates = Object.keys(local).filter(d => local[d]._pending);
+            
+            if (pendingDates.length === 0) return;
+            
+            console.log(`🔄 Syncing ${pendingDates.length} pending record(s) to Firebase...`);
+            
+            for (const date of pendingDates) {
+                try {
+                    const modules = window.firebaseModules;
+                    const record = { ...local[date] };
+                    delete record._pending;
+                    await modules.setDoc(
+                        modules.doc(window.firebaseDb, 'attendance', `${currentUser.username}_${date}`),
+                        { ...record, timestamp: new Date() }
+                    );
+                    removeLocalPending(date);
+                    console.log(`✅ Synced: ${currentUser.username}_${date}`);
+                } catch (e) {
+                    console.log(`⏳ Still pending: ${date}`, e.message);
+                }
+            }
+            
+            const remaining = Object.keys(JSON.parse(localStorage.getItem(`attendance_${currentUser.username}`) || '{}')).filter(d => local[d]?._pending);
+            if (remaining.length === 0 && pendingDates.length > 0) {
+                showToast('✅ Data offline berhasil disync ke server!', 'success');
             }
         }
 
