@@ -3374,17 +3374,24 @@
 
     <style>
     /* ========== INVENTORY MODULE STYLES ========== */
-    .inv-page { display:flex; flex-direction:column; height:100%; background:#f4f6f0; overflow:hidden; }
-    .inv-tabs { display:flex; gap:4px; padding:10px 12px 0; background:#fff; border-bottom:2px solid #e8eee0; flex-shrink:0; overflow-x:auto; }
-    .inv-tab {
-        padding:8px 14px; border:none; border-radius:8px 8px 0 0;
-        background:transparent; color:#7d8b70; font-size:.78rem; font-weight:600;
-        cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent;
-        margin-bottom:-2px; transition:all .15s;
+    .inv-page { min-height:100vh; background:#f4f6f0; padding-top:56px; padding-bottom:80px; }
+    .inv-tabs {
+        display:flex; gap:0; padding:0 12px;
+        background:#fff; border-bottom:2px solid #d4e0c0;
+        position:sticky; top:56px; z-index:50;
+        overflow-x:auto; -webkit-overflow-scrolling:touch;
     }
-    .inv-tab.active { background:#fff; color:#6e9726; border-bottom:2px solid #6e9726; }
+    .inv-tab {
+        padding:10px 14px; border:none; border-top:none; border-left:none; border-right:none;
+        border-bottom:3px solid transparent;
+        background:transparent; color:#7d8b70; font-size:.78rem; font-weight:600;
+        cursor:pointer; white-space:nowrap; transition:all .15s; flex-shrink:0;
+        margin-bottom:-2px;
+    }
+    .inv-tab:hover { color:#6e9726; }
+    .inv-tab.active { color:#6e9726; border-bottom:3px solid #6e9726; background:#f9fbf5; }
     .inv-tab i { margin-right:5px; }
-    .inv-panel { flex:1; overflow-y:auto; padding:14px 12px 80px; }
+    .inv-panel { padding:14px 12px; }
     .inv-toolbar { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
     .inv-search { flex:1; min-width:140px; padding:8px 12px; border:1px solid #d4e0c0; border-radius:8px; font-size:.8rem; background:#fff; outline:none; }
     .inv-search:focus { border-color:#6e9726; }
