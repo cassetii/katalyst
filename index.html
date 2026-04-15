@@ -3147,27 +3147,30 @@
     ============================================ -->
     <div id="inventoryPage" class="page-section">
         <div class="inv-page">
-            <div class="mobile-header">
-                <div class="mobile-header-back" onclick="backToSelection()">
-                    <i class="fas fa-arrow-left"></i>
+
+            <!-- Fixed top bar: title + tabs all in one -->
+            <div class="inv-topbar">
+                <div class="inv-topbar-title">
+                    <button class="inv-back-btn" onclick="backToSelection()">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <span>HPP Calculator</span>
                 </div>
-                <h1 class="mobile-header-title">HPP Calculator</h1>
+                <div class="inv-tabs">
+                    <button class="inv-tab active" onclick="switchInvTab('bahan')" id="invTab_bahan">
+                        <i class="fas fa-carrot"></i> Master Bahan
+                    </button>
+                    <button class="inv-tab" onclick="switchInvTab('hpp')" id="invTab_hpp">
+                        <i class="fas fa-calculator"></i> Kalkulasi HPP
+                    </button>
+                    <button class="inv-tab" onclick="switchInvTab('kas')" id="invTab_kas">
+                        <i class="fas fa-wallet"></i> Kas Harian
+                    </button>
+                </div>
             </div>
 
-            <!-- Tab Nav -->
-            <div class="inv-tabs">
-                <button class="inv-tab active" onclick="switchInvTab('bahan')" id="invTab_bahan">
-                    <i class="fas fa-carrot"></i> Master Bahan
-                </button>
-                <button class="inv-tab" onclick="switchInvTab('hpp')" id="invTab_hpp">
-                    <i class="fas fa-calculator"></i> Kalkulasi HPP
-                </button>
-                <button class="inv-tab" onclick="switchInvTab('kas')" id="invTab_kas">
-                    <i class="fas fa-wallet"></i> Kas Harian
-                </button>
-            </div>
-
-            <!-- Tab: Master Bahan -->
+            <!-- Scrollable content area -->
+            <div class="inv-content">
             <div id="invPanel_bahan" class="inv-panel">
                 <div class="inv-toolbar">
                     <input class="inv-search" type="text" placeholder="🔍 Cari bahan..." oninput="renderBahanTable(this.value)">
@@ -3242,7 +3245,9 @@
                     </table>
                 </div>
             </div>
-        </div>
+
+            </div><!-- end inv-content -->
+        </div><!-- end inv-page -->
 
         <nav class="mobile-nav">
             <div class="mobile-nav-item" onclick="backToSelection()">
@@ -3374,24 +3379,206 @@
 
     <style>
     /* ========== INVENTORY MODULE STYLES ========== */
-    .inv-page { min-height:100vh; background:#f4f6f0; padding-top:60px; padding-bottom:80px; }
+
+    /* Page container - takes full screen, no padding needed */
+    .inv-page {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        height: 100dvh;
+        background: #f4f6f0;
+        overflow: hidden;
+    }
+
+    /* Fixed top bar replaces the global mobile-header for this page */
+    .inv-topbar {
+        flex-shrink: 0;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,.1);
+        z-index: 50;
+    }
+    .inv-topbar-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px 8px;
+        border-bottom: 1px solid #eef2e8;
+    }
+    .inv-topbar-title span {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #3a5010;
+    }
+    .inv-back-btn {
+        width: 36px; height: 36px;
+        border: none; border-radius: 50%;
+        background: #f0f5e8;
+        color: #6e9726;
+        font-size: .9rem;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .inv-back-btn:active { background: #d4e0c0; transform: scale(.95); }
+
+    /* Tabs row */
     .inv-tabs {
-        display:flex; gap:0; padding:0 12px;
-        background:#fff; border-bottom:2px solid #d4e0c0;
-        position:sticky; top:60px; z-index:50;
-        overflow-x:auto; -webkit-overflow-scrolling:touch;
+        display: flex;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 0 12px;
+        gap: 0;
+        scrollbar-width: none;
     }
+    .inv-tabs::-webkit-scrollbar { display: none; }
     .inv-tab {
-        padding:10px 14px; border:none; border-top:none; border-left:none; border-right:none;
-        border-bottom:3px solid transparent;
-        background:transparent; color:#7d8b70; font-size:.78rem; font-weight:600;
-        cursor:pointer; white-space:nowrap; transition:all .15s; flex-shrink:0;
-        margin-bottom:-2px;
+        padding: 10px 16px;
+        border: none;
+        border-bottom: 3px solid transparent;
+        background: transparent;
+        color: #7d8b70;
+        font-size: .78rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all .15s;
     }
-    .inv-tab:hover { color:#6e9726; }
-    .inv-tab.active { color:#6e9726; border-bottom:3px solid #6e9726; background:#f9fbf5; }
-    .inv-tab i { margin-right:5px; }
-    .inv-panel { padding:14px 12px; }
+    .inv-tab:hover { color: #6e9726; }
+    .inv-tab.active { color: #6e9726; border-bottom-color: #6e9726; }
+    .inv-tab i { margin-right: 5px; }
+
+    /* Scrollable content */
+    .inv-content {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 80px;
+    }
+    .inv-panel { padding: 14px 12px; }
+
+    /* Toolbar */
+    .inv-toolbar { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+    .inv-search { flex:1; min-width:140px; padding:9px 12px; border:1px solid #d4e0c0; border-radius:8px; font-size:.8rem; background:#fff; outline:none; }
+    .inv-search:focus { border-color:#6e9726; }
+    .inv-count { font-size:.75rem; color:#7d8b70; flex:1; }
+
+    /* Buttons */
+    .inv-btn-primary { padding:9px 14px; border:none; border-radius:8px; background:#6e9726; color:#fff; font-size:.78rem; font-weight:600; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:5px; }
+    .inv-btn-primary:hover { background:#5a7d1e; }
+    .inv-btn-primary:active { transform:scale(.97); }
+    .inv-btn-ghost { padding:9px 14px; border:1px solid #d4e0c0; border-radius:8px; background:#fff; color:#7d8b70; font-size:.78rem; font-weight:600; cursor:pointer; }
+    .inv-btn-ghost:hover { background:#f4f6f0; }
+    .inv-btn-sm { padding:5px 9px !important; font-size:.72rem !important; }
+    .inv-btn-danger { padding:5px 9px; border:1px solid #e05252; border-radius:6px; background:rgba(224,82,82,.1); color:#e05252; font-size:.72rem; font-weight:600; cursor:pointer; }
+    .inv-btn-danger:hover { background:#e05252; color:#fff; }
+    .inv-btn-edit { padding:5px 9px; border:1px solid #e3b341; border-radius:6px; background:rgba(227,179,65,.1); color:#a07d10; font-size:.72rem; font-weight:600; cursor:pointer; }
+    .inv-btn-edit:hover { background:#e3b341; color:#fff; }
+
+    /* Table */
+    .inv-table-wrap { overflow-x:auto; border-radius:10px; border:1px solid #d4e0c0; background:#fff; }
+    .inv-table { width:100%; border-collapse:collapse; font-size:.76rem; }
+    .inv-table th { padding:9px 10px; background:#f0f5e8; color:#5a7030; font-weight:700; text-align:left; border-bottom:1px solid #d4e0c0; white-space:nowrap; font-size:.7rem; text-transform:uppercase; letter-spacing:.04em; }
+    .inv-table td { padding:8px 10px; border-bottom:1px solid #eef2e8; color:#333; }
+    .inv-table tr:last-child td { border-bottom:none; }
+    .inv-table tr:hover td { background:#f9fbf5; }
+    .inv-table tfoot td { background:#f0f5e8; font-weight:700; border-top:2px solid #d4e0c0; }
+    .num-cell { text-align:right; font-family:'Courier New',monospace; }
+    .col-hs { color:#6e9726 !important; font-family:'Courier New',monospace; text-align:right; font-weight:700; }
+    .text-green { color:#3a9040 !important; font-weight:700; }
+    .text-red   { color:#e05252 !important; font-weight:700; }
+    .text-amber { color:#a07d10 !important; font-weight:700; }
+    .text-muted { color:#7d8b70; }
+    .num-mono { font-family:'Courier New',monospace; text-align:right; }
+    .badge-margin { padding:3px 8px; border-radius:20px; font-size:.7rem; font-weight:700; white-space:nowrap; font-family:'Courier New',monospace; }
+    .badge-green { background:#e8f5e9; color:#3a9040; border:1px solid rgba(58,144,64,.3); }
+    .badge-amber { background:#fff8e1; color:#a07d10; border:1px solid rgba(160,125,16,.3); }
+    .badge-red   { background:#fde8e8; color:#e05252; border:1px solid rgba(224,82,82,.3); }
+
+    /* Forms */
+    .inv-form-group { display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
+    .inv-form-group label { font-size:.7rem; color:#7d8b70; font-weight:600; }
+    .inv-input { padding:9px 10px; border:1px solid #d4e0c0; border-radius:8px; background:#fff; color:#333; font-size:.8rem; outline:none; transition:border .12s; width:100%; }
+    .inv-input:focus { border-color:#6e9726; }
+    .inv-form-row  { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .inv-form-row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+    .inv-section-label { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#7d8b70; padding:10px 0 4px; border-top:1px solid #eef2e8; margin-top:4px; }
+    .inv-preview { margin-top:10px; padding:10px 12px; border-radius:8px; background:#f0f5e8; border:1px solid rgba(110,151,38,.3); font-size:.78rem; color:#5a7030; }
+    .inv-preview strong { color:#6e9726; font-family:'Courier New',monospace; }
+
+    /* Modal */
+    .inv-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:1000; padding:16px; }
+    .inv-modal { background:#fff; border-radius:14px; width:100%; max-width:440px; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.3); }
+    .inv-modal-lg { max-width:560px; }
+    .inv-modal-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #eef2e8; font-weight:700; color:#3a5010; font-size:.9rem; }
+    .inv-modal-close { background:none; border:none; font-size:1.3rem; color:#7d8b70; cursor:pointer; line-height:1; }
+    .inv-modal-body { padding:16px 18px; }
+    .inv-modal-footer { padding:12px 18px; border-top:1px solid #eef2e8; display:flex; justify-content:flex-end; gap:8px; }
+
+    /* Margin pills */
+    .margin-pills { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+    .margin-pill { display:flex; align-items:center; gap:5px; padding:4px 9px; background:#fff; border:1px solid #d4e0c0; border-radius:20px; font-size:.7rem; }
+    .margin-pill-name { color:#7d8b70; max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    /* Menu accordion */
+    .menu-card-inv { background:#fff; border:1px solid #d4e0c0; border-radius:10px; margin-bottom:8px; overflow:hidden; }
+    .menu-card-inv.open { border-color:#b8d080; }
+    .menu-card-head { display:flex; align-items:center; justify-content:space-between; padding:11px 14px; cursor:pointer; flex-wrap:wrap; gap:8px; }
+    .menu-card-head:hover { background:#fafcf5; }
+    .menu-card-head:active { background:#f0f5e8; }
+    .menu-head-left { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
+    .menu-chevron { color:#7d8b70; font-size:.7rem; width:10px; }
+    .menu-card-name { font-weight:700; font-size:.84rem; color:#3a5010; }
+    .menu-head-stats { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .menu-stat { display:flex; flex-direction:column; align-items:flex-end; }
+    .menu-stat-label { font-size:.6rem; color:#7d8b70; text-transform:uppercase; }
+    .menu-stat-val { font-family:'Courier New',monospace; font-size:.78rem; font-weight:700; color:#333; }
+    .menu-card-body { padding:12px 14px; border-top:1px solid #eef2e8; background:#fafcf5; display:flex; flex-direction:column; gap:12px; }
+
+    /* Bahan slots */
+    .bahan-slots { display:flex; flex-direction:column; gap:6px; }
+    .bahan-slot-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .slot-lbl { font-size:.65rem; color:#7d8b70; font-weight:700; text-transform:uppercase; width:50px; flex-shrink:0; }
+    .slot-sel { flex:1; min-width:130px; max-width:220px; padding:6px 8px; border:1px solid #d4e0c0; border-radius:7px; background:#fff; font-size:.75rem; cursor:pointer; outline:none; }
+    .slot-sel:focus { border-color:#6e9726; }
+    .slot-qty-inp { width:62px; padding:6px 7px; border:1px solid #d4e0c0; border-radius:7px; font-family:'Courier New',monospace; font-size:.75rem; text-align:right; outline:none; }
+    .slot-qty-inp:focus { border-color:#6e9726; }
+    .slot-hs-info { font-size:.68rem; color:#7d8b70; white-space:nowrap; font-family:'Courier New',monospace; }
+    .slot-subtotal { font-family:'Courier New',monospace; font-size:.76rem; color:#6e9726; font-weight:700; min-width:85px; text-align:right; }
+    .slot-clear-btn { background:none; border:none; color:#aaa; cursor:pointer; font-size:.9rem; padding:2px 4px; border-radius:4px; }
+    .slot-clear-btn:hover { color:#e05252; background:#fde8e8; }
+
+    /* HPP breakdown */
+    .hpp-breakdown { background:#fff; border:1px solid #d4e0c0; border-radius:8px; padding:10px 12px; }
+    .hpp-row { display:flex; justify-content:space-between; font-size:.76rem; color:#7d8b70; padding:2px 0; }
+    .hpp-row span:last-child { font-family:'Courier New',monospace; }
+    .hpp-row.total { border-top:1px solid #d4e0c0; padding-top:5px; color:#333; font-weight:700; margin-top:3px; }
+
+    /* Menu controls */
+    .menu-controls { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .menu-ctrl-group { display:flex; flex-direction:column; gap:3px; }
+    .menu-ctrl-group label { font-size:.65rem; color:#7d8b70; font-weight:700; text-transform:uppercase; }
+    .menu-ctrl-input { padding:7px 9px; border:1px solid #d4e0c0; border-radius:7px; font-family:'Courier New',monospace; font-size:.78rem; width:130px; outline:none; }
+    .menu-ctrl-input:focus { border-color:#6e9726; }
+    .menu-ctrl-input.jual { border-color:rgba(110,151,38,.5); }
+
+    /* Kas */
+    .kas-summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .kas-sum-card { background:#fff; border:1px solid #d4e0c0; border-radius:10px; padding:12px; }
+    .kas-sum-card.hi { border-color:#b8d080; background:#f0f5e8; }
+    .kas-sum-lbl { font-size:.64rem; color:#7d8b70; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+    .kas-sum-val { font-family:'Courier New',monospace; font-size:.88rem; font-weight:700; color:#333; margin-top:3px; }
+    .kas-prev-row { display:flex; justify-content:space-between; font-size:.78rem; padding:3px 0; }
+    .kas-prev-row span:last-child { font-family:'Courier New',monospace; font-weight:700; }
+    .kas-prev-total { border-top:1px solid rgba(110,151,38,.3); padding-top:6px; margin-top:3px; font-weight:700; }
+    .inv-section-title { font-weight:700; font-size:.85rem; color:#3a5010; margin:16px 0 10px; }
+
+    @media(max-width:480px){
+        .inv-form-row3 { grid-template-columns:1fr 1fr; }
+        .menu-head-stats .menu-stat { display:none; }
+        .menu-head-stats .badge-margin { display:inline; }
+        .kas-summary-grid { grid-template-columns:1fr 1fr; }
+    }
     .inv-toolbar { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
     .inv-search { flex:1; min-width:140px; padding:8px 12px; border:1px solid #d4e0c0; border-radius:8px; font-size:.8rem; background:#fff; outline:none; }
     .inv-search:focus { border-color:#6e9726; }
