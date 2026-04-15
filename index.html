@@ -1814,17 +1814,9 @@
             'glamping': { name: 'Pinuslo Glamping', icon: 'fa-campground', desc: 'Sistem Reservasi Glamping' },
             'absensi': { name: 'Absensi', icon: 'fa-fingerprint', desc: 'Sistem Absensi Karyawan' },
             'inventory': { 
-                name: 'Pinuslo Inventory', 
-                icon: 'fa-boxes', 
-                desc: 'Sistem Manajemen Inventaris & Stok',
-                comingSoon: true,
-                features: [
-                    'Tracking stok real-time untuk semua unit bisnis',
-                    'Manajemen supplier & purchase order',
-                    'Notifikasi stok minimum & reorder otomatis',
-                    'Laporan inventaris & analisis pergerakan barang',
-                    'Integrasi dengan sistem BBM & Cafe'
-                ]
+                name: 'HPP Calculator', 
+                icon: 'fa-calculator', 
+                desc: 'Kalkulator HPP Menu & Kas Harian'
             },
             'marketplace': { 
                 name: 'Pinuslo Marketplace', 
@@ -1999,6 +1991,8 @@
                     card.addEventListener('click', () => {
                         if (appKey === 'absensi') {
                             loadAbsensi(user);
+                        } else if (appKey === 'inventory') {
+                            loadInventory(user);
                         } else if (app.comingSoon) {
                             showComingSoon(app);
                         } else if (appUrls[appKey]) {
@@ -3146,6 +3140,813 @@
         });
 
         console.log('✅ Pinuslo Inventory & Marketplace added successfully!');
+    </script>
+
+    <!-- ============================================
+         INVENTORY / HPP CALCULATOR PAGE
+    ============================================ -->
+    <div id="inventoryPage" class="page-section">
+        <div class="inv-page">
+            <div class="mobile-header">
+                <div class="mobile-header-back" onclick="backToSelection()">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <h1 class="mobile-header-title">HPP Calculator</h1>
+            </div>
+
+            <!-- Tab Nav -->
+            <div class="inv-tabs">
+                <button class="inv-tab active" onclick="switchInvTab('bahan')" id="invTab_bahan">
+                    <i class="fas fa-carrot"></i> Master Bahan
+                </button>
+                <button class="inv-tab" onclick="switchInvTab('hpp')" id="invTab_hpp">
+                    <i class="fas fa-calculator"></i> Kalkulasi HPP
+                </button>
+                <button class="inv-tab" onclick="switchInvTab('kas')" id="invTab_kas">
+                    <i class="fas fa-wallet"></i> Kas Harian
+                </button>
+            </div>
+
+            <!-- Tab: Master Bahan -->
+            <div id="invPanel_bahan" class="inv-panel">
+                <div class="inv-toolbar">
+                    <input class="inv-search" type="text" placeholder="🔍 Cari bahan..." oninput="renderBahanTable(this.value)">
+                    <button class="inv-btn-primary" onclick="openBahanModal()"><i class="fas fa-plus"></i> Tambah</button>
+                </div>
+                <div class="inv-table-wrap">
+                    <table class="inv-table" id="bahanTable">
+                        <thead>
+                            <tr>
+                                <th>No</th><th>Nama Bahan</th><th>Harga Beli</th>
+                                <th>Kemasan</th><th>Isi</th><th class="col-hs">Harga Satuan</th><th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="bahanTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Kalkulasi HPP -->
+            <div id="invPanel_hpp" class="inv-panel" style="display:none">
+                <div class="inv-toolbar">
+                    <span class="inv-count" id="menuCount">0 menu</span>
+                    <button class="inv-btn-primary" onclick="openMenuModal()"><i class="fas fa-plus"></i> Tambah Menu</button>
+                </div>
+                <!-- Margin summary pills -->
+                <div class="margin-pills" id="marginPills"></div>
+                <!-- Menu accordion list -->
+                <div id="menuAccordion"></div>
+                <!-- Comparison table -->
+                <div class="inv-section-title">📊 Tabel Perbandingan</div>
+                <div class="inv-table-wrap">
+                    <table class="inv-table">
+                        <thead>
+                            <tr>
+                                <th>No</th><th>Nama Menu</th><th>HPP</th>
+                                <th>Harga Jual</th><th>Profit</th><th class="col-hs">Margin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="menuCompareTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Kas Harian -->
+            <div id="invPanel_kas" class="inv-panel" style="display:none">
+                <div class="kas-summary-grid" id="kasSummaryGrid"></div>
+                <div class="inv-toolbar" style="margin-top:12px">
+                    <span class="inv-count" id="kasCount">0 hari</span>
+                    <button class="inv-btn-primary" onclick="openKasModal()"><i class="fas fa-plus"></i> Input Kas</button>
+                </div>
+                <div class="inv-table-wrap">
+                    <table class="inv-table kas-tbl">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">Tanggal</th>
+                                <th colspan="3" style="text-align:center;background:rgba(110,151,38,.15)">Penjualan</th>
+                                <th rowspan="2" class="col-hs">Jml Jual</th>
+                                <th colspan="2" style="text-align:center">Pembelian</th>
+                                <th colspan="2" style="text-align:center">Pengeluaran</th>
+                                <th rowspan="2" style="color:#e05252">Jml Keluar</th>
+                                <th rowspan="2" class="col-hs">Net Terima</th>
+                                <th rowspan="2"></th>
+                            </tr>
+                            <tr>
+                                <th>Tunai</th><th>QRIS</th><th>Lainnya</th>
+                                <th>Tunai</th><th>Transfer</th>
+                                <th>Tunai</th><th>Transfer</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kasTbody"></tbody>
+                        <tfoot id="kasTfoot"></tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <nav class="mobile-nav">
+            <div class="mobile-nav-item" onclick="backToSelection()">
+                <i class="fas fa-home"></i><span>Beranda</span>
+            </div>
+            <div class="mobile-nav-item" onclick="handleLogout()">
+                <i class="fas fa-sign-out-alt"></i><span>Keluar</span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Bahan Modal -->
+    <div id="bahanModal" class="inv-modal-overlay" onclick="closeBahanModal()" style="display:none">
+        <div class="inv-modal" onclick="event.stopPropagation()">
+            <div class="inv-modal-header">
+                <span id="bahanModalTitle">Tambah Bahan</span>
+                <button onclick="closeBahanModal()" class="inv-modal-close">×</button>
+            </div>
+            <div class="inv-modal-body">
+                <input type="hidden" id="bahanEditId">
+                <div class="inv-form-group">
+                    <label>Nama Bahan *</label>
+                    <input class="inv-input" id="bahanNama" placeholder="cth: Indomie Soto">
+                </div>
+                <div class="inv-form-row">
+                    <div class="inv-form-group">
+                        <label>Harga Beli (Rp) *</label>
+                        <input class="inv-input" type="number" id="bahanHarga" placeholder="113000">
+                    </div>
+                    <div class="inv-form-group">
+                        <label>Qty Kemasan</label>
+                        <input class="inv-input" type="number" id="bahanQty" value="1">
+                    </div>
+                </div>
+                <div class="inv-form-row">
+                    <div class="inv-form-group">
+                        <label>Satuan Kemasan</label>
+                        <select class="inv-input" id="bahanSatuanKemasan">
+                            <option>Dos</option><option>Kg</option><option>Liter</option>
+                            <option>Botol</option><option>Kaleng</option><option>Bungkus</option>
+                            <option>Porsi</option><option>Pcs</option>
+                        </select>
+                    </div>
+                    <div class="inv-form-group">
+                        <label>Isi per Kemasan *</label>
+                        <input class="inv-input" type="number" id="bahanIsi" placeholder="40" oninput="updateBahanPreview()">
+                    </div>
+                </div>
+                <div class="inv-form-group">
+                    <label>Satuan Isi</label>
+                    <select class="inv-input" id="bahanSatuanIsi">
+                        <option>Gram</option><option>Bungkus</option><option>mL</option>
+                        <option>Liter</option><option>Pcs</option><option>Porsi</option>
+                        <option>Butir</option><option>Kaleng</option><option>Slice</option>
+                    </select>
+                </div>
+                <div class="inv-preview" id="bahanPreview" style="display:none">
+                    💡 Harga Satuan: <strong id="bahanPreviewVal"></strong>
+                </div>
+            </div>
+            <div class="inv-modal-footer">
+                <button class="inv-btn-ghost" onclick="closeBahanModal()">Batal</button>
+                <button class="inv-btn-primary" onclick="saveBahan()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Modal -->
+    <div id="menuModal" class="inv-modal-overlay" onclick="closeMenuModal()" style="display:none">
+        <div class="inv-modal" onclick="event.stopPropagation()">
+            <div class="inv-modal-header">
+                <span>Tambah Menu Baru</span>
+                <button onclick="closeMenuModal()" class="inv-modal-close">×</button>
+            </div>
+            <div class="inv-modal-body">
+                <div class="inv-form-group">
+                    <label>Nama Menu *</label>
+                    <input class="inv-input" id="menuNamaBaru" placeholder="cth: Kopi Aren Satuan" onkeydown="if(event.key==='Enter')saveMenuBaru()">
+                </div>
+            </div>
+            <div class="inv-modal-footer">
+                <button class="inv-btn-ghost" onclick="closeMenuModal()">Batal</button>
+                <button class="inv-btn-primary" onclick="saveMenuBaru()">Buat Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kas Modal -->
+    <div id="kasModal" class="inv-modal-overlay" onclick="closeKasModal()" style="display:none">
+        <div class="inv-modal inv-modal-lg" onclick="event.stopPropagation()">
+            <div class="inv-modal-header">
+                <span>Input Kas Harian</span>
+                <button onclick="closeKasModal()" class="inv-modal-close">×</button>
+            </div>
+            <div class="inv-modal-body">
+                <input type="hidden" id="kasEditId">
+                <div class="inv-form-group">
+                    <label>Tanggal</label>
+                    <input class="inv-input" type="date" id="kasTanggal">
+                </div>
+                <div class="inv-section-label">💰 Penjualan (Netto)</div>
+                <div class="inv-form-row3">
+                    <div class="inv-form-group"><label>Tunai</label><input class="inv-input" type="number" id="kasJualTunai" value="0" oninput="updateKasPreview()"></div>
+                    <div class="inv-form-group"><label>QRIS</label><input class="inv-input" type="number" id="kasJualQRIS" value="0" oninput="updateKasPreview()"></div>
+                    <div class="inv-form-group"><label>Lainnya</label><input class="inv-input" type="number" id="kasJualLain" value="0" oninput="updateKasPreview()"></div>
+                </div>
+                <div class="inv-section-label">🛒 Pembelian Bahan</div>
+                <div class="inv-form-row">
+                    <div class="inv-form-group"><label>Tunai</label><input class="inv-input" type="number" id="kasBeliBahan" value="0" oninput="updateKasPreview()"></div>
+                    <div class="inv-form-group"><label>Transfer</label><input class="inv-input" type="number" id="kasBeliBahanTf" value="0" oninput="updateKasPreview()"></div>
+                </div>
+                <div class="inv-section-label">📋 Pengeluaran Lainnya</div>
+                <div class="inv-form-row">
+                    <div class="inv-form-group"><label>Tunai</label><input class="inv-input" type="number" id="kasKeluar" value="0" oninput="updateKasPreview()"></div>
+                    <div class="inv-form-group"><label>Transfer</label><input class="inv-input" type="number" id="kasKeluarTf" value="0" oninput="updateKasPreview()"></div>
+                </div>
+                <div class="inv-preview" id="kasPreview">
+                    <div class="kas-prev-row"><span>Total Penjualan</span><span id="kpJual">Rp 0</span></div>
+                    <div class="kas-prev-row"><span>Total Pengeluaran</span><span id="kpKeluar" style="color:#e05252">Rp 0</span></div>
+                    <div class="kas-prev-row kas-prev-total"><span>Net Penerimaan</span><span id="kpNet">Rp 0</span></div>
+                </div>
+            </div>
+            <div class="inv-modal-footer">
+                <button class="inv-btn-ghost" onclick="closeKasModal()">Batal</button>
+                <button class="inv-btn-primary" onclick="saveKas()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    /* ========== INVENTORY MODULE STYLES ========== */
+    .inv-page { display:flex; flex-direction:column; height:100%; background:#f4f6f0; overflow:hidden; }
+    .inv-tabs { display:flex; gap:4px; padding:10px 12px 0; background:#fff; border-bottom:2px solid #e8eee0; flex-shrink:0; overflow-x:auto; }
+    .inv-tab {
+        padding:8px 14px; border:none; border-radius:8px 8px 0 0;
+        background:transparent; color:#7d8b70; font-size:.78rem; font-weight:600;
+        cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent;
+        margin-bottom:-2px; transition:all .15s;
+    }
+    .inv-tab.active { background:#fff; color:#6e9726; border-bottom:2px solid #6e9726; }
+    .inv-tab i { margin-right:5px; }
+    .inv-panel { flex:1; overflow-y:auto; padding:14px 12px 80px; }
+    .inv-toolbar { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+    .inv-search { flex:1; min-width:140px; padding:8px 12px; border:1px solid #d4e0c0; border-radius:8px; font-size:.8rem; background:#fff; outline:none; }
+    .inv-search:focus { border-color:#6e9726; }
+    .inv-count { font-size:.75rem; color:#7d8b70; flex:1; }
+    .inv-btn-primary {
+        padding:8px 14px; border:none; border-radius:8px;
+        background:#6e9726; color:#fff; font-size:.78rem; font-weight:600;
+        cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:5px;
+    }
+    .inv-btn-primary:hover { background:#5a7d1e; }
+    .inv-btn-ghost { padding:8px 14px; border:1px solid #d4e0c0; border-radius:8px; background:#fff; color:#7d8b70; font-size:.78rem; font-weight:600; cursor:pointer; }
+    .inv-btn-ghost:hover { background:#f4f6f0; }
+    .inv-btn-sm { padding:5px 9px; font-size:.72rem; }
+    .inv-btn-danger { padding:5px 9px; border:1px solid #e05252; border-radius:6px; background:rgba(224,82,82,.1); color:#e05252; font-size:.72rem; font-weight:600; cursor:pointer; }
+    .inv-btn-danger:hover { background:#e05252; color:#fff; }
+    .inv-btn-edit { padding:5px 9px; border:1px solid #e3b341; border-radius:6px; background:rgba(227,179,65,.1); color:#a07d10; font-size:.72rem; font-weight:600; cursor:pointer; }
+    .inv-btn-edit:hover { background:#e3b341; color:#fff; }
+
+    /* Table */
+    .inv-table-wrap { overflow-x:auto; border-radius:10px; border:1px solid #d4e0c0; background:#fff; }
+    .inv-table { width:100%; border-collapse:collapse; font-size:.76rem; }
+    .inv-table th { padding:9px 10px; background:#f0f5e8; color:#5a7030; font-weight:700; text-align:left; border-bottom:1px solid #d4e0c0; white-space:nowrap; font-size:.7rem; text-transform:uppercase; letter-spacing:.04em; }
+    .inv-table td { padding:8px 10px; border-bottom:1px solid #eef2e8; color:#333; }
+    .inv-table tr:last-child td { border-bottom:none; }
+    .inv-table tr:hover td { background:#f9fbf5; }
+    .inv-table tfoot td { background:#f0f5e8; font-weight:700; border-top:2px solid #d4e0c0; }
+    .num-cell { text-align:right; font-family:'Courier New',monospace; }
+    .col-hs { color:#6e9726 !important; font-family:'Courier New',monospace; text-align:right; font-weight:700; }
+    .text-green { color:#3a9040; font-weight:700; }
+    .text-red   { color:#e05252; font-weight:700; }
+    .text-amber { color:#a07d10; font-weight:700; }
+    .text-muted { color:#7d8b70; }
+    .num-mono { font-family:'Courier New',monospace; text-align:right; }
+    .badge-margin { padding:3px 8px; border-radius:20px; font-size:.7rem; font-weight:700; white-space:nowrap; font-family:'Courier New',monospace; }
+    .badge-green { background:#e8f5e9; color:#3a9040; border:1px solid rgba(58,144,64,.3); }
+    .badge-amber { background:#fff8e1; color:#a07d10; border:1px solid rgba(160,125,16,.3); }
+    .badge-red   { background:#fde8e8; color:#e05252; border:1px solid rgba(224,82,82,.3); }
+
+    /* Forms */
+    .inv-form-group { display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
+    .inv-form-group label { font-size:.7rem; color:#7d8b70; font-weight:600; }
+    .inv-input { padding:9px 10px; border:1px solid #d4e0c0; border-radius:8px; background:#fff; color:#333; font-size:.8rem; outline:none; transition:border .12s; width:100%; }
+    .inv-input:focus { border-color:#6e9726; }
+    .inv-form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .inv-form-row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+    .inv-section-label { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#7d8b70; padding:10px 0 4px; border-top:1px solid #eef2e8; margin-top:4px; }
+    .inv-preview { margin-top:10px; padding:10px 12px; border-radius:8px; background:#f0f5e8; border:1px solid rgba(110,151,38,.3); font-size:.78rem; color:#5a7030; }
+    .inv-preview strong { color:#6e9726; font-family:'Courier New',monospace; }
+
+    /* Modal */
+    .inv-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:1000; padding:16px; }
+    .inv-modal { background:#fff; border-radius:14px; width:100%; max-width:440px; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.3); }
+    .inv-modal-lg { max-width:560px; }
+    .inv-modal-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #eef2e8; font-weight:700; color:#3a5010; font-size:.9rem; }
+    .inv-modal-close { background:none; border:none; font-size:1.3rem; color:#7d8b70; cursor:pointer; line-height:1; }
+    .inv-modal-body { padding:16px 18px; }
+    .inv-modal-footer { padding:12px 18px; border-top:1px solid #eef2e8; display:flex; justify-content:flex-end; gap:8px; }
+
+    /* Margin pills */
+    .margin-pills { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+    .margin-pill { display:flex; align-items:center; gap:5px; padding:4px 9px; background:#fff; border:1px solid #d4e0c0; border-radius:20px; font-size:.7rem; }
+    .margin-pill-name { color:#7d8b70; max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    /* Menu accordion */
+    .menu-card-inv { background:#fff; border:1px solid #d4e0c0; border-radius:10px; margin-bottom:8px; overflow:hidden; }
+    .menu-card-inv.open { border-color:#b8d080; }
+    .menu-card-head { display:flex; align-items:center; justify-content:space-between; padding:11px 14px; cursor:pointer; flex-wrap:wrap; gap:8px; }
+    .menu-card-head:hover { background:#fafcf5; }
+    .menu-head-left { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
+    .menu-chevron { color:#7d8b70; font-size:.7rem; width:10px; }
+    .menu-card-name { font-weight:700; font-size:.84rem; color:#3a5010; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .menu-head-stats { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .menu-stat { display:flex; flex-direction:column; align-items:flex-end; }
+    .menu-stat-label { font-size:.6rem; color:#7d8b70; text-transform:uppercase; letter-spacing:.04em; }
+    .menu-stat-val { font-family:'Courier New',monospace; font-size:.78rem; font-weight:700; color:#333; }
+    .menu-card-body { padding:12px 14px; border-top:1px solid #eef2e8; background:#fafcf5; display:flex; flex-direction:column; gap:12px; }
+
+    /* Bahan slots in menu */
+    .bahan-slots { display:flex; flex-direction:column; gap:6px; }
+    .bahan-slot-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .slot-lbl { font-size:.65rem; color:#7d8b70; font-weight:700; text-transform:uppercase; width:50px; flex-shrink:0; }
+    .slot-sel { flex:1; min-width:130px; max-width:220px; padding:6px 8px; border:1px solid #d4e0c0; border-radius:7px; background:#fff; font-size:.75rem; cursor:pointer; outline:none; }
+    .slot-sel:focus { border-color:#6e9726; }
+    .slot-qty-inp { width:62px; padding:6px 7px; border:1px solid #d4e0c0; border-radius:7px; background:#fff; font-family:'Courier New',monospace; font-size:.75rem; text-align:right; outline:none; }
+    .slot-qty-inp:focus { border-color:#6e9726; }
+    .slot-hs-info { font-size:.68rem; color:#7d8b70; white-space:nowrap; font-family:'Courier New',monospace; }
+    .slot-subtotal { font-family:'Courier New',monospace; font-size:.76rem; color:#6e9726; font-weight:700; min-width:85px; text-align:right; }
+    .slot-clear-btn { background:none; border:none; color:#aaa; cursor:pointer; font-size:.9rem; padding:2px 4px; border-radius:4px; }
+    .slot-clear-btn:hover { color:#e05252; background:#fde8e8; }
+
+    /* HPP breakdown in menu card */
+    .hpp-breakdown { background:#fff; border:1px solid #d4e0c0; border-radius:8px; padding:10px 12px; }
+    .hpp-row { display:flex; justify-content:space-between; font-size:.76rem; color:#7d8b70; padding:2px 0; }
+    .hpp-row span:last-child { font-family:'Courier New',monospace; }
+    .hpp-row.total { border-top:1px solid #d4e0c0; padding-top:5px; color:#333; font-weight:700; margin-top:3px; }
+
+    /* Menu controls */
+    .menu-controls { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .menu-ctrl-group { display:flex; flex-direction:column; gap:3px; }
+    .menu-ctrl-group label { font-size:.65rem; color:#7d8b70; font-weight:700; text-transform:uppercase; }
+    .menu-ctrl-input { padding:7px 9px; border:1px solid #d4e0c0; border-radius:7px; font-family:'Courier New',monospace; font-size:.78rem; width:130px; outline:none; }
+    .menu-ctrl-input:focus { border-color:#6e9726; }
+    .menu-ctrl-input.jual { border-color:rgba(110,151,38,.5); }
+
+    /* Kas */
+    .kas-summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .kas-sum-card { background:#fff; border:1px solid #d4e0c0; border-radius:10px; padding:12px; }
+    .kas-sum-card.hi { border-color:#b8d080; background:#f0f5e8; }
+    .kas-sum-lbl { font-size:.64rem; color:#7d8b70; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+    .kas-sum-val { font-family:'Courier New',monospace; font-size:.9rem; font-weight:700; color:#333; margin-top:3px; }
+    .kas-tbl th { font-size:.65rem; }
+    .kas-prev-row { display:flex; justify-content:space-between; font-size:.78rem; padding:3px 0; }
+    .kas-prev-row span:last-child { font-family:'Courier New',monospace; font-weight:700; }
+    .kas-prev-total { border-top:1px solid rgba(110,151,38,.3); padding-top:6px; margin-top:3px; font-weight:700; }
+    .inv-section-title { font-weight:700; font-size:.85rem; color:#3a5010; margin:16px 0 10px; }
+    @media(max-width:480px){
+        .inv-form-row3 { grid-template-columns:1fr 1fr; }
+        .menu-head-stats .menu-stat:nth-child(n+3) { display:none; }
+        .kas-summary-grid { grid-template-columns:1fr 1fr; }
+    }
+    </style>
+
+    <script>
+    // =============================================
+    // HPP CALCULATOR MODULE — Inventory
+    // =============================================
+
+    // ---- DATA ----
+    const HPP_INITIAL_BAHAN = [
+      {id:1,nama:'Indomie Soto',hargaBeli:113000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:40,satuanIsi:'Bungkus'},
+      {id:2,nama:'Indomie Goreng',hargaBeli:113000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:40,satuanIsi:'Bungkus'},
+      {id:3,nama:'Indomie Kaldu',hargaBeli:113000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:40,satuanIsi:'Bungkus'},
+      {id:4,nama:'Indomie Kari',hargaBeli:113000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:40,satuanIsi:'Bungkus'},
+      {id:5,nama:'Susu UHT',hargaBeli:220000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:12000,satuanIsi:'mL'},
+      {id:6,nama:'Susu Kental Manis 3 Sapi',hargaBeli:700000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:23520,satuanIsi:'mL'},
+      {id:7,nama:'Susu Evaporasi',hargaBeli:616224,qtyKemasan:1,satuanKemasan:'Kaleng',isiKemasan:18480,satuanIsi:'Gram'},
+      {id:8,nama:'Susu Creamer',hargaBeli:50000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:500,satuanIsi:'Gram'},
+      {id:9,nama:'Biji Kopi',hargaBeli:200000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
+      {id:10,nama:"Bubuk Avocado Tom's",hargaBeli:141000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
+      {id:11,nama:"Bubuk Coklat Tom's",hargaBeli:141000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
+      {id:12,nama:"Bubuk GreenTea Tom's",hargaBeli:141000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
+      {id:13,nama:"Bubuk ThaiTea Tom's",hargaBeli:141000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
+      {id:14,nama:"Bubuk Vanila Tom's",hargaBeli:141000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
+      {id:15,nama:'Bubuk MILO',hargaBeli:141000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
+      {id:16,nama:'Syrup Butterscoot',hargaBeli:116000,qtyKemasan:1,satuanKemasan:'Botol',isiKemasan:1000,satuanIsi:'mL'},
+      {id:17,nama:'Syrup Leci',hargaBeli:116000,qtyKemasan:1,satuanKemasan:'Botol',isiKemasan:1000,satuanIsi:'mL'},
+      {id:18,nama:'Syrup Lemon',hargaBeli:116000,qtyKemasan:1,satuanKemasan:'Botol',isiKemasan:1000,satuanIsi:'mL'},
+      {id:19,nama:'Leci Kaleng',hargaBeli:33000,qtyKemasan:1,satuanKemasan:'Kaleng',isiKemasan:10,satuanIsi:'Pcs'},
+      {id:20,nama:'Aren Bubuk',hargaBeli:65000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
+      {id:21,nama:'Simple Syrup',hargaBeli:86000,qtyKemasan:5,satuanKemasan:'Liter',isiKemasan:5000,satuanIsi:'mL'},
+      {id:22,nama:'Kentang',hargaBeli:37500,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
+      {id:23,nama:'Bakso',hargaBeli:21000,qtyKemasan:1,satuanKemasan:'Bungkus',isiKemasan:25,satuanIsi:'Pcs'},
+      {id:24,nama:'Nugged',hargaBeli:40000,qtyKemasan:1,satuanKemasan:'Bungkus',isiKemasan:10,satuanIsi:'Pcs'},
+      {id:25,nama:'Sossis',hargaBeli:20000,qtyKemasan:1,satuanKemasan:'Bungkus',isiKemasan:12,satuanIsi:'Pcs'},
+      {id:26,nama:'Roti',hargaBeli:15700,qtyKemasan:1,satuanKemasan:'Bungkus',isiKemasan:10,satuanIsi:'Slice'},
+      {id:27,nama:'Roti Burger',hargaBeli:15000,qtyKemasan:1,satuanKemasan:'Bungkus',isiKemasan:6,satuanIsi:'Porsi'},
+      {id:28,nama:'Isian Burger',hargaBeli:11000,qtyKemasan:1,satuanKemasan:'Porsi',isiKemasan:1,satuanIsi:'Porsi'},
+      {id:29,nama:'Telur',hargaBeli:60000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:30,satuanIsi:'Butir'},
+      {id:30,nama:'Paper Bowl',hargaBeli:600000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:500,satuanIsi:'Pcs'},
+      {id:31,nama:'Ayam Goreng',hargaBeli:12500,qtyKemasan:1,satuanKemasan:'Porsi',isiKemasan:1,satuanIsi:'Porsi'},
+      {id:32,nama:'Pisang Nugged',hargaBeli:6500,qtyKemasan:1,satuanKemasan:'Porsi',isiKemasan:1,satuanIsi:'Porsi'},
+    ];
+
+    const HPP_INITIAL_MENU = [
+      {id:101,nama:'Indomie Soto + Telur (Single)',bahan:[{bahanId:1,jumlah:1},{bahanId:29,jumlah:1},{bahanId:30,jumlah:1},null,null,null,null],biayaOps:2500,hargaJual:13000},
+      {id:102,nama:'Indomie Soto + Telur (Double)',bahan:[{bahanId:1,jumlah:2},{bahanId:29,jumlah:1},{bahanId:30,jumlah:1},null,null,null,null],biayaOps:2500,hargaJual:22000},
+      {id:103,nama:'Indomie Soto Komplit (Single)',bahan:[{bahanId:1,jumlah:1},{bahanId:23,jumlah:2},{bahanId:30,jumlah:1},{bahanId:29,jumlah:1},null,null,null],biayaOps:2500,hargaJual:18000},
+      {id:104,nama:'Indomie Soto Komplit (Double)',bahan:[{bahanId:1,jumlah:2},{bahanId:23,jumlah:2},{bahanId:30,jumlah:1},{bahanId:29,jumlah:1},null,null,null],biayaOps:2500,hargaJual:27000},
+      {id:105,nama:'Based Kopi Aren',bahan:[{bahanId:9,jumlah:18},{bahanId:20,jumlah:14},{bahanId:8,jumlah:8},null,null,null,null],biayaOps:2500,hargaJual:20000},
+      {id:106,nama:'Kopi Aren Satuan',bahan:[{bahanId:9,jumlah:18},{bahanId:20,jumlah:20},{bahanId:8,jumlah:10},null,null,null,null],biayaOps:2500,hargaJual:20000},
+    ];
+
+    // ---- STATE ----
+    let hppBahan  = [];
+    let hppMenu   = [];
+    let hppKas    = [];
+    let hppMenuExpanded = {};
+
+    function hppLoadState() {
+        try { hppBahan = JSON.parse(localStorage.getItem('hpp_bahan')) || HPP_INITIAL_BAHAN; } catch(e) { hppBahan = HPP_INITIAL_BAHAN; }
+        try { hppMenu  = JSON.parse(localStorage.getItem('hpp_menu'))  || HPP_INITIAL_MENU;  } catch(e) { hppMenu  = HPP_INITIAL_MENU; }
+        try { hppKas   = JSON.parse(localStorage.getItem('hpp_kas'))   || [];                } catch(e) { hppKas   = []; }
+    }
+    function hppSaveBahan() { localStorage.setItem('hpp_bahan', JSON.stringify(hppBahan)); }
+    function hppSaveMenu()  { localStorage.setItem('hpp_menu',  JSON.stringify(hppMenu));  }
+    function hppSaveKas()   { localStorage.setItem('hpp_kas',   JSON.stringify(hppKas));   }
+
+    // ---- CALC ENGINE ----
+    function hsSatuan(b) { return b.isiKemasan ? (b.hargaBeli * b.qtyKemasan) / b.isiKemasan : 0; }
+    function calcHPP(menu) {
+        const totalBahan = (menu.bahan||[]).reduce((s,slot)=>{
+            if(!slot||!slot.bahanId) return s;
+            const b = hppBahan.find(x=>x.id===slot.bahanId);
+            return b ? s + hsSatuan(b)*slot.jumlah : s;
+        },0);
+        return totalBahan + (menu.biayaOps||0);
+    }
+    function calcProfit(menu) { return (menu.hargaJual||0) - calcHPP(menu); }
+    function calcMargin(menu) { const h=calcHPP(menu); return h?calcProfit(menu)/h*100:0; }
+    function fRp(v) { return Math.round(v||0).toLocaleString('id-ID'); }
+    function fPct(v) { return Math.round(v||0)+'%'; }
+    function genId() { return Date.now()+Math.floor(Math.random()*1000); }
+    function marginBadge(m) {
+        if(m>=100) return 'badge-green';
+        if(m>=50)  return 'badge-amber';
+        return 'badge-red';
+    }
+
+    // ---- LOAD INVENTORY ----
+    function loadInventory(user) {
+        hppLoadState();
+        document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+        document.getElementById('inventoryPage').classList.add('active');
+        switchInvTab('bahan');
+    }
+
+    function switchInvTab(tab) {
+        ['bahan','hpp','kas'].forEach(t=>{
+            document.getElementById('invTab_'+t).classList.toggle('active', t===tab);
+            document.getElementById('invPanel_'+t).style.display = t===tab?'block':'none';
+        });
+        if(tab==='bahan') renderBahanTable('');
+        if(tab==='hpp')   renderHPPTab();
+        if(tab==='kas')   renderKasTab();
+    }
+
+    // =====================
+    // TAB 1: MASTER BAHAN
+    // =====================
+    function renderBahanTable(q='') {
+        const filtered = hppBahan.filter(b=>b.nama.toLowerCase().includes((q||'').toLowerCase()));
+        const tbody = document.getElementById('bahanTbody');
+        if(!tbody) return;
+        tbody.innerHTML = filtered.map((b,i)=>`
+            <tr>
+                <td class="text-muted">${i+1}</td>
+                <td style="font-weight:600">${b.nama}</td>
+                <td class="num-cell">${fRp(b.hargaBeli)}</td>
+                <td>${b.qtyKemasan} ${b.satuanKemasan}</td>
+                <td class="num-cell">${fRp(b.isiKemasan)} ${b.satuanIsi}</td>
+                <td class="col-hs">${fRp(hsSatuan(b))}</td>
+                <td>
+                    <div style="display:flex;gap:4px;justify-content:center">
+                        <button class="inv-btn-edit inv-btn-sm" onclick="openBahanModal(${b.id})">✏️</button>
+                        <button class="inv-btn-danger inv-btn-sm" onclick="deleteBahan(${b.id})">🗑️</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('') || `<tr><td colspan="7" style="text-align:center;padding:20px;color:#aaa">Tidak ada data</td></tr>`;
+    }
+
+    function openBahanModal(id=null) {
+        const m = document.getElementById('bahanModal');
+        const b = id ? hppBahan.find(x=>x.id===id) : null;
+        document.getElementById('bahanModalTitle').textContent = b ? 'Edit Bahan' : 'Tambah Bahan';
+        document.getElementById('bahanEditId').value   = b ? b.id : '';
+        document.getElementById('bahanNama').value     = b ? b.nama : '';
+        document.getElementById('bahanHarga').value    = b ? b.hargaBeli : '';
+        document.getElementById('bahanQty').value      = b ? b.qtyKemasan : 1;
+        document.getElementById('bahanIsi').value      = b ? b.isiKemasan : '';
+        document.getElementById('bahanSatuanKemasan').value = b ? b.satuanKemasan : 'Dos';
+        document.getElementById('bahanSatuanIsi').value     = b ? b.satuanIsi : 'Gram';
+        document.getElementById('bahanPreview').style.display = 'none';
+        m.style.display = 'flex';
+        setTimeout(()=>document.getElementById('bahanNama').focus(),100);
+    }
+    function closeBahanModal() { document.getElementById('bahanModal').style.display='none'; }
+
+    function updateBahanPreview() {
+        const h=+document.getElementById('bahanHarga').value||0;
+        const q=+document.getElementById('bahanQty').value||1;
+        const i=+document.getElementById('bahanIsi').value||0;
+        const sat=document.getElementById('bahanSatuanIsi').value;
+        if(h&&i){
+            document.getElementById('bahanPreview').style.display='block';
+            document.getElementById('bahanPreviewVal').textContent=`Rp ${fRp(h*q/i)} / ${sat}`;
+        }
+    }
+
+    function saveBahan() {
+        const nama  = document.getElementById('bahanNama').value.trim();
+        const harga = +document.getElementById('bahanHarga').value;
+        const qty   = +document.getElementById('bahanQty').value||1;
+        const isi   = +document.getElementById('bahanIsi').value;
+        const satK  = document.getElementById('bahanSatuanKemasan').value;
+        const satI  = document.getElementById('bahanSatuanIsi').value;
+        if(!nama||!harga||!isi) { alert('Nama, Harga, dan Isi wajib diisi!'); return; }
+        const editId = +document.getElementById('bahanEditId').value||null;
+        if(editId) {
+            const idx=hppBahan.findIndex(b=>b.id===editId);
+            if(idx>=0) hppBahan[idx]={...hppBahan[idx],nama,hargaBeli:harga,qtyKemasan:qty,isiKemasan:isi,satuanKemasan:satK,satuanIsi:satI};
+        } else {
+            hppBahan.push({id:genId(),nama,hargaBeli:harga,qtyKemasan:qty,isiKemasan:isi,satuanKemasan:satK,satuanIsi:satI});
+        }
+        hppSaveBahan();
+        closeBahanModal();
+        renderBahanTable(document.getElementById('bahanTbody')?document.querySelector('.inv-search')?.value:'');
+    }
+
+    function deleteBahan(id) {
+        const b=hppBahan.find(x=>x.id===id);
+        if(!b||!confirm(`Hapus "${b.nama}"?`)) return;
+        hppBahan=hppBahan.filter(x=>x.id!==id);
+        hppSaveBahan();
+        renderBahanTable(document.querySelector('.inv-search')?.value||'');
+    }
+
+    // =====================
+    // TAB 2: KALKULASI HPP
+    // =====================
+    function renderHPPTab() {
+        document.getElementById('menuCount').textContent = hppMenu.length+' menu';
+        renderMarginPills();
+        renderMenuAccordion();
+        renderMenuCompare();
+    }
+
+    function renderMarginPills() {
+        document.getElementById('marginPills').innerHTML = hppMenu.map(m=>{
+            const mg=calcMargin(m);
+            return `<div class="margin-pill">
+                <span class="margin-pill-name">${m.nama}</span>
+                <span class="badge-margin ${marginBadge(mg)}">${fPct(mg)}</span>
+            </div>`;
+        }).join('');
+    }
+
+    function renderMenuAccordion() {
+        const container = document.getElementById('menuAccordion');
+        container.innerHTML = hppMenu.map(m=>{
+            const hpp=calcHPP(m), profit=calcProfit(m), mg=calcMargin(m);
+            const isOpen=!!hppMenuExpanded[m.id];
+            return `<div class="menu-card-inv ${isOpen?'open':''}" id="menuCard_${m.id}">
+                <div class="menu-card-head" onclick="toggleMenuCard(${m.id})">
+                    <div class="menu-head-left">
+                        <span class="menu-chevron">${isOpen?'▼':'▶'}</span>
+                        <span class="menu-card-name">${m.nama}</span>
+                    </div>
+                    <div class="menu-head-stats">
+                        <div class="menu-stat"><span class="menu-stat-label">HPP</span><span class="menu-stat-val">Rp ${fRp(hpp)}</span></div>
+                        <div class="menu-stat"><span class="menu-stat-label">Jual</span><span class="menu-stat-val" style="color:#6e9726">Rp ${fRp(m.hargaJual)}</span></div>
+                        <div class="menu-stat"><span class="menu-stat-label">Profit</span><span class="menu-stat-val ${profit>=0?'text-green':'text-red'}">Rp ${fRp(profit)}</span></div>
+                        <span class="badge-margin ${marginBadge(mg)}">${fPct(mg)}</span>
+                        <button class="inv-btn-danger inv-btn-sm" onclick="event.stopPropagation();deleteMenu(${m.id})">🗑️</button>
+                    </div>
+                </div>
+                ${isOpen ? renderMenuBody(m) : ''}
+            </div>`;
+        }).join('') || `<div style="text-align:center;padding:24px;color:#aaa;font-size:.82rem">Belum ada menu. Klik "+ Tambah Menu".</div>`;
+    }
+
+    function renderMenuBody(m) {
+        const hpp=calcHPP(m), profit=calcProfit(m), mg=calcMargin(m);
+        const slots = (m.bahan||[null,null,null,null,null,null,null]).map((slot,idx)=>{
+            const b=slot?.bahanId?hppBahan.find(x=>x.id===slot.bahanId):null;
+            const hs=b?hsSatuan(b):0;
+            const sub=b?hs*slot.jumlah:0;
+            return `<div class="bahan-slot-row">
+                <span class="slot-lbl">Bahan ${idx+1}</span>
+                <select class="slot-sel" onchange="updateMenuBahan(${m.id},${idx},this.value,1)">
+                    <option value="">— pilih —</option>
+                    ${hppBahan.map(bx=>`<option value="${bx.id}" ${slot?.bahanId===bx.id?'selected':''}>${bx.nama}</option>`).join('')}
+                </select>
+                ${b?`<input class="slot-qty-inp" type="number" min="0.1" step="0.1" value="${slot.jumlah}" onchange="updateMenuBahanQty(${m.id},${idx},this.value)">
+                    <span class="slot-hs-info">@${fRp(hs)}/${b.satuanIsi}</span>
+                    <span class="slot-subtotal">= Rp ${fRp(sub)}</span>
+                    <button class="slot-clear-btn" onclick="clearMenuBahan(${m.id},${idx})">×</button>`:''}
+            </div>`;
+        }).join('');
+
+        return `<div class="menu-card-body">
+            <div class="bahan-slots">${slots}</div>
+            <div class="menu-controls">
+                <div class="menu-ctrl-group">
+                    <label>Biaya Operasional (Rp)</label>
+                    <input class="menu-ctrl-input" type="number" value="${m.biayaOps}" onchange="updateMenuField(${m.id},'biayaOps',+this.value)">
+                </div>
+                <div class="menu-ctrl-group">
+                    <label>Harga Jual (Rp)</label>
+                    <input class="menu-ctrl-input jual" type="number" value="${m.hargaJual}" onchange="updateMenuField(${m.id},'hargaJual',+this.value)">
+                </div>
+            </div>
+            <div class="hpp-breakdown">
+                <div class="hpp-row"><span>Total Bahan</span><span>Rp ${fRp(hpp-(m.biayaOps||0))}</span></div>
+                <div class="hpp-row"><span>Biaya Operasional</span><span>Rp ${fRp(m.biayaOps)}</span></div>
+                <div class="hpp-row total"><span>HPP Menu</span><span>Rp ${fRp(hpp)}</span></div>
+                <div class="hpp-row"><span>Harga Jual</span><span style="color:#6e9726">Rp ${fRp(m.hargaJual)}</span></div>
+                <div class="hpp-row total ${profit>=0?'text-green':'text-red'}"><span>Profit</span><span>Rp ${fRp(profit)} (${fPct(mg)})</span></div>
+            </div>
+        </div>`;
+    }
+
+    function renderMenuCompare() {
+        document.getElementById('menuCompareTbody').innerHTML = hppMenu.map((m,i)=>{
+            const hpp=calcHPP(m),profit=calcProfit(m),mg=calcMargin(m);
+            const cls=mg>=100?'text-green':mg>=50?'text-amber':'text-red';
+            return `<tr>
+                <td class="text-muted">${i+1}</td>
+                <td style="font-weight:600">${m.nama}</td>
+                <td class="num-cell">${fRp(hpp)}</td>
+                <td class="num-cell" style="color:#6e9726">${fRp(m.hargaJual)}</td>
+                <td class="num-cell ${profit>=0?'text-green':'text-red'}">${fRp(profit)}</td>
+                <td class="col-hs ${cls}">${fPct(mg)}</td>
+            </tr>`;
+        }).join('') || `<tr><td colspan="6" style="text-align:center;padding:16px;color:#aaa">Belum ada menu</td></tr>`;
+    }
+
+    function toggleMenuCard(id) {
+        hppMenuExpanded[id] = !hppMenuExpanded[id];
+        renderMenuAccordion();
+        renderMarginPills();
+        renderMenuCompare();
+    }
+
+    function openMenuModal() { document.getElementById('menuNamaBaru').value=''; document.getElementById('menuModal').style.display='flex'; setTimeout(()=>document.getElementById('menuNamaBaru').focus(),100); }
+    function closeMenuModal() { document.getElementById('menuModal').style.display='none'; }
+    function saveMenuBaru() {
+        const nama=document.getElementById('menuNamaBaru').value.trim();
+        if(!nama) return;
+        hppMenu.push({id:genId(),nama,bahan:[null,null,null,null,null,null,null],biayaOps:2500,hargaJual:0});
+        hppSaveMenu(); closeMenuModal(); renderHPPTab();
+    }
+
+    function deleteMenu(id) {
+        const m=hppMenu.find(x=>x.id===id);
+        if(!m||!confirm(`Hapus "${m.nama}"?`)) return;
+        hppMenu=hppMenu.filter(x=>x.id!==id);
+        delete hppMenuExpanded[id];
+        hppSaveMenu(); renderHPPTab();
+    }
+
+    function updateMenuBahan(menuId,idx,bahanIdStr,jumlah) {
+        const m=hppMenu.find(x=>x.id===menuId); if(!m) return;
+        m.bahan[idx] = bahanIdStr ? {bahanId:+bahanIdStr,jumlah:+jumlah||1} : null;
+        hppSaveMenu(); renderMenuAccordion(); renderMenuCompare(); renderMarginPills();
+    }
+
+    function updateMenuBahanQty(menuId,idx,val) {
+        const m=hppMenu.find(x=>x.id===menuId); if(!m||!m.bahan[idx]) return;
+        m.bahan[idx].jumlah = +val||1;
+        hppSaveMenu(); renderMenuAccordion(); renderMenuCompare(); renderMarginPills();
+    }
+
+    function clearMenuBahan(menuId,idx) {
+        const m=hppMenu.find(x=>x.id===menuId); if(!m) return;
+        m.bahan[idx]=null;
+        hppSaveMenu(); renderMenuAccordion(); renderMenuCompare(); renderMarginPills();
+    }
+
+    function updateMenuField(menuId,field,val) {
+        const m=hppMenu.find(x=>x.id===menuId); if(!m) return;
+        m[field]=val;
+        hppSaveMenu(); renderMenuAccordion(); renderMenuCompare(); renderMarginPills();
+    }
+
+    // =====================
+    // TAB 3: KAS HARIAN
+    // =====================
+    function kasCalc(k) {
+        const jual=(+k.jualTunai||0)+(+k.jualQRIS||0)+(+k.jualLain||0);
+        const keluar=(+k.beliTunai||0)+(+k.beliTf||0)+(+k.keluarTunai||0)+(+k.keluarTf||0);
+        return {jual,keluar,net:jual-keluar};
+    }
+    function kasSummaryAll() {
+        return hppKas.reduce((a,k)=>{const c=kasCalc(k);a.jual+=c.jual;a.keluar+=c.keluar;a.net+=c.net;return a;},{jual:0,keluar:0,net:0});
+    }
+
+    function renderKasTab() {
+        document.getElementById('kasCount').textContent = hppKas.length+' hari';
+        const s=kasSummaryAll();
+        document.getElementById('kasSummaryGrid').innerHTML=`
+            <div class="kas-sum-card"><div class="kas-sum-lbl">Total Penjualan</div><div class="kas-sum-val" style="color:#6e9726">Rp ${fRp(s.jual)}</div></div>
+            <div class="kas-sum-card"><div class="kas-sum-lbl">Total Pengeluaran</div><div class="kas-sum-val" style="color:#e05252">Rp ${fRp(s.keluar)}</div></div>
+            <div class="kas-sum-card hi"><div class="kas-sum-lbl">Net Penerimaan</div><div class="kas-sum-val ${s.net>=0?'text-green':'text-red'}">Rp ${fRp(s.net)}</div></div>
+        `;
+        const tbody=document.getElementById('kasTbody');
+        tbody.innerHTML = hppKas.length?hppKas.map(k=>{
+            const c=kasCalc(k);
+            return `<tr>
+                <td>${k.tanggal}</td>
+                <td class="num-cell">${fRp(k.jualTunai)}</td>
+                <td class="num-cell">${fRp(k.jualQRIS)}</td>
+                <td class="num-cell">${fRp(k.jualLain)}</td>
+                <td class="col-hs">${fRp(c.jual)}</td>
+                <td class="num-cell">${fRp(k.beliTunai)}</td>
+                <td class="num-cell">${fRp(k.beliTf)}</td>
+                <td class="num-cell">${fRp(k.keluarTunai)}</td>
+                <td class="num-cell">${fRp(k.keluarTf)}</td>
+                <td class="num-cell text-red">${fRp(c.keluar)}</td>
+                <td class="num-mono ${c.net>=0?'text-green':'text-red'}" style="font-weight:700">${fRp(c.net)}</td>
+                <td>
+                    <div style="display:flex;gap:3px">
+                        <button class="inv-btn-edit inv-btn-sm" onclick="openKasModal('${k.id}')">✏️</button>
+                        <button class="inv-btn-danger inv-btn-sm" onclick="deleteKas('${k.id}')">🗑️</button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join(''):`<tr><td colspan="12" style="text-align:center;padding:20px;color:#aaa">Belum ada data kas.</td></tr>`;
+
+        const tfoot=document.getElementById('kasTfoot');
+        if(hppKas.length){
+            tfoot.innerHTML=`<tr>
+                <td><strong>TOTAL</strong></td>
+                <td colspan="3"></td>
+                <td class="col-hs">${fRp(s.jual)}</td>
+                <td colspan="4"></td>
+                <td class="num-cell text-red" style="font-weight:700">${fRp(s.keluar)}</td>
+                <td class="num-mono ${s.net>=0?'text-green':'text-red'}" style="font-weight:700">${fRp(s.net)}</td>
+                <td></td>
+            </tr>`;
+        } else { tfoot.innerHTML=''; }
+    }
+
+    function openKasModal(editId=null) {
+        const today=new Date().toISOString().split('T')[0];
+        const k=editId?hppKas.find(x=>x.id==editId):null;
+        document.getElementById('kasEditId').value=k?k.id:'';
+        document.getElementById('kasTanggal').value=k?k.tanggal:today;
+        document.getElementById('kasJualTunai').value=k?k.jualTunai:0;
+        document.getElementById('kasJualQRIS').value=k?k.jualQRIS:0;
+        document.getElementById('kasJualLain').value=k?k.jualLain:0;
+        document.getElementById('kasBeliBahan').value=k?k.beliTunai:0;
+        document.getElementById('kasBeliBahanTf').value=k?k.beliTf:0;
+        document.getElementById('kasKeluar').value=k?k.keluarTunai:0;
+        document.getElementById('kasKeluarTf').value=k?k.keluarTf:0;
+        updateKasPreview();
+        document.getElementById('kasModal').style.display='flex';
+    }
+    function closeKasModal() { document.getElementById('kasModal').style.display='none'; }
+    function updateKasPreview() {
+        const jual=(+document.getElementById('kasJualTunai').value||0)+(+document.getElementById('kasJualQRIS').value||0)+(+document.getElementById('kasJualLain').value||0);
+        const keluar=(+document.getElementById('kasBeliBahan').value||0)+(+document.getElementById('kasBeliBahanTf').value||0)+(+document.getElementById('kasKeluar').value||0)+(+document.getElementById('kasKeluarTf').value||0);
+        const net=jual-keluar;
+        document.getElementById('kpJual').textContent='Rp '+fRp(jual);
+        document.getElementById('kpKeluar').textContent='Rp '+fRp(keluar);
+        document.getElementById('kpNet').textContent='Rp '+fRp(net);
+        document.getElementById('kpNet').className=net>=0?'text-green':'text-red';
+    }
+    function saveKas() {
+        const editId=document.getElementById('kasEditId').value;
+        const data={
+            id:editId||String(genId()),
+            tanggal:document.getElementById('kasTanggal').value,
+            jualTunai:+document.getElementById('kasJualTunai').value||0,
+            jualQRIS:+document.getElementById('kasJualQRIS').value||0,
+            jualLain:+document.getElementById('kasJualLain').value||0,
+            beliTunai:+document.getElementById('kasBeliBahan').value||0,
+            beliTf:+document.getElementById('kasBeliBahanTf').value||0,
+            keluarTunai:+document.getElementById('kasKeluar').value||0,
+            keluarTf:+document.getElementById('kasKeluarTf').value||0,
+        };
+        if(editId) { const i=hppKas.findIndex(x=>x.id==editId); if(i>=0) hppKas[i]=data; }
+        else hppKas.push(data);
+        hppSaveKas(); closeKasModal(); renderKasTab();
+    }
+    function deleteKas(id) {
+        if(!confirm('Hapus baris ini?')) return;
+        hppKas=hppKas.filter(x=>x.id!=id);
+        hppSaveKas(); renderKasTab();
+    }
+
+    console.log('✅ HPP Calculator module loaded!');
     </script>
 </body>
 </html>
