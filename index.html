@@ -20,7 +20,7 @@
     <!-- Firebase SDK v9 (Modular) -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, query, where, orderBy, limit, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, query, where, orderBy, limit, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
         
         const firebaseConfig = {
@@ -41,7 +41,7 @@
             window.firebaseDb = db;
             window.firebaseAnalytics = analytics;
             window.firebaseEnabled = true;
-            window.firebaseModules = { collection, doc, setDoc, getDoc, updateDoc, query, where, orderBy, limit, getDocs, serverTimestamp };
+            window.firebaseModules = { collection, doc, setDoc, getDoc, updateDoc, deleteDoc, query, where, orderBy, limit, getDocs, serverTimestamp };
             window.serverTimestamp = serverTimestamp;
         } catch (error) {
             console.error('❌ Firebase failed:', error);
@@ -3226,9 +3226,10 @@
                         <thead>
                             <tr>
                                 <th rowspan="2">Tanggal</th>
-                                <th colspan="3" style="text-align:center;background:rgba(110,151,38,.15)">Penjualan</th>
+                                <th colspan="3" style="text-align:center;background:rgba(110,151,38,.15)">Penjualan Bruto</th>
                                 <th rowspan="2" class="col-hs">Jml Jual</th>
                                 <th colspan="2" style="text-align:center">Pembelian</th>
+                                <th rowspan="2" style="color:#a07d10">Jml Beli</th>
                                 <th colspan="2" style="text-align:center">Pengeluaran</th>
                                 <th rowspan="2" style="color:#e05252">Jml Keluar</th>
                                 <th rowspan="2" class="col-hs">Net Terima</th>
@@ -3365,7 +3366,8 @@
                     <div class="inv-form-group"><label>Transfer</label><input class="inv-input" type="number" id="kasKeluarTf" value="0" oninput="updateKasPreview()"></div>
                 </div>
                 <div class="inv-preview" id="kasPreview">
-                    <div class="kas-prev-row"><span>Total Penjualan</span><span id="kpJual">Rp 0</span></div>
+                    <div class="kas-prev-row"><span>Penjualan Bruto</span><span id="kpJual">Rp 0</span></div>
+                    <div class="kas-prev-row"><span>Total Pembelian</span><span id="kpBeli" style="color:#a07d10">Rp 0</span></div>
                     <div class="kas-prev-row"><span>Total Pengeluaran</span><span id="kpKeluar" style="color:#e05252">Rp 0</span></div>
                     <div class="kas-prev-row kas-prev-total"><span>Net Penerimaan</span><span id="kpNet">Rp 0</span></div>
                 </div>
@@ -3563,7 +3565,7 @@
     .menu-ctrl-input.jual { border-color:rgba(110,151,38,.5); }
 
     /* Kas */
-    .kas-summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .kas-summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
     .kas-sum-card { background:#fff; border:1px solid #d4e0c0; border-radius:10px; padding:12px; }
     .kas-sum-card.hi { border-color:#b8d080; background:#f0f5e8; }
     .kas-sum-lbl { font-size:.64rem; color:#7d8b70; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
@@ -3684,7 +3686,7 @@
     .menu-ctrl-input.jual { border-color:rgba(110,151,38,.5); }
 
     /* Kas */
-    .kas-summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .kas-summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
     .kas-sum-card { background:#fff; border:1px solid #d4e0c0; border-radius:10px; padding:12px; }
     .kas-sum-card.hi { border-color:#b8d080; background:#f0f5e8; }
     .kas-sum-lbl { font-size:.64rem; color:#7d8b70; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
@@ -3780,22 +3782,158 @@
     let hppMenu = [];
     let hppKas = [];
     let hppMenuExpanded = new Set();
+    let hppFirebaseReady = false;
 
-    function hppLoadState() {
+    /* ---------- Firebase helpers (HPP) ---------- */
+    async function hppFbLoadAll() {
+        if (!window.firebaseEnabled || !window.firebaseDb) return null;
+        try {
+            const { collection, getDocs } = window.firebaseModules;
+            const db = window.firebaseDb;
+            const [bSnap, mSnap, kSnap] = await Promise.all([
+                getDocs(collection(db, 'hpp_bahan')),
+                getDocs(collection(db, 'hpp_menu')),
+                getDocs(collection(db, 'hpp_kas'))
+            ]);
+            const bahan = []; bSnap.forEach(d => bahan.push(d.data()));
+            const menu  = []; mSnap.forEach(d => menu.push(d.data()));
+            const kas   = []; kSnap.forEach(d => kas.push(d.data()));
+            return { bahan, menu, kas };
+        } catch (e) {
+            console.error('[HPP] Firebase load error:', e);
+            return null;
+        }
+    }
+
+    async function hppFbSaveDoc(col, record) {
+        if (!window.firebaseEnabled || !window.firebaseDb || !record.id) return false;
+        try {
+            const { doc, setDoc } = window.firebaseModules;
+            await setDoc(doc(window.firebaseDb, col, record.id), { ...record, updatedAt: new Date().toISOString() });
+            return true;
+        } catch (e) {
+            console.error(`[HPP] Firebase save ${col} error:`, e);
+            return false;
+        }
+    }
+
+    async function hppFbDeleteDoc(col, id) {
+        if (!window.firebaseEnabled || !window.firebaseDb) return false;
+        try {
+            const { doc, deleteDoc } = window.firebaseModules;
+            await deleteDoc(doc(window.firebaseDb, col, id));
+            return true;
+        } catch (e) {
+            console.error(`[HPP] Firebase delete ${col} error:`, e);
+            return false;
+        }
+    }
+
+    async function hppFbSeedBulk(col, records) {
+        if (!window.firebaseEnabled || !window.firebaseDb) return 0;
+        let ok = 0;
+        for (const r of records) {
+            if (await hppFbSaveDoc(col, r)) ok++;
+        }
+        console.log(`[HPP] Seeded ${ok}/${records.length} to ${col}`);
+        return ok;
+    }
+
+    /* ---------- State loader (Firebase + localStorage fallback) ---------- */
+    async function hppLoadState() {
+        // Always load localStorage first as instant fallback
         try {
             const b = localStorage.getItem('pinuslo_hpp_bahan');
             const m = localStorage.getItem('pinuslo_hpp_menu');
             const k = localStorage.getItem('pinuslo_hpp_kas');
-            hppBahan = b ? JSON.parse(b) : [...HPP_INITIAL_BAHAN];
-            hppMenu  = m ? JSON.parse(m) : [...HPP_INITIAL_MENU];
+            hppBahan = b ? JSON.parse(b) : [];
+            hppMenu  = m ? JSON.parse(m) : [];
             hppKas   = k ? JSON.parse(k) : [];
         } catch (e) {
-            console.error('HPP load error:', e);
-            hppBahan = [...HPP_INITIAL_BAHAN];
-            hppMenu  = [...HPP_INITIAL_MENU];
-            hppKas   = [];
+            console.error('[HPP] localStorage load error:', e);
+            hppBahan = []; hppMenu = []; hppKas = [];
+        }
+
+        // Then try Firebase (override if available)
+        const fb = await hppFbLoadAll();
+        if (fb) {
+            hppFirebaseReady = true;
+
+            // Seed Firebase with defaults if it's truly empty AND localStorage also empty
+            if (fb.bahan.length === 0 && hppBahan.length === 0) {
+                console.log('[HPP] Firebase empty, seeding default bahan...');
+                hppBahan = [...HPP_INITIAL_BAHAN];
+                await hppFbSeedBulk('hpp_bahan', hppBahan);
+            } else if (fb.bahan.length === 0 && hppBahan.length > 0) {
+                // localStorage has data, Firebase empty → migrate up
+                console.log('[HPP] Migrating bahan from localStorage to Firebase...');
+                await hppFbSeedBulk('hpp_bahan', hppBahan);
+            } else {
+                hppBahan = fb.bahan;
+            }
+
+            if (fb.menu.length === 0 && hppMenu.length === 0) {
+                console.log('[HPP] Firebase empty, seeding default menu...');
+                hppMenu = [...HPP_INITIAL_MENU];
+                await hppFbSeedBulk('hpp_menu', hppMenu);
+            } else if (fb.menu.length === 0 && hppMenu.length > 0) {
+                console.log('[HPP] Migrating menu from localStorage to Firebase...');
+                await hppFbSeedBulk('hpp_menu', hppMenu);
+            } else {
+                hppMenu = fb.menu;
+            }
+
+            if (fb.kas.length > 0) {
+                hppKas = fb.kas;
+            } else if (hppKas.length > 0) {
+                console.log('[HPP] Migrating kas from localStorage to Firebase...');
+                await hppFbSeedBulk('hpp_kas', hppKas);
+            }
+
+            // Sync to localStorage cache
+            localStorage.setItem('pinuslo_hpp_bahan', JSON.stringify(hppBahan));
+            localStorage.setItem('pinuslo_hpp_menu',  JSON.stringify(hppMenu));
+            localStorage.setItem('pinuslo_hpp_kas',   JSON.stringify(hppKas));
+
+            console.log(`[HPP] ✅ Firebase loaded: ${hppBahan.length} bahan, ${hppMenu.length} menu, ${hppKas.length} kas`);
+        } else {
+            // Firebase offline/unavailable — use localStorage, seed defaults if empty
+            hppFirebaseReady = false;
+            if (hppBahan.length === 0) hppBahan = [...HPP_INITIAL_BAHAN];
+            if (hppMenu.length === 0)  hppMenu  = [...HPP_INITIAL_MENU];
+            localStorage.setItem('pinuslo_hpp_bahan', JSON.stringify(hppBahan));
+            localStorage.setItem('pinuslo_hpp_menu',  JSON.stringify(hppMenu));
+            console.warn('[HPP] ⚠️ Firebase unavailable, using localStorage');
         }
     }
+
+    /* ---------- Dual-write save (Firebase + localStorage) ---------- */
+    async function hppSaveBahanOne(bahan) {
+        localStorage.setItem('pinuslo_hpp_bahan', JSON.stringify(hppBahan));
+        if (hppFirebaseReady) await hppFbSaveDoc('hpp_bahan', bahan);
+    }
+    async function hppSaveMenuOne(menu) {
+        localStorage.setItem('pinuslo_hpp_menu', JSON.stringify(hppMenu));
+        if (hppFirebaseReady) await hppFbSaveDoc('hpp_menu', menu);
+    }
+    async function hppSaveKasOne(kas) {
+        localStorage.setItem('pinuslo_hpp_kas', JSON.stringify(hppKas));
+        if (hppFirebaseReady) await hppFbSaveDoc('hpp_kas', kas);
+    }
+    async function hppDeleteBahanOne(id) {
+        localStorage.setItem('pinuslo_hpp_bahan', JSON.stringify(hppBahan));
+        if (hppFirebaseReady) await hppFbDeleteDoc('hpp_bahan', id);
+    }
+    async function hppDeleteMenuOne(id) {
+        localStorage.setItem('pinuslo_hpp_menu', JSON.stringify(hppMenu));
+        if (hppFirebaseReady) await hppFbDeleteDoc('hpp_menu', id);
+    }
+    async function hppDeleteKasOne(id) {
+        localStorage.setItem('pinuslo_hpp_kas', JSON.stringify(hppKas));
+        if (hppFirebaseReady) await hppFbDeleteDoc('hpp_kas', id);
+    }
+
+    /* Legacy sync save (keep for compatibility) */
     function hppSaveBahan(){ localStorage.setItem('pinuslo_hpp_bahan', JSON.stringify(hppBahan)); }
     function hppSaveMenu(){  localStorage.setItem('pinuslo_hpp_menu',  JSON.stringify(hppMenu)); }
     function hppSaveKas(){   localStorage.setItem('pinuslo_hpp_kas',   JSON.stringify(hppKas)); }
@@ -3833,13 +3971,26 @@
     }
 
     /* ---------- Main loader ---------- */
-    function loadInventory(user) {
+    async function loadInventory(user) {
         document.getElementById('appSelectionPage').classList.remove('active');
         document.getElementById('inventoryPage').classList.add('active');
-        hppLoadState();
+
+        // Show loading while fetching from Firebase
+        const bahanTbody = document.getElementById('bahanTbody');
+        if (bahanTbody) {
+            bahanTbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:#aaa"><i class="fas fa-spinner fa-spin"></i> Memuat data dari server...</td></tr>`;
+        }
+
+        await hppLoadState();
         renderBahanTable();
         renderHPPTab();
         renderKasTab();
+
+        if (hppFirebaseReady) {
+            showToast('☁️ Data HPP sinkron dengan server', 'success');
+        } else {
+            showToast('⚠️ Mode offline — data tersimpan lokal', 'warning');
+        }
     }
 
     function switchInvTab(tab){
@@ -3914,7 +4065,7 @@
             prev.style.display = 'none';
         }
     }
-    function saveBahan(){
+    async function saveBahan(){
         const nama = document.getElementById('bahanNama').value.trim();
         const harga = parseFloat(document.getElementById('bahanHarga').value);
         const isi = parseFloat(document.getElementById('bahanIsi').value);
@@ -3931,22 +4082,27 @@
             satuanIsi: document.getElementById('bahanSatuanIsi').value
         };
         const editId = document.getElementById('bahanEditId').value;
+        let savedRecord;
         if(editId){
             const idx = hppBahan.findIndex(b => b.id === editId);
-            if(idx !== -1) hppBahan[idx] = { ...hppBahan[idx], ...data };
+            if(idx !== -1) {
+                hppBahan[idx] = { ...hppBahan[idx], ...data };
+                savedRecord = hppBahan[idx];
+            }
         } else {
-            hppBahan.push({ id: genId('b'), ...data });
+            savedRecord = { id: genId('b'), ...data };
+            hppBahan.push(savedRecord);
         }
-        hppSaveBahan();
+        await hppSaveBahanOne(savedRecord);
         renderBahanTable();
         renderHPPTab();
         closeBahanModal();
         showToast('✅ Bahan tersimpan!', 'success');
     }
-    function deleteBahan(id){
+    async function deleteBahan(id){
         if(!confirm('Hapus bahan ini?')) return;
         hppBahan = hppBahan.filter(b => b.id !== id);
-        hppSaveBahan();
+        await hppDeleteBahanOne(id);
         renderBahanTable();
         renderHPPTab();
         showToast('Bahan dihapus', 'success');
@@ -4079,7 +4235,7 @@
         setTimeout(() => document.getElementById('menuNamaBaru').focus(), 100);
     }
     function closeMenuModal(){ document.getElementById('menuModal').style.display = 'none'; }
-    function saveMenuBaru(){
+    async function saveMenuBaru(){
         const nama = document.getElementById('menuNamaBaru').value.trim();
         if(!nama){
             showToast('Nama menu wajib diisi!', 'error');
@@ -4088,20 +4244,20 @@
         const newMenu = { id: genId('m'), nama, hargaJual: 0, marginTarget: 30, bahan: [] };
         hppMenu.push(newMenu);
         hppMenuExpanded.add(newMenu.id);
-        hppSaveMenu();
+        await hppSaveMenuOne(newMenu);
         closeMenuModal();
         renderHPPTab();
         showToast('✅ Menu ditambahkan!', 'success');
     }
-    function deleteMenu(id){
+    async function deleteMenu(id){
         if(!confirm('Hapus menu ini?')) return;
         hppMenu = hppMenu.filter(m => m.id !== id);
         hppMenuExpanded.delete(id);
-        hppSaveMenu();
+        await hppDeleteMenuOne(id);
         renderHPPTab();
         showToast('Menu dihapus', 'success');
     }
-    function updateMenuBahan(menuId, slotIdx, bahanId){
+    async function updateMenuBahan(menuId, slotIdx, bahanId){
         const menu = hppMenu.find(m => m.id === menuId);
         if(!menu) return;
         if(!bahanId){
@@ -4116,57 +4272,59 @@
                 menu.bahan[slotIdx].satuan = bahan.satuanIsi;
             }
         }
-        hppSaveMenu();
+        await hppSaveMenuOne(menu);
         renderHPPTab();
     }
-    function updateMenuBahanQty(menuId, slotIdx, qty){
+    async function updateMenuBahanQty(menuId, slotIdx, qty){
         const menu = hppMenu.find(m => m.id === menuId);
         if(!menu || !menu.bahan[slotIdx]) return;
         menu.bahan[slotIdx].qty = parseFloat(qty) || 0;
-        hppSaveMenu();
+        await hppSaveMenuOne(menu);
         renderHPPTab();
     }
-    function clearMenuBahan(menuId, slotIdx){
+    async function clearMenuBahan(menuId, slotIdx){
         const menu = hppMenu.find(m => m.id === menuId);
         if(!menu) return;
         menu.bahan.splice(slotIdx, 1);
-        hppSaveMenu();
+        await hppSaveMenuOne(menu);
         renderHPPTab();
     }
-    function updateMenuField(menuId, field, val){
+    async function updateMenuField(menuId, field, val){
         const menu = hppMenu.find(m => m.id === menuId);
         if(!menu) return;
         menu[field] = parseFloat(val) || 0;
-        hppSaveMenu();
+        await hppSaveMenuOne(menu);
         renderHPPTab();
     }
 
     /* ============== TAB 3: KAS HARIAN ============== */
     function kasCalc(k){
-        const jual = (k.jualTunai||0) + (k.jualQRIS||0) + (k.jualLain||0);
-        const keluar = (k.beliBahan||0) + (k.beliBahanTf||0) + (k.keluar||0) + (k.keluarTf||0);
-        return { jual, keluar, net: jual - keluar };
+        const jual   = (k.jualTunai||0) + (k.jualQRIS||0) + (k.jualLain||0);
+        const beli   = (k.beliBahan||0) + (k.beliBahanTf||0);
+        const keluar = (k.keluar||0) + (k.keluarTf||0);
+        return { jual, beli, keluar, net: jual - beli - keluar };
     }
     function kasSummaryAll(){
-        let tJual = 0, tKeluar = 0, tNet = 0;
+        let tJual = 0, tBeli = 0, tKeluar = 0, tNet = 0;
         hppKas.forEach(k => {
             const c = kasCalc(k);
-            tJual += c.jual; tKeluar += c.keluar; tNet += c.net;
+            tJual += c.jual; tBeli += c.beli; tKeluar += c.keluar; tNet += c.net;
         });
-        return { tJual, tKeluar, tNet, hari: hppKas.length };
+        return { tJual, tBeli, tKeluar, tNet, hari: hppKas.length };
     }
     function renderKasTab(){
         const sum = kasSummaryAll();
         document.getElementById('kasCount').textContent = sum.hari + ' hari';
         document.getElementById('kasSummaryGrid').innerHTML = `
-            <div class="kas-sum-card"><div class="kas-sum-lbl">Total Penjualan</div><div class="kas-sum-val text-green">${fRp(sum.tJual)}</div></div>
+            <div class="kas-sum-card"><div class="kas-sum-lbl">Penjualan Bruto</div><div class="kas-sum-val text-green">${fRp(sum.tJual)}</div></div>
+            <div class="kas-sum-card"><div class="kas-sum-lbl">Total Pembelian</div><div class="kas-sum-val text-amber">${fRp(sum.tBeli)}</div></div>
             <div class="kas-sum-card"><div class="kas-sum-lbl">Total Pengeluaran</div><div class="kas-sum-val text-red">${fRp(sum.tKeluar)}</div></div>
             <div class="kas-sum-card hi"><div class="kas-sum-lbl">Net Penerimaan</div><div class="kas-sum-val">${fRp(sum.tNet)}</div></div>
         `;
         const tbody = document.getElementById('kasTbody');
         const tfoot = document.getElementById('kasTfoot');
         if(hppKas.length === 0){
-            tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:30px;color:#aaa">Belum ada data kas</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:30px;color:#aaa">Belum ada data kas</td></tr>`;
             tfoot.innerHTML = '';
             return;
         }
@@ -4181,6 +4339,7 @@
                 <td class="col-hs">${fRp(c.jual)}</td>
                 <td class="num-mono">${fRp(k.beliBahan)}</td>
                 <td class="num-mono">${fRp(k.beliBahanTf)}</td>
+                <td class="num-mono text-amber">${fRp(c.beli)}</td>
                 <td class="num-mono">${fRp(k.keluar)}</td>
                 <td class="num-mono">${fRp(k.keluarTf)}</td>
                 <td class="num-mono text-red">${fRp(c.keluar)}</td>
@@ -4195,9 +4354,11 @@
             <td><strong>TOTAL</strong></td>
             <td colspan="3"></td>
             <td class="col-hs">${fRp(sum.tJual)}</td>
-            <td colspan="4"></td>
+            <td colspan="2"></td>
+            <td class="num-mono text-amber">${fRp(sum.tBeli)}</td>
+            <td colspan="2"></td>
             <td class="num-mono text-red">${fRp(sum.tKeluar)}</td>
-            <td class="col-hs">${fRp(sum.tNet)}</td>
+            <td class="col-hs ${sum.tNet>=0?'text-green':'text-red'}">${fRp(sum.tNet)}</td>
             <td></td>
         </tr>`;
     }
@@ -4236,11 +4397,12 @@
         };
         const c = kasCalc(k);
         document.getElementById('kpJual').textContent   = fRp(c.jual);
+        document.getElementById('kpBeli').textContent   = fRp(c.beli);
         document.getElementById('kpKeluar').textContent = fRp(c.keluar);
         document.getElementById('kpNet').textContent    = fRp(c.net);
         document.getElementById('kpNet').style.color    = c.net >= 0 ? '#6e9726' : '#e05252';
     }
-    function saveKas(){
+    async function saveKas(){
         const tanggal = document.getElementById('kasTanggal').value;
         if(!tanggal){ showToast('Tanggal wajib diisi!', 'error'); return; }
         const data = {
@@ -4254,21 +4416,26 @@
             keluarTf: +document.getElementById('kasKeluarTf').value || 0
         };
         const editId = document.getElementById('kasEditId').value;
+        let savedRecord;
         if(editId){
             const idx = hppKas.findIndex(k => k.id === editId);
-            if(idx !== -1) hppKas[idx] = { ...hppKas[idx], ...data };
+            if(idx !== -1) {
+                hppKas[idx] = { ...hppKas[idx], ...data };
+                savedRecord = hppKas[idx];
+            }
         } else {
-            hppKas.push({ id: genId('k'), ...data });
+            savedRecord = { id: genId('k'), ...data };
+            hppKas.push(savedRecord);
         }
-        hppSaveKas();
+        await hppSaveKasOne(savedRecord);
         renderKasTab();
         closeKasModal();
-        showToast('✅ Kas tersimpan!', 'success');
+        showToast(hppFirebaseReady ? '✅ Kas tersimpan ke server!' : '✅ Kas tersimpan (lokal)', 'success');
     }
-    function deleteKas(id){
+    async function deleteKas(id){
         if(!confirm('Hapus data kas ini?')) return;
         hppKas = hppKas.filter(k => k.id !== id);
-        hppSaveKas();
+        await hppDeleteKasOne(id);
         renderKasTab();
         showToast('Data kas dihapus', 'success');
     }
