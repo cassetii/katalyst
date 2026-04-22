@@ -3259,9 +3259,9 @@
         </nav>
     </div>
 
-    <!-- Bahan Modal -->
-    <div id="bahanModal" class="inv-modal-overlay" onclick="closeBahanModal()" style="display:none">
-        <div class="inv-modal" onclick="event.stopPropagation()">
+    <!-- Bahan Modal (FIX: onmousedown + target check) -->
+    <div id="bahanModal" class="inv-modal-overlay" onmousedown="if(event.target===this)closeBahanModal()" style="display:none">
+        <div class="inv-modal">
             <div class="inv-modal-header">
                 <span id="bahanModalTitle">Tambah Bahan</span>
                 <button onclick="closeBahanModal()" class="inv-modal-close">×</button>
@@ -3315,9 +3315,9 @@
         </div>
     </div>
 
-    <!-- Menu Modal -->
-    <div id="menuModal" class="inv-modal-overlay" onclick="closeMenuModal()" style="display:none">
-        <div class="inv-modal" onclick="event.stopPropagation()">
+    <!-- Menu Modal (FIX: onmousedown + target check) -->
+    <div id="menuModal" class="inv-modal-overlay" onmousedown="if(event.target===this)closeMenuModal()" style="display:none">
+        <div class="inv-modal">
             <div class="inv-modal-header">
                 <span>Tambah Menu Baru</span>
                 <button onclick="closeMenuModal()" class="inv-modal-close">×</button>
@@ -3335,9 +3335,9 @@
         </div>
     </div>
 
-    <!-- Kas Modal -->
-    <div id="kasModal" class="inv-modal-overlay" onclick="closeKasModal()" style="display:none">
-        <div class="inv-modal inv-modal-lg" onclick="event.stopPropagation()">
+    <!-- Kas Modal (FIX: onmousedown + target check - ini yang bermasalah dulu) -->
+    <div id="kasModal" class="inv-modal-overlay" onmousedown="if(event.target===this)closeKasModal()" style="display:none">
+        <div class="inv-modal inv-modal-lg">
             <div class="inv-modal-header">
                 <span>Input Kas Harian</span>
                 <button onclick="closeKasModal()" class="inv-modal-close">×</button>
@@ -3702,443 +3702,586 @@
     </style>
 
     <script>
-    // =============================================
-    // HPP CALCULATOR MODULE — Inventory
-    // =============================================
+    /* ========== HPP CALCULATOR MODULE ========== */
 
-    // ---- DATA ----
     const HPP_INITIAL_BAHAN = [
-      {id:1,nama:'Indomie Soto',hargaBeli:113000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:40,satuanIsi:'Bungkus'},
-      {id:2,nama:'Indomie Goreng',hargaBeli:113000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:40,satuanIsi:'Bungkus'},
-      {id:3,nama:'Indomie Kaldu',hargaBeli:113000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:40,satuanIsi:'Bungkus'},
-      {id:4,nama:'Indomie Kari',hargaBeli:113000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:40,satuanIsi:'Bungkus'},
-      {id:5,nama:'Susu UHT',hargaBeli:220000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:12000,satuanIsi:'mL'},
-      {id:6,nama:'Susu Kental Manis 3 Sapi',hargaBeli:700000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:23520,satuanIsi:'mL'},
-      {id:7,nama:'Susu Evaporasi',hargaBeli:616224,qtyKemasan:1,satuanKemasan:'Kaleng',isiKemasan:18480,satuanIsi:'Gram'},
-      {id:8,nama:'Susu Creamer',hargaBeli:50000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:500,satuanIsi:'Gram'},
-      {id:9,nama:'Biji Kopi',hargaBeli:200000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
-      {id:10,nama:"Bubuk Avocado Tom's",hargaBeli:141000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
-      {id:11,nama:"Bubuk Coklat Tom's",hargaBeli:141000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
-      {id:12,nama:"Bubuk GreenTea Tom's",hargaBeli:141000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
-      {id:13,nama:"Bubuk ThaiTea Tom's",hargaBeli:141000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
-      {id:14,nama:"Bubuk Vanila Tom's",hargaBeli:141000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
-      {id:15,nama:'Bubuk MILO',hargaBeli:141000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
-      {id:16,nama:'Syrup Butterscoot',hargaBeli:116000,qtyKemasan:1,satuanKemasan:'Botol',isiKemasan:1000,satuanIsi:'mL'},
-      {id:17,nama:'Syrup Leci',hargaBeli:116000,qtyKemasan:1,satuanKemasan:'Botol',isiKemasan:1000,satuanIsi:'mL'},
-      {id:18,nama:'Syrup Lemon',hargaBeli:116000,qtyKemasan:1,satuanKemasan:'Botol',isiKemasan:1000,satuanIsi:'mL'},
-      {id:19,nama:'Leci Kaleng',hargaBeli:33000,qtyKemasan:1,satuanKemasan:'Kaleng',isiKemasan:10,satuanIsi:'Pcs'},
-      {id:20,nama:'Aren Bubuk',hargaBeli:65000,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
-      {id:21,nama:'Simple Syrup',hargaBeli:86000,qtyKemasan:5,satuanKemasan:'Liter',isiKemasan:5000,satuanIsi:'mL'},
-      {id:22,nama:'Kentang',hargaBeli:37500,qtyKemasan:1,satuanKemasan:'Kg',isiKemasan:1000,satuanIsi:'Gram'},
-      {id:23,nama:'Bakso',hargaBeli:21000,qtyKemasan:1,satuanKemasan:'Bungkus',isiKemasan:25,satuanIsi:'Pcs'},
-      {id:24,nama:'Nugged',hargaBeli:40000,qtyKemasan:1,satuanKemasan:'Bungkus',isiKemasan:10,satuanIsi:'Pcs'},
-      {id:25,nama:'Sossis',hargaBeli:20000,qtyKemasan:1,satuanKemasan:'Bungkus',isiKemasan:12,satuanIsi:'Pcs'},
-      {id:26,nama:'Roti',hargaBeli:15700,qtyKemasan:1,satuanKemasan:'Bungkus',isiKemasan:10,satuanIsi:'Slice'},
-      {id:27,nama:'Roti Burger',hargaBeli:15000,qtyKemasan:1,satuanKemasan:'Bungkus',isiKemasan:6,satuanIsi:'Porsi'},
-      {id:28,nama:'Isian Burger',hargaBeli:11000,qtyKemasan:1,satuanKemasan:'Porsi',isiKemasan:1,satuanIsi:'Porsi'},
-      {id:29,nama:'Telur',hargaBeli:60000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:30,satuanIsi:'Butir'},
-      {id:30,nama:'Paper Bowl',hargaBeli:600000,qtyKemasan:1,satuanKemasan:'Dos',isiKemasan:500,satuanIsi:'Pcs'},
-      {id:31,nama:'Ayam Goreng',hargaBeli:12500,qtyKemasan:1,satuanKemasan:'Porsi',isiKemasan:1,satuanIsi:'Porsi'},
-      {id:32,nama:'Pisang Nugged',hargaBeli:6500,qtyKemasan:1,satuanKemasan:'Porsi',isiKemasan:1,satuanIsi:'Porsi'},
+        {id:'b001',nama:'Indomie Soto',hargaBeli:113000,qtyKemasan:1,satuanKemasan:'Dos',isiPerKemasan:40,satuanIsi:'Bungkus'},
+        {id:'b002',nama:'Indomie Kari',hargaBeli:119000,qtyKemasan:1,satuanKemasan:'Dos',isiPerKemasan:40,satuanIsi:'Bungkus'},
+        {id:'b003',nama:'Indomie Ayam Bawang',hargaBeli:115000,qtyKemasan:1,satuanKemasan:'Dos',isiPerKemasan:40,satuanIsi:'Bungkus'},
+        {id:'b004',nama:'Indomie Goreng',hargaBeli:138000,qtyKemasan:1,satuanKemasan:'Dos',isiPerKemasan:40,satuanIsi:'Bungkus'},
+        {id:'b005',nama:'Susu UHT',hargaBeli:23000,qtyKemasan:1,satuanKemasan:'Liter',isiPerKemasan:1000,satuanIsi:'mL'},
+        {id:'b006',nama:'Susu Kental Manis',hargaBeli:13500,qtyKemasan:1,satuanKemasan:'Kaleng',isiPerKemasan:370,satuanIsi:'mL'},
+        {id:'b007',nama:'Susu Evaporasi',hargaBeli:15000,qtyKemasan:1,satuanKemasan:'Kaleng',isiPerKemasan:380,satuanIsi:'mL'},
+        {id:'b008',nama:'Creamer',hargaBeli:18000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:500,satuanIsi:'Gram'},
+        {id:'b009',nama:'Biji Kopi',hargaBeli:160000,qtyKemasan:1,satuanKemasan:'Kg',isiPerKemasan:1000,satuanIsi:'Gram'},
+        {id:'b010',nama:"Bubuk Tom's Coklat",hargaBeli:85000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:1000,satuanIsi:'Gram'},
+        {id:'b011',nama:"Bubuk Tom's Vanilla",hargaBeli:85000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:1000,satuanIsi:'Gram'},
+        {id:'b012',nama:"Bubuk Tom's Taro",hargaBeli:85000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:1000,satuanIsi:'Gram'},
+        {id:'b013',nama:"Bubuk Tom's Matcha",hargaBeli:95000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:1000,satuanIsi:'Gram'},
+        {id:'b014',nama:"Bubuk Tom's Strawberry",hargaBeli:85000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:1000,satuanIsi:'Gram'},
+        {id:'b015',nama:'Bubuk MILO',hargaBeli:105000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:1000,satuanIsi:'Gram'},
+        {id:'b016',nama:'Syrup Vanilla',hargaBeli:65000,qtyKemasan:1,satuanKemasan:'Botol',isiPerKemasan:750,satuanIsi:'mL'},
+        {id:'b017',nama:'Syrup Hazelnut',hargaBeli:75000,qtyKemasan:1,satuanKemasan:'Botol',isiPerKemasan:750,satuanIsi:'mL'},
+        {id:'b018',nama:'Syrup Caramel',hargaBeli:68000,qtyKemasan:1,satuanKemasan:'Botol',isiPerKemasan:750,satuanIsi:'mL'},
+        {id:'b019',nama:'Leci Kaleng',hargaBeli:22000,qtyKemasan:1,satuanKemasan:'Kaleng',isiPerKemasan:565,satuanIsi:'Gram'},
+        {id:'b020',nama:'Aren Bubuk',hargaBeli:45000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:500,satuanIsi:'Gram'},
+        {id:'b021',nama:'Simple Syrup',hargaBeli:25000,qtyKemasan:1,satuanKemasan:'Liter',isiPerKemasan:1000,satuanIsi:'mL'},
+        {id:'b022',nama:'Kentang',hargaBeli:45000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:1000,satuanIsi:'Gram'},
+        {id:'b023',nama:'Bakso',hargaBeli:38000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:500,satuanIsi:'Gram'},
+        {id:'b024',nama:'Nugget',hargaBeli:42000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:500,satuanIsi:'Gram'},
+        {id:'b025',nama:'Sosis',hargaBeli:35000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:500,satuanIsi:'Gram'},
+        {id:'b026',nama:'Roti',hargaBeli:15000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:10,satuanIsi:'Slice'},
+        {id:'b027',nama:'Roti Burger',hargaBeli:12000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:6,satuanIsi:'Pcs'},
+        {id:'b028',nama:'Isian Burger',hargaBeli:48000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:10,satuanIsi:'Pcs'},
+        {id:'b029',nama:'Telur',hargaBeli:55000,qtyKemasan:1,satuanKemasan:'Kg',isiPerKemasan:16,satuanIsi:'Butir'},
+        {id:'b030',nama:'Paper Bowl',hargaBeli:35000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:50,satuanIsi:'Pcs'},
+        {id:'b031',nama:'Ayam Goreng',hargaBeli:65000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:10,satuanIsi:'Pcs'},
+        {id:'b032',nama:'Pisang Nugget',hargaBeli:38000,qtyKemasan:1,satuanKemasan:'Bungkus',isiPerKemasan:500,satuanIsi:'Gram'}
     ];
 
     const HPP_INITIAL_MENU = [
-      {id:101,nama:'Indomie Soto + Telur (Single)',bahan:[{bahanId:1,jumlah:1},{bahanId:29,jumlah:1},{bahanId:30,jumlah:1},null,null,null,null],biayaOps:2500,hargaJual:13000},
-      {id:102,nama:'Indomie Soto + Telur (Double)',bahan:[{bahanId:1,jumlah:2},{bahanId:29,jumlah:1},{bahanId:30,jumlah:1},null,null,null,null],biayaOps:2500,hargaJual:22000},
-      {id:103,nama:'Indomie Soto Komplit (Single)',bahan:[{bahanId:1,jumlah:1},{bahanId:23,jumlah:2},{bahanId:30,jumlah:1},{bahanId:29,jumlah:1},null,null,null],biayaOps:2500,hargaJual:18000},
-      {id:104,nama:'Indomie Soto Komplit (Double)',bahan:[{bahanId:1,jumlah:2},{bahanId:23,jumlah:2},{bahanId:30,jumlah:1},{bahanId:29,jumlah:1},null,null,null],biayaOps:2500,hargaJual:27000},
-      {id:105,nama:'Based Kopi Aren',bahan:[{bahanId:9,jumlah:18},{bahanId:20,jumlah:14},{bahanId:8,jumlah:8},null,null,null,null],biayaOps:2500,hargaJual:20000},
-      {id:106,nama:'Kopi Aren Satuan',bahan:[{bahanId:9,jumlah:18},{bahanId:20,jumlah:20},{bahanId:8,jumlah:10},null,null,null,null],biayaOps:2500,hargaJual:20000},
+        {id:'m001',nama:'Indomie Soto + Telur Single',hargaJual:15000,marginTarget:30,bahan:[
+            {bahanId:'b001',qty:1,satuan:'Bungkus'},
+            {bahanId:'b029',qty:1,satuan:'Butir'},
+            {bahanId:'b030',qty:1,satuan:'Pcs'}
+        ]},
+        {id:'m002',nama:'Indomie Soto + Telur Double',hargaJual:22000,marginTarget:30,bahan:[
+            {bahanId:'b001',qty:2,satuan:'Bungkus'},
+            {bahanId:'b029',qty:1,satuan:'Butir'},
+            {bahanId:'b030',qty:1,satuan:'Pcs'}
+        ]},
+        {id:'m003',nama:'Indomie Soto Komplit Single',hargaJual:20000,marginTarget:35,bahan:[
+            {bahanId:'b001',qty:1,satuan:'Bungkus'},
+            {bahanId:'b029',qty:1,satuan:'Butir'},
+            {bahanId:'b023',qty:30,satuan:'Gram'},
+            {bahanId:'b025',qty:30,satuan:'Gram'},
+            {bahanId:'b030',qty:1,satuan:'Pcs'}
+        ]},
+        {id:'m004',nama:'Indomie Soto Komplit Double',hargaJual:28000,marginTarget:35,bahan:[
+            {bahanId:'b001',qty:2,satuan:'Bungkus'},
+            {bahanId:'b029',qty:1,satuan:'Butir'},
+            {bahanId:'b023',qty:30,satuan:'Gram'},
+            {bahanId:'b025',qty:30,satuan:'Gram'},
+            {bahanId:'b030',qty:1,satuan:'Pcs'}
+        ]},
+        {id:'m005',nama:'Based Kopi Aren',hargaJual:18000,marginTarget:50,bahan:[
+            {bahanId:'b009',qty:18,satuan:'Gram'},
+            {bahanId:'b020',qty:25,satuan:'Gram'},
+            {bahanId:'b005',qty:150,satuan:'mL'}
+        ]},
+        {id:'m006',nama:'Kopi Aren Satuan',hargaJual:15000,marginTarget:50,bahan:[
+            {bahanId:'b009',qty:15,satuan:'Gram'},
+            {bahanId:'b020',qty:20,satuan:'Gram'},
+            {bahanId:'b005',qty:120,satuan:'mL'}
+        ]}
     ];
 
-    // ---- STATE ----
-    let hppBahan  = [];
-    let hppMenu   = [];
-    let hppKas    = [];
-    let hppMenuExpanded = {};
+    let hppBahan = [];
+    let hppMenu = [];
+    let hppKas = [];
+    let hppMenuExpanded = new Set();
 
     function hppLoadState() {
-        try { hppBahan = JSON.parse(localStorage.getItem('hpp_bahan')) || HPP_INITIAL_BAHAN; } catch(e) { hppBahan = HPP_INITIAL_BAHAN; }
-        try { hppMenu  = JSON.parse(localStorage.getItem('hpp_menu'))  || HPP_INITIAL_MENU;  } catch(e) { hppMenu  = HPP_INITIAL_MENU; }
-        try { hppKas   = JSON.parse(localStorage.getItem('hpp_kas'))   || [];                } catch(e) { hppKas   = []; }
+        try {
+            const b = localStorage.getItem('pinuslo_hpp_bahan');
+            const m = localStorage.getItem('pinuslo_hpp_menu');
+            const k = localStorage.getItem('pinuslo_hpp_kas');
+            hppBahan = b ? JSON.parse(b) : [...HPP_INITIAL_BAHAN];
+            hppMenu  = m ? JSON.parse(m) : [...HPP_INITIAL_MENU];
+            hppKas   = k ? JSON.parse(k) : [];
+        } catch (e) {
+            console.error('HPP load error:', e);
+            hppBahan = [...HPP_INITIAL_BAHAN];
+            hppMenu  = [...HPP_INITIAL_MENU];
+            hppKas   = [];
+        }
     }
-    function hppSaveBahan() { localStorage.setItem('hpp_bahan', JSON.stringify(hppBahan)); }
-    function hppSaveMenu()  { localStorage.setItem('hpp_menu',  JSON.stringify(hppMenu));  }
-    function hppSaveKas()   { localStorage.setItem('hpp_kas',   JSON.stringify(hppKas));   }
+    function hppSaveBahan(){ localStorage.setItem('pinuslo_hpp_bahan', JSON.stringify(hppBahan)); }
+    function hppSaveMenu(){  localStorage.setItem('pinuslo_hpp_menu',  JSON.stringify(hppMenu)); }
+    function hppSaveKas(){   localStorage.setItem('pinuslo_hpp_kas',   JSON.stringify(hppKas)); }
 
-    // ---- CALC ENGINE ----
-    function hsSatuan(b) { return b.isiKemasan ? (b.hargaBeli * b.qtyKemasan) / b.isiKemasan : 0; }
-    function calcHPP(menu) {
-        const totalBahan = (menu.bahan||[]).reduce((s,slot)=>{
-            if(!slot||!slot.bahanId) return s;
-            const b = hppBahan.find(x=>x.id===slot.bahanId);
-            return b ? s + hsSatuan(b)*slot.jumlah : s;
-        },0);
-        return totalBahan + (menu.biayaOps||0);
+    /* ---------- Calc engine ---------- */
+    function hsSatuan(b){
+        if(!b || !b.hargaBeli || !b.isiPerKemasan || !b.qtyKemasan) return 0;
+        return b.hargaBeli / (b.qtyKemasan * b.isiPerKemasan);
     }
-    function calcProfit(menu) { return (menu.hargaJual||0) - calcHPP(menu); }
-    function calcMargin(menu) { const h=calcHPP(menu); return h?calcProfit(menu)/h*100:0; }
-    function fRp(v) { return Math.round(v||0).toLocaleString('id-ID'); }
-    function fPct(v) { return Math.round(v||0)+'%'; }
-    function genId() { return Date.now()+Math.floor(Math.random()*1000); }
-    function marginBadge(m) {
-        if(m>=100) return 'badge-green';
-        if(m>=50)  return 'badge-amber';
-        return 'badge-red';
+    function calcHPP(menu){
+        if(!menu || !menu.bahan) return 0;
+        return menu.bahan.reduce((sum, b) => {
+            const bahan = hppBahan.find(x => x.id === b.bahanId);
+            if(!bahan) return sum;
+            return sum + (hsSatuan(bahan) * b.qty);
+        }, 0);
+    }
+    function calcProfit(menu){ return (menu.hargaJual || 0) - calcHPP(menu); }
+    function calcMargin(menu){
+        if(!menu.hargaJual || menu.hargaJual === 0) return 0;
+        return (calcProfit(menu) / menu.hargaJual) * 100;
+    }
+    function fRp(n){
+        if(!n && n!==0) return 'Rp 0';
+        return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+    }
+    function fPct(n){ return (n||0).toFixed(1) + '%'; }
+    function genId(prefix){
+        return prefix + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    }
+    function marginBadge(m){
+        if(m >= 40) return `<span class="badge-margin badge-green">${fPct(m)}</span>`;
+        if(m >= 20) return `<span class="badge-margin badge-amber">${fPct(m)}</span>`;
+        return `<span class="badge-margin badge-red">${fPct(m)}</span>`;
     }
 
-    // ---- LOAD INVENTORY ----
+    /* ---------- Main loader ---------- */
     function loadInventory(user) {
-        hppLoadState();
-        document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+        document.getElementById('appSelectionPage').classList.remove('active');
         document.getElementById('inventoryPage').classList.add('active');
-        switchInvTab('bahan');
+        hppLoadState();
+        renderBahanTable();
+        renderHPPTab();
+        renderKasTab();
     }
 
-    function switchInvTab(tab) {
-        ['bahan','hpp','kas'].forEach(t=>{
+    function switchInvTab(tab){
+        ['bahan','hpp','kas'].forEach(t => {
             document.getElementById('invTab_'+t).classList.toggle('active', t===tab);
-            document.getElementById('invPanel_'+t).style.display = t===tab?'block':'none';
+            document.getElementById('invPanel_'+t).style.display = (t===tab) ? 'block' : 'none';
         });
-        if(tab==='bahan') renderBahanTable('');
-        if(tab==='hpp')   renderHPPTab();
-        if(tab==='kas')   renderKasTab();
+        if(tab==='hpp') renderHPPTab();
+        if(tab==='kas') renderKasTab();
     }
 
-    // =====================
-    // TAB 1: MASTER BAHAN
-    // =====================
-    function renderBahanTable(q='') {
-        const filtered = hppBahan.filter(b=>b.nama.toLowerCase().includes((q||'').toLowerCase()));
+    /* ============== TAB 1: MASTER BAHAN ============== */
+    function renderBahanTable(filter=''){
         const tbody = document.getElementById('bahanTbody');
         if(!tbody) return;
-        tbody.innerHTML = filtered.map((b,i)=>`
-            <tr>
-                <td class="text-muted">${i+1}</td>
-                <td style="font-weight:600">${b.nama}</td>
+        const f = (filter||'').toLowerCase();
+        const list = hppBahan.filter(b => b.nama.toLowerCase().includes(f));
+        if(list.length === 0){
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:#aaa">Tidak ada bahan</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = list.map((b,i) => {
+            const hs = hsSatuan(b);
+            return `<tr>
+                <td>${i+1}</td>
+                <td><strong>${b.nama}</strong></td>
                 <td class="num-cell">${fRp(b.hargaBeli)}</td>
                 <td>${b.qtyKemasan} ${b.satuanKemasan}</td>
-                <td class="num-cell">${fRp(b.isiKemasan)} ${b.satuanIsi}</td>
-                <td class="col-hs">${fRp(hsSatuan(b))}</td>
-                <td>
-                    <div style="display:flex;gap:4px;justify-content:center">
-                        <button class="inv-btn-edit inv-btn-sm" onclick="openBahanModal(${b.id})">✏️</button>
-                        <button class="inv-btn-danger inv-btn-sm" onclick="deleteBahan(${b.id})">🗑️</button>
-                    </div>
+                <td>${b.isiPerKemasan} ${b.satuanIsi}</td>
+                <td class="col-hs">${fRp(hs)}/${b.satuanIsi}</td>
+                <td style="white-space:nowrap">
+                    <button class="inv-btn-edit" onclick="openBahanModal('${b.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="inv-btn-danger" onclick="deleteBahan('${b.id}')"><i class="fas fa-trash"></i></button>
                 </td>
-            </tr>
-        `).join('') || `<tr><td colspan="7" style="text-align:center;padding:20px;color:#aaa">Tidak ada data</td></tr>`;
+            </tr>`;
+        }).join('');
     }
 
-    function openBahanModal(id=null) {
+    function openBahanModal(id){
         const m = document.getElementById('bahanModal');
-        const b = id ? hppBahan.find(x=>x.id===id) : null;
-        document.getElementById('bahanModalTitle').textContent = b ? 'Edit Bahan' : 'Tambah Bahan';
-        document.getElementById('bahanEditId').value   = b ? b.id : '';
-        document.getElementById('bahanNama').value     = b ? b.nama : '';
-        document.getElementById('bahanHarga').value    = b ? b.hargaBeli : '';
-        document.getElementById('bahanQty').value      = b ? b.qtyKemasan : 1;
-        document.getElementById('bahanIsi').value      = b ? b.isiKemasan : '';
-        document.getElementById('bahanSatuanKemasan').value = b ? b.satuanKemasan : 'Dos';
-        document.getElementById('bahanSatuanIsi').value     = b ? b.satuanIsi : 'Gram';
-        document.getElementById('bahanPreview').style.display = 'none';
-        m.style.display = 'flex';
-        setTimeout(()=>document.getElementById('bahanNama').focus(),100);
-    }
-    function closeBahanModal() { document.getElementById('bahanModal').style.display='none'; }
-
-    function updateBahanPreview() {
-        const h=+document.getElementById('bahanHarga').value||0;
-        const q=+document.getElementById('bahanQty').value||1;
-        const i=+document.getElementById('bahanIsi').value||0;
-        const sat=document.getElementById('bahanSatuanIsi').value;
-        if(h&&i){
-            document.getElementById('bahanPreview').style.display='block';
-            document.getElementById('bahanPreviewVal').textContent=`Rp ${fRp(h*q/i)} / ${sat}`;
-        }
-    }
-
-    function saveBahan() {
-        const nama  = document.getElementById('bahanNama').value.trim();
-        const harga = +document.getElementById('bahanHarga').value;
-        const qty   = +document.getElementById('bahanQty').value||1;
-        const isi   = +document.getElementById('bahanIsi').value;
-        const satK  = document.getElementById('bahanSatuanKemasan').value;
-        const satI  = document.getElementById('bahanSatuanIsi').value;
-        if(!nama||!harga||!isi) { alert('Nama, Harga, dan Isi wajib diisi!'); return; }
-        const editId = +document.getElementById('bahanEditId').value||null;
-        if(editId) {
-            const idx=hppBahan.findIndex(b=>b.id===editId);
-            if(idx>=0) hppBahan[idx]={...hppBahan[idx],nama,hargaBeli:harga,qtyKemasan:qty,isiKemasan:isi,satuanKemasan:satK,satuanIsi:satI};
+        const isEdit = !!id;
+        document.getElementById('bahanModalTitle').textContent = isEdit ? 'Edit Bahan' : 'Tambah Bahan';
+        document.getElementById('bahanEditId').value = id || '';
+        if(isEdit){
+            const b = hppBahan.find(x => x.id === id);
+            if(!b) return;
+            document.getElementById('bahanNama').value = b.nama;
+            document.getElementById('bahanHarga').value = b.hargaBeli;
+            document.getElementById('bahanQty').value = b.qtyKemasan;
+            document.getElementById('bahanSatuanKemasan').value = b.satuanKemasan;
+            document.getElementById('bahanIsi').value = b.isiPerKemasan;
+            document.getElementById('bahanSatuanIsi').value = b.satuanIsi;
         } else {
-            hppBahan.push({id:genId(),nama,hargaBeli:harga,qtyKemasan:qty,isiKemasan:isi,satuanKemasan:satK,satuanIsi:satI});
+            ['bahanNama','bahanHarga','bahanIsi'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('bahanQty').value = 1;
+        }
+        m.style.display = 'flex';
+        updateBahanPreview();
+    }
+    function closeBahanModal(){ document.getElementById('bahanModal').style.display = 'none'; }
+    function updateBahanPreview(){
+        const harga = parseFloat(document.getElementById('bahanHarga').value) || 0;
+        const qty = parseFloat(document.getElementById('bahanQty').value) || 1;
+        const isi = parseFloat(document.getElementById('bahanIsi').value) || 0;
+        const satIsi = document.getElementById('bahanSatuanIsi').value;
+        const prev = document.getElementById('bahanPreview');
+        if(harga > 0 && isi > 0){
+            const hs = harga / (qty * isi);
+            document.getElementById('bahanPreviewVal').textContent = fRp(hs) + '/' + satIsi;
+            prev.style.display = 'block';
+        } else {
+            prev.style.display = 'none';
+        }
+    }
+    function saveBahan(){
+        const nama = document.getElementById('bahanNama').value.trim();
+        const harga = parseFloat(document.getElementById('bahanHarga').value);
+        const isi = parseFloat(document.getElementById('bahanIsi').value);
+        if(!nama || !harga || !isi){
+            showToast('Lengkapi nama, harga beli, dan isi!', 'error');
+            return;
+        }
+        const data = {
+            nama,
+            hargaBeli: harga,
+            qtyKemasan: parseFloat(document.getElementById('bahanQty').value) || 1,
+            satuanKemasan: document.getElementById('bahanSatuanKemasan').value,
+            isiPerKemasan: isi,
+            satuanIsi: document.getElementById('bahanSatuanIsi').value
+        };
+        const editId = document.getElementById('bahanEditId').value;
+        if(editId){
+            const idx = hppBahan.findIndex(b => b.id === editId);
+            if(idx !== -1) hppBahan[idx] = { ...hppBahan[idx], ...data };
+        } else {
+            hppBahan.push({ id: genId('b'), ...data });
         }
         hppSaveBahan();
+        renderBahanTable();
+        renderHPPTab();
         closeBahanModal();
-        renderBahanTable(document.getElementById('bahanTbody')?document.querySelector('.inv-search')?.value:'');
+        showToast('✅ Bahan tersimpan!', 'success');
     }
-
-    function deleteBahan(id) {
-        const b=hppBahan.find(x=>x.id===id);
-        if(!b||!confirm(`Hapus "${b.nama}"?`)) return;
-        hppBahan=hppBahan.filter(x=>x.id!==id);
+    function deleteBahan(id){
+        if(!confirm('Hapus bahan ini?')) return;
+        hppBahan = hppBahan.filter(b => b.id !== id);
         hppSaveBahan();
-        renderBahanTable(document.querySelector('.inv-search')?.value||'');
+        renderBahanTable();
+        renderHPPTab();
+        showToast('Bahan dihapus', 'success');
     }
 
-    // =====================
-    // TAB 2: KALKULASI HPP
-    // =====================
-    function renderHPPTab() {
-        document.getElementById('menuCount').textContent = hppMenu.length+' menu';
+    /* ============== TAB 2: KALKULASI HPP ============== */
+    function renderHPPTab(){
+        document.getElementById('menuCount').textContent = hppMenu.length + ' menu';
         renderMarginPills();
         renderMenuAccordion();
         renderMenuCompare();
     }
-
-    function renderMarginPills() {
-        document.getElementById('marginPills').innerHTML = hppMenu.map(m=>{
-            const mg=calcMargin(m);
+    function renderMarginPills(){
+        const el = document.getElementById('marginPills');
+        if(!el) return;
+        if(hppMenu.length === 0){ el.innerHTML = ''; return; }
+        el.innerHTML = hppMenu.map(m => {
+            const margin = calcMargin(m);
             return `<div class="margin-pill">
-                <span class="margin-pill-name">${m.nama}</span>
-                <span class="badge-margin ${marginBadge(mg)}">${fPct(mg)}</span>
+                <span class="margin-pill-name" title="${m.nama}">${m.nama}</span>
+                ${marginBadge(margin)}
             </div>`;
         }).join('');
     }
-
-    function renderMenuAccordion() {
-        const container = document.getElementById('menuAccordion');
-        container.innerHTML = hppMenu.map(m=>{
-            const hpp=calcHPP(m), profit=calcProfit(m), mg=calcMargin(m);
-            const isOpen=!!hppMenuExpanded[m.id];
-            return `<div class="menu-card-inv ${isOpen?'open':''}" id="menuCard_${m.id}">
-                <div class="menu-card-head" onclick="toggleMenuCard(${m.id})">
+    function renderMenuAccordion(){
+        const el = document.getElementById('menuAccordion');
+        if(!el) return;
+        if(hppMenu.length === 0){
+            el.innerHTML = `<div style="text-align:center;padding:30px;color:#aaa">Belum ada menu</div>`;
+            return;
+        }
+        el.innerHTML = hppMenu.map(menu => {
+            const open = hppMenuExpanded.has(menu.id);
+            const hpp = calcHPP(menu);
+            const profit = calcProfit(menu);
+            const margin = calcMargin(menu);
+            return `<div class="menu-card-inv ${open?'open':''}" data-id="${menu.id}">
+                <div class="menu-card-head" onclick="toggleMenuCard('${menu.id}')">
                     <div class="menu-head-left">
-                        <span class="menu-chevron">${isOpen?'▼':'▶'}</span>
-                        <span class="menu-card-name">${m.nama}</span>
+                        <span class="menu-chevron"><i class="fas fa-chevron-${open?'down':'right'}"></i></span>
+                        <span class="menu-card-name">${menu.nama}</span>
                     </div>
                     <div class="menu-head-stats">
-                        <div class="menu-stat"><span class="menu-stat-label">HPP</span><span class="menu-stat-val">Rp ${fRp(hpp)}</span></div>
-                        <div class="menu-stat"><span class="menu-stat-label">Jual</span><span class="menu-stat-val" style="color:#6e9726">Rp ${fRp(m.hargaJual)}</span></div>
-                        <div class="menu-stat"><span class="menu-stat-label">Profit</span><span class="menu-stat-val ${profit>=0?'text-green':'text-red'}">Rp ${fRp(profit)}</span></div>
-                        <span class="badge-margin ${marginBadge(mg)}">${fPct(mg)}</span>
-                        <button class="inv-btn-danger inv-btn-sm" onclick="event.stopPropagation();deleteMenu(${m.id})">🗑️</button>
+                        <div class="menu-stat"><span class="menu-stat-label">HPP</span><span class="menu-stat-val">${fRp(hpp)}</span></div>
+                        <div class="menu-stat"><span class="menu-stat-label">Jual</span><span class="menu-stat-val">${fRp(menu.hargaJual)}</span></div>
+                        <div class="menu-stat"><span class="menu-stat-label">Profit</span><span class="menu-stat-val">${fRp(profit)}</span></div>
+                        ${marginBadge(margin)}
                     </div>
                 </div>
-                ${isOpen ? renderMenuBody(m) : ''}
-            </div>`;
-        }).join('') || `<div style="text-align:center;padding:24px;color:#aaa;font-size:.82rem">Belum ada menu. Klik "+ Tambah Menu".</div>`;
-    }
-
-    function renderMenuBody(m) {
-        const hpp=calcHPP(m), profit=calcProfit(m), mg=calcMargin(m);
-        const slots = (m.bahan||[null,null,null,null,null,null,null]).map((slot,idx)=>{
-            const b=slot?.bahanId?hppBahan.find(x=>x.id===slot.bahanId):null;
-            const hs=b?hsSatuan(b):0;
-            const sub=b?hs*slot.jumlah:0;
-            return `<div class="bahan-slot-row">
-                <span class="slot-lbl">Bahan ${idx+1}</span>
-                <select class="slot-sel" onchange="updateMenuBahan(${m.id},${idx},this.value,1)">
-                    <option value="">— pilih —</option>
-                    ${hppBahan.map(bx=>`<option value="${bx.id}" ${slot?.bahanId===bx.id?'selected':''}>${bx.nama}</option>`).join('')}
-                </select>
-                ${b?`<input class="slot-qty-inp" type="number" min="0.1" step="0.1" value="${slot.jumlah}" onchange="updateMenuBahanQty(${m.id},${idx},this.value)">
-                    <span class="slot-hs-info">@${fRp(hs)}/${b.satuanIsi}</span>
-                    <span class="slot-subtotal">= Rp ${fRp(sub)}</span>
-                    <button class="slot-clear-btn" onclick="clearMenuBahan(${m.id},${idx})">×</button>`:''}
+                ${open ? renderMenuBody(menu) : ''}
             </div>`;
         }).join('');
-
+    }
+    function renderMenuBody(menu){
+        const slots = [];
+        for(let i = 0; i < 7; i++){
+            const slot = menu.bahan[i];
+            const bahan = slot ? hppBahan.find(b => b.id === slot.bahanId) : null;
+            const hs = bahan ? hsSatuan(bahan) : 0;
+            const subtotal = bahan && slot ? hs * slot.qty : 0;
+            slots.push(`<div class="bahan-slot-row">
+                <span class="slot-lbl">Bahan ${i+1}</span>
+                <select class="slot-sel" onchange="updateMenuBahan('${menu.id}', ${i}, this.value)">
+                    <option value="">— Pilih —</option>
+                    ${hppBahan.map(b => `<option value="${b.id}" ${slot && slot.bahanId === b.id ? 'selected' : ''}>${b.nama}</option>`).join('')}
+                </select>
+                <input type="number" class="slot-qty-inp" value="${slot ? slot.qty : ''}" placeholder="0"
+                    onchange="updateMenuBahanQty('${menu.id}', ${i}, this.value)" ${!bahan ? 'disabled' : ''}>
+                ${bahan ? `<span class="slot-hs-info">× ${fRp(hs)}/${bahan.satuanIsi}</span>` : ''}
+                <span class="slot-subtotal">${bahan && slot ? fRp(subtotal) : ''}</span>
+                ${slot ? `<button class="slot-clear-btn" onclick="clearMenuBahan('${menu.id}', ${i})" title="Hapus"><i class="fas fa-times"></i></button>` : ''}
+            </div>`);
+        }
+        const hpp = calcHPP(menu);
+        const profit = calcProfit(menu);
+        const margin = calcMargin(menu);
         return `<div class="menu-card-body">
-            <div class="bahan-slots">${slots}</div>
+            <div class="bahan-slots">${slots.join('')}</div>
+            <div class="hpp-breakdown">
+                <div class="hpp-row"><span>Total HPP</span><span>${fRp(hpp)}</span></div>
+                <div class="hpp-row"><span>Harga Jual</span><span>${fRp(menu.hargaJual)}</span></div>
+                <div class="hpp-row total"><span>Profit / Margin</span><span>${fRp(profit)} · ${fPct(margin)}</span></div>
+            </div>
             <div class="menu-controls">
                 <div class="menu-ctrl-group">
-                    <label>Biaya Operasional (Rp)</label>
-                    <input class="menu-ctrl-input" type="number" value="${m.biayaOps}" onchange="updateMenuField(${m.id},'biayaOps',+this.value)">
+                    <label>Harga Jual</label>
+                    <input type="number" class="menu-ctrl-input jual" value="${menu.hargaJual}"
+                        onchange="updateMenuField('${menu.id}', 'hargaJual', this.value)">
                 </div>
                 <div class="menu-ctrl-group">
-                    <label>Harga Jual (Rp)</label>
-                    <input class="menu-ctrl-input jual" type="number" value="${m.hargaJual}" onchange="updateMenuField(${m.id},'hargaJual',+this.value)">
+                    <label>Target Margin (%)</label>
+                    <input type="number" class="menu-ctrl-input" value="${menu.marginTarget || 30}"
+                        onchange="updateMenuField('${menu.id}', 'marginTarget', this.value)">
                 </div>
-            </div>
-            <div class="hpp-breakdown">
-                <div class="hpp-row"><span>Total Bahan</span><span>Rp ${fRp(hpp-(m.biayaOps||0))}</span></div>
-                <div class="hpp-row"><span>Biaya Operasional</span><span>Rp ${fRp(m.biayaOps)}</span></div>
-                <div class="hpp-row total"><span>HPP Menu</span><span>Rp ${fRp(hpp)}</span></div>
-                <div class="hpp-row"><span>Harga Jual</span><span style="color:#6e9726">Rp ${fRp(m.hargaJual)}</span></div>
-                <div class="hpp-row total ${profit>=0?'text-green':'text-red'}"><span>Profit</span><span>Rp ${fRp(profit)} (${fPct(mg)})</span></div>
+                <button class="inv-btn-danger inv-btn-sm" onclick="deleteMenu('${menu.id}')" style="margin-left:auto">
+                    <i class="fas fa-trash"></i> Hapus Menu
+                </button>
             </div>
         </div>`;
     }
-
-    function renderMenuCompare() {
-        document.getElementById('menuCompareTbody').innerHTML = hppMenu.map((m,i)=>{
-            const hpp=calcHPP(m),profit=calcProfit(m),mg=calcMargin(m);
-            const cls=mg>=100?'text-green':mg>=50?'text-amber':'text-red';
+    function renderMenuCompare(){
+        const tbody = document.getElementById('menuCompareTbody');
+        if(!tbody) return;
+        if(hppMenu.length === 0){
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:#aaa">Belum ada menu</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = hppMenu.map((m,i) => {
+            const hpp = calcHPP(m);
+            const profit = calcProfit(m);
+            const margin = calcMargin(m);
             return `<tr>
-                <td class="text-muted">${i+1}</td>
-                <td style="font-weight:600">${m.nama}</td>
+                <td>${i+1}</td>
+                <td><strong>${m.nama}</strong></td>
                 <td class="num-cell">${fRp(hpp)}</td>
-                <td class="num-cell" style="color:#6e9726">${fRp(m.hargaJual)}</td>
+                <td class="num-cell">${fRp(m.hargaJual)}</td>
                 <td class="num-cell ${profit>=0?'text-green':'text-red'}">${fRp(profit)}</td>
-                <td class="col-hs ${cls}">${fPct(mg)}</td>
+                <td class="col-hs">${marginBadge(margin)}</td>
             </tr>`;
-        }).join('') || `<tr><td colspan="6" style="text-align:center;padding:16px;color:#aaa">Belum ada menu</td></tr>`;
+        }).join('');
     }
-
-    function toggleMenuCard(id) {
-        hppMenuExpanded[id] = !hppMenuExpanded[id];
+    function toggleMenuCard(id){
+        if(hppMenuExpanded.has(id)) hppMenuExpanded.delete(id);
+        else hppMenuExpanded.add(id);
         renderMenuAccordion();
-        renderMarginPills();
-        renderMenuCompare();
+    }
+    function openMenuModal(){
+        document.getElementById('menuModal').style.display = 'flex';
+        document.getElementById('menuNamaBaru').value = '';
+        setTimeout(() => document.getElementById('menuNamaBaru').focus(), 100);
+    }
+    function closeMenuModal(){ document.getElementById('menuModal').style.display = 'none'; }
+    function saveMenuBaru(){
+        const nama = document.getElementById('menuNamaBaru').value.trim();
+        if(!nama){
+            showToast('Nama menu wajib diisi!', 'error');
+            return;
+        }
+        const newMenu = { id: genId('m'), nama, hargaJual: 0, marginTarget: 30, bahan: [] };
+        hppMenu.push(newMenu);
+        hppMenuExpanded.add(newMenu.id);
+        hppSaveMenu();
+        closeMenuModal();
+        renderHPPTab();
+        showToast('✅ Menu ditambahkan!', 'success');
+    }
+    function deleteMenu(id){
+        if(!confirm('Hapus menu ini?')) return;
+        hppMenu = hppMenu.filter(m => m.id !== id);
+        hppMenuExpanded.delete(id);
+        hppSaveMenu();
+        renderHPPTab();
+        showToast('Menu dihapus', 'success');
+    }
+    function updateMenuBahan(menuId, slotIdx, bahanId){
+        const menu = hppMenu.find(m => m.id === menuId);
+        if(!menu) return;
+        if(!bahanId){
+            menu.bahan.splice(slotIdx, 1);
+        } else {
+            const bahan = hppBahan.find(b => b.id === bahanId);
+            if(!bahan) return;
+            if(!menu.bahan[slotIdx]){
+                menu.bahan[slotIdx] = { bahanId, qty: 1, satuan: bahan.satuanIsi };
+            } else {
+                menu.bahan[slotIdx].bahanId = bahanId;
+                menu.bahan[slotIdx].satuan = bahan.satuanIsi;
+            }
+        }
+        hppSaveMenu();
+        renderHPPTab();
+    }
+    function updateMenuBahanQty(menuId, slotIdx, qty){
+        const menu = hppMenu.find(m => m.id === menuId);
+        if(!menu || !menu.bahan[slotIdx]) return;
+        menu.bahan[slotIdx].qty = parseFloat(qty) || 0;
+        hppSaveMenu();
+        renderHPPTab();
+    }
+    function clearMenuBahan(menuId, slotIdx){
+        const menu = hppMenu.find(m => m.id === menuId);
+        if(!menu) return;
+        menu.bahan.splice(slotIdx, 1);
+        hppSaveMenu();
+        renderHPPTab();
+    }
+    function updateMenuField(menuId, field, val){
+        const menu = hppMenu.find(m => m.id === menuId);
+        if(!menu) return;
+        menu[field] = parseFloat(val) || 0;
+        hppSaveMenu();
+        renderHPPTab();
     }
 
-    function openMenuModal() { document.getElementById('menuNamaBaru').value=''; document.getElementById('menuModal').style.display='flex'; setTimeout(()=>document.getElementById('menuNamaBaru').focus(),100); }
-    function closeMenuModal() { document.getElementById('menuModal').style.display='none'; }
-    function saveMenuBaru() {
-        const nama=document.getElementById('menuNamaBaru').value.trim();
-        if(!nama) return;
-        hppMenu.push({id:genId(),nama,bahan:[null,null,null,null,null,null,null],biayaOps:2500,hargaJual:0});
-        hppSaveMenu(); closeMenuModal(); renderHPPTab();
+    /* ============== TAB 3: KAS HARIAN ============== */
+    function kasCalc(k){
+        const jual = (k.jualTunai||0) + (k.jualQRIS||0) + (k.jualLain||0);
+        const keluar = (k.beliBahan||0) + (k.beliBahanTf||0) + (k.keluar||0) + (k.keluarTf||0);
+        return { jual, keluar, net: jual - keluar };
     }
-
-    function deleteMenu(id) {
-        const m=hppMenu.find(x=>x.id===id);
-        if(!m||!confirm(`Hapus "${m.nama}"?`)) return;
-        hppMenu=hppMenu.filter(x=>x.id!==id);
-        delete hppMenuExpanded[id];
-        hppSaveMenu(); renderHPPTab();
+    function kasSummaryAll(){
+        let tJual = 0, tKeluar = 0, tNet = 0;
+        hppKas.forEach(k => {
+            const c = kasCalc(k);
+            tJual += c.jual; tKeluar += c.keluar; tNet += c.net;
+        });
+        return { tJual, tKeluar, tNet, hari: hppKas.length };
     }
-
-    function updateMenuBahan(menuId,idx,bahanIdStr,jumlah) {
-        const m=hppMenu.find(x=>x.id===menuId); if(!m) return;
-        m.bahan[idx] = bahanIdStr ? {bahanId:+bahanIdStr,jumlah:+jumlah||1} : null;
-        hppSaveMenu(); renderMenuAccordion(); renderMenuCompare(); renderMarginPills();
-    }
-
-    function updateMenuBahanQty(menuId,idx,val) {
-        const m=hppMenu.find(x=>x.id===menuId); if(!m||!m.bahan[idx]) return;
-        m.bahan[idx].jumlah = +val||1;
-        hppSaveMenu(); renderMenuAccordion(); renderMenuCompare(); renderMarginPills();
-    }
-
-    function clearMenuBahan(menuId,idx) {
-        const m=hppMenu.find(x=>x.id===menuId); if(!m) return;
-        m.bahan[idx]=null;
-        hppSaveMenu(); renderMenuAccordion(); renderMenuCompare(); renderMarginPills();
-    }
-
-    function updateMenuField(menuId,field,val) {
-        const m=hppMenu.find(x=>x.id===menuId); if(!m) return;
-        m[field]=val;
-        hppSaveMenu(); renderMenuAccordion(); renderMenuCompare(); renderMarginPills();
-    }
-
-    // =====================
-    // TAB 3: KAS HARIAN
-    // =====================
-    function kasCalc(k) {
-        const jual=(+k.jualTunai||0)+(+k.jualQRIS||0)+(+k.jualLain||0);
-        const keluar=(+k.beliTunai||0)+(+k.beliTf||0)+(+k.keluarTunai||0)+(+k.keluarTf||0);
-        return {jual,keluar,net:jual-keluar};
-    }
-    function kasSummaryAll() {
-        return hppKas.reduce((a,k)=>{const c=kasCalc(k);a.jual+=c.jual;a.keluar+=c.keluar;a.net+=c.net;return a;},{jual:0,keluar:0,net:0});
-    }
-
-    function renderKasTab() {
-        document.getElementById('kasCount').textContent = hppKas.length+' hari';
-        const s=kasSummaryAll();
-        document.getElementById('kasSummaryGrid').innerHTML=`
-            <div class="kas-sum-card"><div class="kas-sum-lbl">Total Penjualan</div><div class="kas-sum-val" style="color:#6e9726">Rp ${fRp(s.jual)}</div></div>
-            <div class="kas-sum-card"><div class="kas-sum-lbl">Total Pengeluaran</div><div class="kas-sum-val" style="color:#e05252">Rp ${fRp(s.keluar)}</div></div>
-            <div class="kas-sum-card hi"><div class="kas-sum-lbl">Net Penerimaan</div><div class="kas-sum-val ${s.net>=0?'text-green':'text-red'}">Rp ${fRp(s.net)}</div></div>
+    function renderKasTab(){
+        const sum = kasSummaryAll();
+        document.getElementById('kasCount').textContent = sum.hari + ' hari';
+        document.getElementById('kasSummaryGrid').innerHTML = `
+            <div class="kas-sum-card"><div class="kas-sum-lbl">Total Penjualan</div><div class="kas-sum-val text-green">${fRp(sum.tJual)}</div></div>
+            <div class="kas-sum-card"><div class="kas-sum-lbl">Total Pengeluaran</div><div class="kas-sum-val text-red">${fRp(sum.tKeluar)}</div></div>
+            <div class="kas-sum-card hi"><div class="kas-sum-lbl">Net Penerimaan</div><div class="kas-sum-val">${fRp(sum.tNet)}</div></div>
         `;
-        const tbody=document.getElementById('kasTbody');
-        tbody.innerHTML = hppKas.length?hppKas.map(k=>{
-            const c=kasCalc(k);
+        const tbody = document.getElementById('kasTbody');
+        const tfoot = document.getElementById('kasTfoot');
+        if(hppKas.length === 0){
+            tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:30px;color:#aaa">Belum ada data kas</td></tr>`;
+            tfoot.innerHTML = '';
+            return;
+        }
+        const sorted = [...hppKas].sort((a,b) => b.tanggal.localeCompare(a.tanggal));
+        tbody.innerHTML = sorted.map(k => {
+            const c = kasCalc(k);
             return `<tr>
                 <td>${k.tanggal}</td>
-                <td class="num-cell">${fRp(k.jualTunai)}</td>
-                <td class="num-cell">${fRp(k.jualQRIS)}</td>
-                <td class="num-cell">${fRp(k.jualLain)}</td>
+                <td class="num-mono">${fRp(k.jualTunai)}</td>
+                <td class="num-mono">${fRp(k.jualQRIS)}</td>
+                <td class="num-mono">${fRp(k.jualLain)}</td>
                 <td class="col-hs">${fRp(c.jual)}</td>
-                <td class="num-cell">${fRp(k.beliTunai)}</td>
-                <td class="num-cell">${fRp(k.beliTf)}</td>
-                <td class="num-cell">${fRp(k.keluarTunai)}</td>
-                <td class="num-cell">${fRp(k.keluarTf)}</td>
-                <td class="num-cell text-red">${fRp(c.keluar)}</td>
-                <td class="num-mono ${c.net>=0?'text-green':'text-red'}" style="font-weight:700">${fRp(c.net)}</td>
-                <td>
-                    <div style="display:flex;gap:3px">
-                        <button class="inv-btn-edit inv-btn-sm" onclick="openKasModal('${k.id}')">✏️</button>
-                        <button class="inv-btn-danger inv-btn-sm" onclick="deleteKas('${k.id}')">🗑️</button>
-                    </div>
+                <td class="num-mono">${fRp(k.beliBahan)}</td>
+                <td class="num-mono">${fRp(k.beliBahanTf)}</td>
+                <td class="num-mono">${fRp(k.keluar)}</td>
+                <td class="num-mono">${fRp(k.keluarTf)}</td>
+                <td class="num-mono text-red">${fRp(c.keluar)}</td>
+                <td class="col-hs ${c.net>=0?'text-green':'text-red'}">${fRp(c.net)}</td>
+                <td style="white-space:nowrap">
+                    <button class="inv-btn-edit" onclick="openKasModal('${k.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="inv-btn-danger" onclick="deleteKas('${k.id}')"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>`;
-        }).join(''):`<tr><td colspan="12" style="text-align:center;padding:20px;color:#aaa">Belum ada data kas.</td></tr>`;
-
-        const tfoot=document.getElementById('kasTfoot');
-        if(hppKas.length){
-            tfoot.innerHTML=`<tr>
-                <td><strong>TOTAL</strong></td>
-                <td colspan="3"></td>
-                <td class="col-hs">${fRp(s.jual)}</td>
-                <td colspan="4"></td>
-                <td class="num-cell text-red" style="font-weight:700">${fRp(s.keluar)}</td>
-                <td class="num-mono ${s.net>=0?'text-green':'text-red'}" style="font-weight:700">${fRp(s.net)}</td>
-                <td></td>
-            </tr>`;
-        } else { tfoot.innerHTML=''; }
+        }).join('');
+        tfoot.innerHTML = `<tr>
+            <td><strong>TOTAL</strong></td>
+            <td colspan="3"></td>
+            <td class="col-hs">${fRp(sum.tJual)}</td>
+            <td colspan="4"></td>
+            <td class="num-mono text-red">${fRp(sum.tKeluar)}</td>
+            <td class="col-hs">${fRp(sum.tNet)}</td>
+            <td></td>
+        </tr>`;
     }
-
-    function openKasModal(editId=null) {
-        const today=new Date().toISOString().split('T')[0];
-        const k=editId?hppKas.find(x=>x.id==editId):null;
-        document.getElementById('kasEditId').value=k?k.id:'';
-        document.getElementById('kasTanggal').value=k?k.tanggal:today;
-        document.getElementById('kasJualTunai').value=k?k.jualTunai:0;
-        document.getElementById('kasJualQRIS').value=k?k.jualQRIS:0;
-        document.getElementById('kasJualLain').value=k?k.jualLain:0;
-        document.getElementById('kasBeliBahan').value=k?k.beliTunai:0;
-        document.getElementById('kasBeliBahanTf').value=k?k.beliTf:0;
-        document.getElementById('kasKeluar').value=k?k.keluarTunai:0;
-        document.getElementById('kasKeluarTf').value=k?k.keluarTf:0;
+    function openKasModal(id){
+        const m = document.getElementById('kasModal');
+        document.getElementById('kasEditId').value = id || '';
+        if(id){
+            const k = hppKas.find(x => x.id === id);
+            if(!k) return;
+            document.getElementById('kasTanggal').value = k.tanggal;
+            document.getElementById('kasJualTunai').value = k.jualTunai || 0;
+            document.getElementById('kasJualQRIS').value  = k.jualQRIS || 0;
+            document.getElementById('kasJualLain').value  = k.jualLain || 0;
+            document.getElementById('kasBeliBahan').value   = k.beliBahan || 0;
+            document.getElementById('kasBeliBahanTf').value = k.beliBahanTf || 0;
+            document.getElementById('kasKeluar').value   = k.keluar || 0;
+            document.getElementById('kasKeluarTf').value = k.keluarTf || 0;
+        } else {
+            document.getElementById('kasTanggal').value = new Date().toLocaleDateString('en-CA');
+            ['kasJualTunai','kasJualQRIS','kasJualLain','kasBeliBahan','kasBeliBahanTf','kasKeluar','kasKeluarTf']
+                .forEach(x => document.getElementById(x).value = 0);
+        }
+        m.style.display = 'flex';
         updateKasPreview();
-        document.getElementById('kasModal').style.display='flex';
     }
-    function closeKasModal() { document.getElementById('kasModal').style.display='none'; }
-    function updateKasPreview() {
-        const jual=(+document.getElementById('kasJualTunai').value||0)+(+document.getElementById('kasJualQRIS').value||0)+(+document.getElementById('kasJualLain').value||0);
-        const keluar=(+document.getElementById('kasBeliBahan').value||0)+(+document.getElementById('kasBeliBahanTf').value||0)+(+document.getElementById('kasKeluar').value||0)+(+document.getElementById('kasKeluarTf').value||0);
-        const net=jual-keluar;
-        document.getElementById('kpJual').textContent='Rp '+fRp(jual);
-        document.getElementById('kpKeluar').textContent='Rp '+fRp(keluar);
-        document.getElementById('kpNet').textContent='Rp '+fRp(net);
-        document.getElementById('kpNet').className=net>=0?'text-green':'text-red';
-    }
-    function saveKas() {
-        const editId=document.getElementById('kasEditId').value;
-        const data={
-            id:editId||String(genId()),
-            tanggal:document.getElementById('kasTanggal').value,
-            jualTunai:+document.getElementById('kasJualTunai').value||0,
-            jualQRIS:+document.getElementById('kasJualQRIS').value||0,
-            jualLain:+document.getElementById('kasJualLain').value||0,
-            beliTunai:+document.getElementById('kasBeliBahan').value||0,
-            beliTf:+document.getElementById('kasBeliBahanTf').value||0,
-            keluarTunai:+document.getElementById('kasKeluar').value||0,
-            keluarTf:+document.getElementById('kasKeluarTf').value||0,
+    function closeKasModal(){ document.getElementById('kasModal').style.display = 'none'; }
+    function updateKasPreview(){
+        const k = {
+            jualTunai: +document.getElementById('kasJualTunai').value || 0,
+            jualQRIS:  +document.getElementById('kasJualQRIS').value  || 0,
+            jualLain:  +document.getElementById('kasJualLain').value  || 0,
+            beliBahan:   +document.getElementById('kasBeliBahan').value   || 0,
+            beliBahanTf: +document.getElementById('kasBeliBahanTf').value || 0,
+            keluar:   +document.getElementById('kasKeluar').value   || 0,
+            keluarTf: +document.getElementById('kasKeluarTf').value || 0
         };
-        if(editId) { const i=hppKas.findIndex(x=>x.id==editId); if(i>=0) hppKas[i]=data; }
-        else hppKas.push(data);
-        hppSaveKas(); closeKasModal(); renderKasTab();
+        const c = kasCalc(k);
+        document.getElementById('kpJual').textContent   = fRp(c.jual);
+        document.getElementById('kpKeluar').textContent = fRp(c.keluar);
+        document.getElementById('kpNet').textContent    = fRp(c.net);
+        document.getElementById('kpNet').style.color    = c.net >= 0 ? '#6e9726' : '#e05252';
     }
-    function deleteKas(id) {
-        if(!confirm('Hapus baris ini?')) return;
-        hppKas=hppKas.filter(x=>x.id!=id);
-        hppSaveKas(); renderKasTab();
+    function saveKas(){
+        const tanggal = document.getElementById('kasTanggal').value;
+        if(!tanggal){ showToast('Tanggal wajib diisi!', 'error'); return; }
+        const data = {
+            tanggal,
+            jualTunai: +document.getElementById('kasJualTunai').value || 0,
+            jualQRIS:  +document.getElementById('kasJualQRIS').value  || 0,
+            jualLain:  +document.getElementById('kasJualLain').value  || 0,
+            beliBahan:   +document.getElementById('kasBeliBahan').value   || 0,
+            beliBahanTf: +document.getElementById('kasBeliBahanTf').value || 0,
+            keluar:   +document.getElementById('kasKeluar').value   || 0,
+            keluarTf: +document.getElementById('kasKeluarTf').value || 0
+        };
+        const editId = document.getElementById('kasEditId').value;
+        if(editId){
+            const idx = hppKas.findIndex(k => k.id === editId);
+            if(idx !== -1) hppKas[idx] = { ...hppKas[idx], ...data };
+        } else {
+            hppKas.push({ id: genId('k'), ...data });
+        }
+        hppSaveKas();
+        renderKasTab();
+        closeKasModal();
+        showToast('✅ Kas tersimpan!', 'success');
     }
+    function deleteKas(id){
+        if(!confirm('Hapus data kas ini?')) return;
+        hppKas = hppKas.filter(k => k.id !== id);
+        hppSaveKas();
+        renderKasTab();
+        showToast('Data kas dihapus', 'success');
+    }
+
+    /* ---------- FIX PATCH 4: Escape key closes HPP modals ---------- */
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            ['bahanModal','menuModal','kasModal'].forEach(id => {
+                const m = document.getElementById(id);
+                if (m && m.style.display === 'flex') m.style.display = 'none';
+            });
+        }
+    });
 
     console.log('✅ HPP Calculator module loaded!');
     </script>
