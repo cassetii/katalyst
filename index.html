@@ -3216,6 +3216,31 @@
 
             <!-- Tab: Kas Harian -->
             <div id="invPanel_kas" class="inv-panel" style="display:none">
+                <!-- Filter rentang tanggal -->
+                <div class="kas-filter-box">
+                    <div class="kas-filter-row">
+                        <div class="kas-filter-group">
+                            <label>Dari Tanggal</label>
+                            <input type="date" class="inv-input" id="kasFilterStart" onchange="applyKasFilter()">
+                        </div>
+                        <div class="kas-filter-group">
+                            <label>Sampai Tanggal</label>
+                            <input type="date" class="inv-input" id="kasFilterEnd" onchange="applyKasFilter()">
+                        </div>
+                        <button class="inv-btn-ghost inv-btn-sm" onclick="resetKasFilter()" title="Reset filter">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                    <div class="kas-preset-row">
+                        <button class="kas-preset-btn" onclick="setKasPreset('today')">Hari Ini</button>
+                        <button class="kas-preset-btn" onclick="setKasPreset('week')">7 Hari</button>
+                        <button class="kas-preset-btn" onclick="setKasPreset('month')">Bulan Ini</button>
+                        <button class="kas-preset-btn" onclick="setKasPreset('lastmonth')">Bulan Lalu</button>
+                        <button class="kas-preset-btn" onclick="setKasPreset('year')">Tahun Ini</button>
+                        <button class="kas-preset-btn" onclick="setKasPreset('all')">Semua</button>
+                    </div>
+                    <div class="kas-filter-info" id="kasFilterInfo"></div>
+                </div>
                 <div class="kas-summary-grid" id="kasSummaryGrid"></div>
                 <div class="inv-toolbar" style="margin-top:12px">
                     <span class="inv-count" id="kasCount">0 hari</span>
@@ -3574,6 +3599,18 @@
     .kas-prev-row span:last-child { font-family:'Courier New',monospace; font-weight:700; }
     .kas-prev-total { border-top:1px solid rgba(110,151,38,.3); padding-top:6px; margin-top:3px; font-weight:700; }
     .inv-section-title { font-weight:700; font-size:.85rem; color:#3a5010; margin:16px 0 10px; }
+
+    /* Kas Filter Box */
+    .kas-filter-box { background:#fff; border:1px solid #d4e0c0; border-radius:10px; padding:12px; margin-bottom:10px; }
+    .kas-filter-row { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:10px; }
+    .kas-filter-group { display:flex; flex-direction:column; gap:3px; flex:1; min-width:140px; }
+    .kas-filter-group label { font-size:.68rem; color:#7d8b70; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+    .kas-preset-row { display:flex; gap:6px; flex-wrap:wrap; padding-top:8px; border-top:1px dashed #eef2e8; }
+    .kas-preset-btn { padding:5px 10px; border:1px solid #d4e0c0; border-radius:6px; background:#fafcf5; color:#5a7030; font-size:.72rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .15s; }
+    .kas-preset-btn:hover { background:#f0f5e8; border-color:#6e9726; color:#6e9726; }
+    .kas-preset-btn.active { background:#6e9726; border-color:#6e9726; color:#fff; }
+    .kas-filter-info { font-size:.72rem; color:#7d8b70; margin-top:8px; font-style:italic; }
+    .kas-filter-info strong { color:#6e9726; font-style:normal; }
 
     @media(max-width:480px){
         .inv-form-row3 { grid-template-columns:1fr 1fr; }
@@ -4298,23 +4335,117 @@
     }
 
     /* ============== TAB 3: KAS HARIAN ============== */
+    let kasFilterStart = null;
+    let kasFilterEnd = null;
+    let kasActivePreset = 'all';
+
     function kasCalc(k){
         const jual   = (k.jualTunai||0) + (k.jualQRIS||0) + (k.jualLain||0);
         const beli   = (k.beliBahan||0) + (k.beliBahanTf||0);
         const keluar = (k.keluar||0) + (k.keluarTf||0);
         return { jual, beli, keluar, net: jual - beli - keluar };
     }
-    function kasSummaryAll(){
+
+    function getFilteredKas(){
+        if(!kasFilterStart && !kasFilterEnd) return [...hppKas];
+        return hppKas.filter(k => {
+            if(kasFilterStart && k.tanggal < kasFilterStart) return false;
+            if(kasFilterEnd   && k.tanggal > kasFilterEnd)   return false;
+            return true;
+        });
+    }
+
+    function kasSummaryAll(list){
+        const data = list || hppKas;
         let tJual = 0, tBeli = 0, tKeluar = 0, tNet = 0;
-        hppKas.forEach(k => {
+        data.forEach(k => {
             const c = kasCalc(k);
             tJual += c.jual; tBeli += c.beli; tKeluar += c.keluar; tNet += c.net;
         });
-        return { tJual, tBeli, tKeluar, tNet, hari: hppKas.length };
+        return { tJual, tBeli, tKeluar, tNet, hari: data.length };
+    }
+
+    function applyKasFilter(){
+        kasFilterStart = document.getElementById('kasFilterStart').value || null;
+        kasFilterEnd   = document.getElementById('kasFilterEnd').value   || null;
+        // Validasi: start tidak boleh lebih besar dari end
+        if(kasFilterStart && kasFilterEnd && kasFilterStart > kasFilterEnd){
+            showToast('⚠️ Tanggal mulai tidak boleh lebih besar dari tanggal akhir', 'warning');
+            return;
+        }
+        kasActivePreset = 'custom';
+        renderKasTab();
+    }
+
+    function resetKasFilter(){
+        kasFilterStart = null;
+        kasFilterEnd = null;
+        kasActivePreset = 'all';
+        document.getElementById('kasFilterStart').value = '';
+        document.getElementById('kasFilterEnd').value = '';
+        renderKasTab();
+    }
+
+    function setKasPreset(preset){
+        const today = new Date();
+        const toISO = (d) => d.toLocaleDateString('en-CA'); // YYYY-MM-DD local timezone
+        let start = null, end = null;
+
+        if(preset === 'today'){
+            start = end = toISO(today);
+        } else if(preset === 'week'){
+            const d = new Date(today);
+            d.setDate(d.getDate() - 6);
+            start = toISO(d);
+            end = toISO(today);
+        } else if(preset === 'month'){
+            start = toISO(new Date(today.getFullYear(), today.getMonth(), 1));
+            end   = toISO(today);
+        } else if(preset === 'lastmonth'){
+            start = toISO(new Date(today.getFullYear(), today.getMonth()-1, 1));
+            end   = toISO(new Date(today.getFullYear(), today.getMonth(), 0));
+        } else if(preset === 'year'){
+            start = toISO(new Date(today.getFullYear(), 0, 1));
+            end   = toISO(today);
+        } else if(preset === 'all'){
+            start = null; end = null;
+        }
+
+        kasFilterStart = start;
+        kasFilterEnd = end;
+        kasActivePreset = preset;
+        document.getElementById('kasFilterStart').value = start || '';
+        document.getElementById('kasFilterEnd').value = end || '';
+        renderKasTab();
+    }
+
+    function fmtTgl(iso){
+        if(!iso) return '-';
+        try { return new Date(iso + 'T00:00:00').toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' }); }
+        catch(e) { return iso; }
     }
     function renderKasTab(){
-        const sum = kasSummaryAll();
-        document.getElementById('kasCount').textContent = sum.hari + ' hari';
+        const filtered = getFilteredKas();
+        const sum = kasSummaryAll(filtered);
+        const totalAll = hppKas.length;
+
+        document.getElementById('kasCount').textContent = sum.hari + ' hari' + (kasActivePreset !== 'all' ? ` dari ${totalAll}` : '');
+
+        // Update preset active state
+        document.querySelectorAll('.kas-preset-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.querySelector(`.kas-preset-btn[onclick*="'${kasActivePreset}'"]`);
+        if(activeBtn) activeBtn.classList.add('active');
+
+        // Info rentang tanggal
+        const infoEl = document.getElementById('kasFilterInfo');
+        if(infoEl){
+            if(kasFilterStart || kasFilterEnd){
+                infoEl.innerHTML = `Menampilkan data dari <strong>${fmtTgl(kasFilterStart) || 'awal'}</strong> sampai <strong>${fmtTgl(kasFilterEnd) || 'terakhir'}</strong>`;
+            } else {
+                infoEl.innerHTML = `Menampilkan <strong>semua data</strong>`;
+            }
+        }
+
         document.getElementById('kasSummaryGrid').innerHTML = `
             <div class="kas-sum-card"><div class="kas-sum-lbl">Penjualan Bruto</div><div class="kas-sum-val text-green">${fRp(sum.tJual)}</div></div>
             <div class="kas-sum-card"><div class="kas-sum-lbl">Total Pembelian</div><div class="kas-sum-val text-amber">${fRp(sum.tBeli)}</div></div>
@@ -4323,12 +4454,13 @@
         `;
         const tbody = document.getElementById('kasTbody');
         const tfoot = document.getElementById('kasTfoot');
-        if(hppKas.length === 0){
-            tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:30px;color:#aaa">Belum ada data kas</td></tr>`;
+        if(filtered.length === 0){
+            const msg = totalAll === 0 ? 'Belum ada data kas' : 'Tidak ada data di rentang tanggal ini';
+            tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:30px;color:#aaa">${msg}</td></tr>`;
             tfoot.innerHTML = '';
             return;
         }
-        const sorted = [...hppKas].sort((a,b) => b.tanggal.localeCompare(a.tanggal));
+        const sorted = [...filtered].sort((a,b) => b.tanggal.localeCompare(a.tanggal));
         tbody.innerHTML = sorted.map(k => {
             const c = kasCalc(k);
             return `<tr>
