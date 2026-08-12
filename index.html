@@ -337,208 +337,7 @@
             transform: scale(0.98);
             box-shadow: var(--shadow-sm);
         }
-
-        /* ========================================
-           SETTINGS - KELOLA USER (KHUSUS IQBAL)
-        ======================================== */
-        .settings-btn {
-            margin-left: auto;
-            width: 42px;
-            height: 42px;
-            border: none;
-            border-radius: 50%;
-            background: #eef4e5;
-            color: var(--pine-green);
-            font-size: 1.1rem;
-            cursor: pointer;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: all 0.2s ease;
-        }
-
-        .settings-btn:active {
-            transform: scale(0.92) rotate(30deg);
-        }
-
-        .settings-toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin: var(--spacing-md);
-        }
-
-        .settings-count {
-            color: #7d8b70;
-            font-size: 0.85rem;
-        }
-
-        .btn-add-user {
-            background: linear-gradient(135deg, var(--pine-green), var(--dark-forest));
-            color: white;
-            border: none;
-            border-radius: var(--radius-md);
-            padding: 0.6rem 1rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .btn-add-user:active {
-            transform: scale(0.96);
-        }
-
-        .settings-user-list {
-            margin: 0 var(--spacing-md) var(--spacing-md);
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-
-        .su-card {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .su-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--pine-green), var(--dark-forest));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .su-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .su-name {
-            font-weight: 600;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            flex-wrap: wrap;
-        }
-
-        .su-meta {
-            font-size: 0.75rem;
-            color: #7d8b70;
-            margin-top: 0.15rem;
-        }
-
-        .su-badge {
-            font-size: 0.65rem;
-            font-weight: 700;
-            padding: 0.15rem 0.5rem;
-            border-radius: 999px;
-        }
-
-        .su-badge.admin {
-            background: #fef3c7;
-            color: #b45309;
-        }
-
-        .su-badge.user {
-            background: #e0f2e9;
-            color: #1d6f42;
-        }
-
-        .su-actions {
-            display: flex;
-            gap: 0.4rem;
-            flex-shrink: 0;
-        }
-
-        .su-btn {
-            width: 36px;
-            height: 36px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-
-        .su-btn.edit {
-            background: #eef4e5;
-            color: var(--pine-green);
-        }
-
-        .su-btn.del {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-
-        .su-btn:active {
-            transform: scale(0.92);
-        }
-
-        .um-input {
-            width: 100%;
-            padding: 0.7rem 0.85rem;
-            border: 2px solid #e5e7eb;
-            border-radius: var(--radius-md);
-            font-size: 0.95rem;
-            margin-bottom: 0.85rem;
-            background: white;
-        }
-
-        .um-input:focus {
-            outline: none;
-            border-color: var(--pine-green);
-            box-shadow: 0 0 0 3px rgba(110, 151, 38, 0.1);
-        }
-
-        .um-input:disabled {
-            background: #f3f4f6;
-            color: #9ca3af;
-        }
-
-        .um-apps {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .um-app-check {
-            display: flex;
-            align-items: center;
-            gap: 0.45rem;
-            background: #f7f9f4;
-            border: 1.5px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 0.55rem;
-            font-size: 0.8rem;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .um-app-check:has(input:checked) {
-            border-color: var(--pine-green);
-            background: #eef4e5;
-        }
-
-        .um-app-check input {
-            accent-color: var(--pine-green);
-        }
-
-        .um-app-check i {
-            color: var(--pine-green);
-        }
-
+        
         /* ========================================
            APP SELECTION - CARD GRID
         ======================================== */
@@ -1684,9 +1483,6 @@
                     <div class="user-name" id="userName">User</div>
                     <div class="user-role" id="userRole">Staff</div>
                 </div>
-                <button class="settings-btn" id="settingsBtn" style="display: none;" onclick="openSettings()" title="Settings - Kelola User">
-                    <i class="fas fa-cog"></i>
-                </button>
             </div>
             
             <div class="apps-grid" id="appsGrid">
@@ -1727,46 +1523,6 @@
             <div class="mobile-nav-item" onclick="backToSelection()">
                 <i class="fas fa-home"></i>
                 <span>Beranda</span>
-            </div>
-            <div class="mobile-nav-item" onclick="handleLogout()">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Keluar</span>
-            </div>
-        </nav>
-    </div>
-
-    <!-- ============================================
-         SETTINGS PAGE - KELOLA USER (KHUSUS IQBAL)
-    ============================================ -->
-    <div id="settingsPage" class="page-section">
-        <div class="app-page">
-            <div class="mobile-header">
-                <div class="mobile-header-back" onclick="backFromSettings()">
-                    <i class="fas fa-arrow-left"></i>
-                </div>
-                <h1 class="mobile-header-title">Kelola User</h1>
-            </div>
-
-            <div class="settings-toolbar">
-                <span class="settings-count" id="settingsUserCount"></span>
-                <button class="btn-add-user" onclick="openUserModal()">
-                    <i class="fas fa-user-plus"></i> Tambah User
-                </button>
-            </div>
-
-            <div class="settings-user-list" id="settingsUserList">
-                <!-- Daftar user di-generate otomatis -->
-            </div>
-        </div>
-
-        <nav class="mobile-nav">
-            <div class="mobile-nav-item" onclick="backFromSettings()">
-                <i class="fas fa-home"></i>
-                <span>Beranda</span>
-            </div>
-            <div class="mobile-nav-item active">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
             </div>
             <div class="mobile-nav-item" onclick="handleLogout()">
                 <i class="fas fa-sign-out-alt"></i>
@@ -1980,53 +1736,6 @@
         </div>
     </div>
 
-    <!-- ============================================
-         USER MODAL - TAMBAH/EDIT USER (Bottom Sheet)
-    ============================================ -->
-    <div id="userModal" class="modal-overlay">
-        <div class="modal-sheet">
-            <div class="modal-handle"></div>
-            <div class="modal-header">
-                <i class="fas fa-user-cog"></i>
-                <div>
-                    <h3 id="userModalTitle">Tambah User</h3>
-                    <p id="userModalSubtitle" style="font-size: 0.875rem; color: #7d8b70; margin: 0;"></p>
-                </div>
-            </div>
-            <div class="modal-body" style="max-height: 55vh; overflow-y: auto;">
-                <label class="modal-label">Nama Lengkap <span style="color: #ef4444;">*</span></label>
-                <input type="text" id="umFullName" class="um-input" placeholder="Nama lengkap user">
-
-                <label class="modal-label">Username <span style="color: #ef4444;">*</span></label>
-                <input type="text" id="umUsername" class="um-input" placeholder="huruf kecil, tanpa spasi" autocapitalize="none" autocomplete="off">
-
-                <div id="umPasswordGroup">
-                    <label class="modal-label">Password Awal <span style="color: #ef4444;">*</span></label>
-                    <input type="text" id="umPassword" class="um-input" placeholder="Password untuk user baru" autocomplete="off">
-                </div>
-
-                <label class="modal-label">Role</label>
-                <select id="umRole" class="um-input">
-                    <option value="user">Staff</option>
-                    <option value="admin">Administrator</option>
-                </select>
-
-                <label class="modal-label">Akses Aplikasi</label>
-                <div class="um-apps" id="umApps">
-                    <!-- Checkbox aplikasi di-generate otomatis -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-modal-cancel" onclick="closeUserModal()">
-                    <i class="fas fa-times"></i> Batal
-                </button>
-                <button class="btn-modal-submit" style="background: linear-gradient(135deg, var(--pine-green), var(--dark-forest));" onclick="saveUser()">
-                    <i class="fas fa-save"></i> Simpan
-                </button>
-            </div>
-        </div>
-    </div>
-
     <script>
         // ============================================
         // GLOBAL VARIABLES & CONFIGURATION
@@ -2068,9 +1777,7 @@
         let GEOFENCE_RADIUS = LOCATIONS[selectedLocation].radius;
         let REQUIRED_WIFI = LOCATIONS[selectedLocation].wifi;
 
-        // Daftar user bawaan: dipakai untuk migrasi awal ke Firebase
-        // dan sebagai fallback login kalau Firebase offline.
-        const defaultUsers = [
+        const allUsers = [
             { username: 'iqbal', password: 'iqbal123', role: 'admin', fullName: 'Iqbal', apps: ['pinus', 'pinewater', 'bbm', 'cafe', 'glamping', 'absensi', 'inventory', 'marketplace'] },
             { username: 'jendra', password: 'jendra123', role: 'admin', fullName: 'Jendra', apps: ['cafe', 'absensi', 'inventory'] },
             { username: 'selow', password: 'selow123', role: 'admin', fullName: 'Selow', apps: ['pinus', 'pinewater', 'absensi', 'inventory'] },
@@ -2090,9 +1797,6 @@
             { username: 'babal', password: 'babal123', role: 'user', fullName: 'Babal', apps: ['glamping', 'pinewater'] },
             { username: 'roy', password: 'roy123', role: 'user', fullName: 'Roy', apps: ['pinewater', 'glamping'] }
         ];
-
-        // Daftar user aktif — dimuat dari Firebase saat app dibuka
-        let allUsers = [...defaultUsers];
 
         const appUrls = {
             'pinus': 'https://pinusselowregist.netlify.app',
@@ -2269,13 +1973,7 @@
             document.getElementById('userAvatar').textContent = user.fullName.charAt(0).toUpperCase();
             document.getElementById('userName').textContent = user.fullName;
             document.getElementById('userRole').textContent = user.role === 'admin' ? 'Administrator' : 'Staff';
-
-            // Tombol Settings hanya muncul untuk Iqbal
-            const settingsBtn = document.getElementById('settingsBtn');
-            if (settingsBtn) {
-                settingsBtn.style.display = user.username === SUPER_ADMIN ? 'flex' : 'none';
-            }
-
+            
             const appsGrid = document.getElementById('appsGrid');
             appsGrid.innerHTML = '';
             
@@ -3033,7 +2731,6 @@
             document.getElementById('absensiPage').classList.remove('active');
             document.getElementById('reportsPage').classList.remove('active');
             document.getElementById('comingSoonPage').classList.remove('active');
-            document.getElementById('settingsPage').classList.remove('active');
             document.getElementById('appSelectionPage').classList.add('active');
             
             if (map) {
@@ -3419,241 +3116,10 @@
         }
 
         // ============================================
-        // USER MANAGEMENT - SETTINGS (KHUSUS IQBAL)
-        // ============================================
-        const SUPER_ADMIN = 'iqbal';
-        const USERS_COLLECTION = 'katalyst_users';
-        let editingUsername = null;
-
-        async function loadUsersFromFirebase() {
-            if (!window.firebaseEnabled || !window.firebaseDb || !window.firebaseModules) {
-                console.warn('⚠️ Firebase offline - pakai daftar user bawaan');
-                return;
-            }
-            try {
-                const { collection, getDocs, doc, setDoc } = window.firebaseModules;
-                const snap = await getDocs(collection(window.firebaseDb, USERS_COLLECTION));
-
-                if (snap.empty) {
-                    // Migrasi sekali: pindahkan user bawaan ke Firebase
-                    for (const u of defaultUsers) {
-                        await setDoc(doc(window.firebaseDb, USERS_COLLECTION, u.username), u);
-                    }
-                    allUsers = [...defaultUsers];
-                    console.log(`✅ Migrasi ${defaultUsers.length} user ke Firebase selesai`);
-                } else {
-                    allUsers = snap.docs.map(d => d.data());
-                    console.log(`✅ ${allUsers.length} user dimuat dari Firebase`);
-                }
-            } catch (error) {
-                console.error('❌ Gagal memuat user dari Firebase:', error);
-            }
-        }
-
-        window.openSettings = async function() {
-            if (!currentUser || currentUser.username !== SUPER_ADMIN) {
-                showToast('Hanya Iqbal yang bisa mengakses Settings!', 'error');
-                return;
-            }
-            document.getElementById('appSelectionPage').classList.remove('active');
-            document.getElementById('settingsPage').classList.add('active');
-            renderUserList();
-            await loadUsersFromFirebase();
-            renderUserList();
-        };
-
-        window.backFromSettings = function() {
-            document.getElementById('settingsPage').classList.remove('active');
-            document.getElementById('appSelectionPage').classList.add('active');
-        };
-
-        function renderUserList() {
-            const list = document.getElementById('settingsUserList');
-            const count = document.getElementById('settingsUserCount');
-            if (!list) return;
-
-            count.textContent = `${allUsers.length} user terdaftar`;
-
-            const sorted = [...allUsers].sort((a, b) => {
-                if (a.username === SUPER_ADMIN) return -1;
-                if (b.username === SUPER_ADMIN) return 1;
-                return a.fullName.localeCompare(b.fullName);
-            });
-
-            list.innerHTML = sorted.map(u => {
-                const isSuper = u.username === SUPER_ADMIN;
-                return `
-                <div class="su-card">
-                    <div class="su-avatar">${u.fullName.charAt(0).toUpperCase()}</div>
-                    <div class="su-info">
-                        <div class="su-name">
-                            ${u.fullName}
-                            ${isSuper ? '<i class="fas fa-lock" style="font-size:0.7rem;color:#b45309;" title="Akun terproteksi"></i>' : ''}
-                            <span class="su-badge ${u.role}">${u.role === 'admin' ? 'Admin' : 'Staff'}</span>
-                        </div>
-                        <div class="su-meta">@${u.username} &middot; ${u.apps.length} aplikasi</div>
-                    </div>
-                    <div class="su-actions">
-                        <button class="su-btn edit" onclick="openUserModal('${u.username}')" title="Edit">
-                            <i class="fas fa-pen"></i>
-                        </button>
-                        ${isSuper ? '' : `
-                        <button class="su-btn del" onclick="deleteUserAccount('${u.username}')" title="Hapus">
-                            <i class="fas fa-trash"></i>
-                        </button>`}
-                    </div>
-                </div>`;
-            }).join('');
-        }
-
-        window.openUserModal = function(username = null) {
-            editingUsername = username;
-            const isEdit = !!username;
-            const u = isEdit ? allUsers.find(x => x.username === username) : null;
-            if (isEdit && !u) {
-                showToast('User tidak ditemukan!', 'error');
-                return;
-            }
-
-            document.getElementById('userModalTitle').textContent = isEdit ? 'Edit User' : 'Tambah User';
-            document.getElementById('userModalSubtitle').textContent = isEdit ? `@${u.username}` : 'Buat akun baru untuk tim';
-            document.getElementById('umFullName').value = u ? u.fullName : '';
-
-            const usernameInput = document.getElementById('umUsername');
-            usernameInput.value = u ? u.username : '';
-            usernameInput.disabled = isEdit;
-
-            document.getElementById('umPasswordGroup').style.display = isEdit ? 'none' : 'block';
-            document.getElementById('umPassword').value = '';
-
-            const roleSelect = document.getElementById('umRole');
-            roleSelect.value = u ? u.role : 'user';
-            roleSelect.disabled = isEdit && username === SUPER_ADMIN;
-
-            document.getElementById('umApps').innerHTML = Object.keys(appConfig).map(key => `
-                <label class="um-app-check">
-                    <input type="checkbox" value="${key}" ${u && u.apps.includes(key) ? 'checked' : ''}>
-                    <i class="fas ${appConfig[key].icon}"></i> ${appConfig[key].name}
-                </label>`).join('');
-
-            document.getElementById('userModal').classList.add('active');
-        };
-
-        window.closeUserModal = function() {
-            document.getElementById('userModal').classList.remove('active');
-            editingUsername = null;
-        };
-
-        window.saveUser = async function() {
-            const fullName = document.getElementById('umFullName').value.trim();
-            const usernameInput = document.getElementById('umUsername').value.trim().toLowerCase();
-            const password = document.getElementById('umPassword').value;
-            const role = document.getElementById('umRole').value;
-            const apps = [...document.querySelectorAll('#umApps input:checked')].map(c => c.value);
-
-            const isEdit = !!editingUsername;
-
-            if (!fullName) {
-                showToast('Nama lengkap wajib diisi!', 'error');
-                return;
-            }
-            if (!isEdit) {
-                if (!usernameInput) {
-                    showToast('Username wajib diisi!', 'error');
-                    return;
-                }
-                if (!/^[a-z0-9_]+$/.test(usernameInput)) {
-                    showToast('Username hanya boleh huruf kecil, angka, dan _', 'error');
-                    return;
-                }
-                if (allUsers.some(u => u.username === usernameInput)) {
-                    showToast('Username sudah dipakai!', 'error');
-                    return;
-                }
-                if (!password) {
-                    showToast('Password awal wajib diisi!', 'error');
-                    return;
-                }
-            }
-            if (!window.firebaseEnabled || !window.firebaseDb) {
-                showToast('Tidak ada koneksi Firebase. Coba lagi nanti.', 'error');
-                return;
-            }
-
-            const existing = isEdit ? allUsers.find(u => u.username === editingUsername) : null;
-            const data = {
-                username: isEdit ? editingUsername : usernameInput,
-                password: isEdit ? existing.password : password,
-                // Role Iqbal tidak bisa diubah
-                role: (isEdit && editingUsername === SUPER_ADMIN) ? existing.role : role,
-                fullName: fullName,
-                apps: apps
-            };
-
-            try {
-                const { doc, setDoc } = window.firebaseModules;
-                await setDoc(doc(window.firebaseDb, USERS_COLLECTION, data.username), data);
-
-                const idx = allUsers.findIndex(u => u.username === data.username);
-                if (idx >= 0) allUsers[idx] = data;
-                else allUsers.push(data);
-
-                // Kalau Iqbal mengedit dirinya sendiri, sinkronkan sesi
-                if (currentUser && currentUser.username === data.username) {
-                    currentUser = data;
-                    localStorage.setItem('pinuslo_user', JSON.stringify(data));
-                }
-
-                closeUserModal();
-                renderUserList();
-                showToast(isEdit ? `User ${fullName} diperbarui!` : `User ${fullName} berhasil dibuat!`, 'success');
-            } catch (error) {
-                console.error('❌ Gagal menyimpan user:', error);
-                showToast('Gagal menyimpan: ' + error.message, 'error');
-            }
-        };
-
-        window.deleteUserAccount = async function(username) {
-            if (username === SUPER_ADMIN) {
-                showToast('Akun Iqbal tidak bisa dihapus!', 'error');
-                return;
-            }
-            const u = allUsers.find(x => x.username === username);
-            if (!confirm(`Hapus user "${u ? u.fullName : username}" (@${username})?\nTindakan ini tidak bisa dibatalkan.`)) return;
-
-            if (!window.firebaseEnabled || !window.firebaseDb) {
-                showToast('Tidak ada koneksi Firebase. Coba lagi nanti.', 'error');
-                return;
-            }
-
-            try {
-                const { doc, deleteDoc } = window.firebaseModules;
-                await deleteDoc(doc(window.firebaseDb, USERS_COLLECTION, username));
-                allUsers = allUsers.filter(x => x.username !== username);
-                renderUserList();
-                showToast(`User @${username} dihapus`, 'success');
-            } catch (error) {
-                console.error('❌ Gagal menghapus user:', error);
-                showToast('Gagal menghapus: ' + error.message, 'error');
-            }
-        };
-
-        const userModalOverlay = document.getElementById('userModal');
-        if (userModalOverlay) {
-            userModalOverlay.addEventListener('click', (e) => {
-                if (e.target === userModalOverlay) {
-                    closeUserModal();
-                }
-            });
-        }
-
-        // ============================================
         // INITIALIZATION
         // ============================================
         window.addEventListener('load', () => {
             setTimeout(() => {
-                loadUsersFromFirebase();
-
                 const saved = localStorage.getItem('pinuslo_user');
                 if (saved) {
                     const user = JSON.parse(saved);
@@ -3776,6 +3242,7 @@
                     <div class="kas-filter-info" id="kasFilterInfo"></div>
                 </div>
                 <div class="kas-summary-grid" id="kasSummaryGrid"></div>
+                <div id="kasMethodBox" class="kas-method-box"></div>
                 <div class="inv-toolbar" style="margin-top:12px">
                     <span class="inv-count" id="kasCount">0 hari</span>
                     <button class="inv-btn-primary" onclick="openKasModal()"><i class="fas fa-plus"></i> Input Kas</button>
@@ -4129,6 +3596,18 @@
     .kas-sum-card.hi { border-color:#b8d080; background:#f0f5e8; }
     .kas-sum-lbl { font-size:.64rem; color:#7d8b70; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
     .kas-sum-val { font-family:'Courier New',monospace; font-size:.88rem; font-weight:700; color:#333; margin-top:3px; }
+    /* Ringkasan per metode pembayaran */
+    .kas-method-box { margin-top:12px; }
+    .kas-method-group { background:#fff; border:1px solid #d4e0c0; border-radius:10px; padding:12px; margin-top:8px; }
+    .kas-method-title { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+    .kas-method-title.in { color:#3a5010; }
+    .kas-method-title.out { color:#a07d10; }
+    .kas-method-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+    .kas-method-cell { border:1px solid #eef2e8; border-radius:8px; padding:9px 10px; background:#fafcf5; }
+    .kas-method-cell.tot { background:#f0f5e8; border-color:#b8d080; }
+    .kas-method-lbl { font-size:.6rem; color:#7d8b70; font-weight:700; text-transform:uppercase; letter-spacing:.04em; display:flex; align-items:center; gap:4px; }
+    .kas-method-val { font-family:'Courier New',monospace; font-size:.82rem; font-weight:700; color:#333; margin-top:3px; }
+    @media(max-width:640px){ .kas-method-grid { grid-template-columns:1fr 1fr; } }
     .kas-prev-row { display:flex; justify-content:space-between; font-size:.78rem; padding:3px 0; }
     .kas-prev-row span:last-child { font-family:'Courier New',monospace; font-weight:700; }
     .kas-prev-total { border-top:1px solid rgba(110,151,38,.3); padding-top:6px; margin-top:3px; font-weight:700; }
@@ -4899,6 +4378,25 @@
         return { tJual, tBeli, tKeluar, tNet, hari: data.length };
     }
 
+    // Kelompokkan total berdasarkan metode pembayaran (ikut filter tanggal).
+    function kasByMethod(list){
+        const data = list || hppKas;
+        let masukTunai=0, masukQRIS=0, masukLain=0, keluarTunai=0, keluarTransfer=0;
+        data.forEach(k => {
+            masukTunai     += (k.jualTunai||0);
+            masukQRIS      += (k.jualQRIS||0);
+            masukLain      += (k.jualLain||0);
+            keluarTunai    += (k.beliBahan||0) + (k.keluar||0);
+            keluarTransfer += (k.beliBahanTf||0) + (k.keluarTf||0);
+        });
+        return {
+            masukTunai, masukQRIS, masukLain,
+            masukTotal: masukTunai + masukQRIS + masukLain,
+            keluarTunai, keluarTransfer,
+            keluarTotal: keluarTunai + keluarTransfer,
+        };
+    }
+
     function applyKasFilter(){
         kasFilterStart = document.getElementById('kasFilterStart').value || null;
         kasFilterEnd   = document.getElementById('kasFilterEnd').value   || null;
@@ -4986,6 +4484,29 @@
             <div class="kas-sum-card"><div class="kas-sum-lbl">Total Pengeluaran</div><div class="kas-sum-val text-red">${fRp(sum.tKeluar)}</div></div>
             <div class="kas-sum-card hi"><div class="kas-sum-lbl">Net Penerimaan</div><div class="kas-sum-val">${fRp(sum.tNet)}</div></div>
         `;
+
+        // Ringkasan per metode pembayaran
+        const m = kasByMethod(filtered);
+        document.getElementById('kasMethodBox').innerHTML = `
+            <div class="kas-method-group">
+                <div class="kas-method-title in"><i class="fas fa-arrow-down"></i> Uang Masuk — Penjualan per Metode</div>
+                <div class="kas-method-grid">
+                    <div class="kas-method-cell"><div class="kas-method-lbl"><i class="fas fa-money-bill-wave"></i> Tunai</div><div class="kas-method-val text-green">${fRp(m.masukTunai)}</div></div>
+                    <div class="kas-method-cell"><div class="kas-method-lbl"><i class="fas fa-qrcode"></i> QRIS</div><div class="kas-method-val text-green">${fRp(m.masukQRIS)}</div></div>
+                    <div class="kas-method-cell"><div class="kas-method-lbl"><i class="fas fa-ellipsis-h"></i> Lainnya</div><div class="kas-method-val text-green">${fRp(m.masukLain)}</div></div>
+                    <div class="kas-method-cell tot"><div class="kas-method-lbl">Total Masuk</div><div class="kas-method-val">${fRp(m.masukTotal)}</div></div>
+                </div>
+            </div>
+            <div class="kas-method-group">
+                <div class="kas-method-title out"><i class="fas fa-arrow-up"></i> Uang Keluar — Pembelian + Pengeluaran per Metode</div>
+                <div class="kas-method-grid" style="grid-template-columns:repeat(3,1fr)">
+                    <div class="kas-method-cell"><div class="kas-method-lbl"><i class="fas fa-money-bill-wave"></i> Tunai</div><div class="kas-method-val text-amber">${fRp(m.keluarTunai)}</div></div>
+                    <div class="kas-method-cell"><div class="kas-method-lbl"><i class="fas fa-exchange-alt"></i> Transfer</div><div class="kas-method-val text-amber">${fRp(m.keluarTransfer)}</div></div>
+                    <div class="kas-method-cell tot"><div class="kas-method-lbl">Total Keluar</div><div class="kas-method-val">${fRp(m.keluarTotal)}</div></div>
+                </div>
+            </div>
+        `;
+
         const tbody = document.getElementById('kasTbody');
         const tfoot = document.getElementById('kasTfoot');
         if(filtered.length === 0){
