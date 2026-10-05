@@ -1781,18 +1781,12 @@
             { username: 'iqbal', password: 'iqbal123', role: 'admin', fullName: 'Iqbal', apps: ['pinus', 'pinewater', 'bbm', 'cafe', 'glamping', 'absensi', 'inventory', 'marketplace'] },
             { username: 'jendra', password: 'jendra123', role: 'admin', fullName: 'Jendra', apps: ['cafe', 'absensi', 'inventory'] },
             { username: 'selow', password: 'selow123', role: 'admin', fullName: 'Selow', apps: ['pinus', 'pinewater', 'absensi', 'inventory'] },
-            { username: 'komandan', password: 'komandan123', role: 'admin', fullName: 'Komandan', apps: ['pinewater', 'bbm', 'absensi', 'inventory'] },
             { username: 'agus', password: 'agus123', role: 'user', fullName: 'Agus', apps: ['pinus', 'cafe', 'glamping', 'absensi', 'marketplace'] },
             { username: 'selfi', password: 'selfi123', role: 'user', fullName: 'Selfi', apps: ['pinus', 'cafe', 'glamping', 'absensi', 'marketplace'] },
-            { username: 'fadel', password: 'fadel123', role: 'user', fullName: 'Fadel', apps: ['cafe', 'absensi'] },
-            { username: 'farel', password: 'farel123', role: 'user', fullName: 'Farel', apps: ['cafe', 'absensi'] },
             { username: 'sadiq', password: 'sadiq123', role: 'user', fullName: 'Sadiq', apps: ['cafe', 'absensi'] },
-            { username: 'sirad', password: 'sirad123', role: 'user', fullName: 'Sirad', apps: ['pinus', 'pinewater', 'cafe', 'glamping', 'absensi', 'marketplace'] },
             { username: 'bate', password: 'bate123', role: 'user', fullName: 'Bate', apps: ['pinus', 'cafe', 'absensi'] },
-            { username: 'zulkifli', password: 'zulkifli123', role: 'user', fullName: 'Zulkifli', apps: ['pinus', 'pinewater', 'absensi'] },
             { username: 'ikki', password: 'ikki123', role: 'user', fullName: 'Ikki', apps: ['pinus', 'cafe', 'absensi'] },
             { username: 'chulo', password: 'chulo123', role: 'user', fullName: 'Chulo', apps: ['glamping'] },
-            { username: 'pian', password: 'pian123', role: 'user', fullName: 'Pian', apps: ['glamping'] },
             { username: 'imbang', password: 'imbang123', role: 'user', fullName: 'Imbang', apps: ['glamping'] },
             { username: 'babal', password: 'babal123', role: 'user', fullName: 'Babal', apps: ['glamping', 'pinewater'] },
             { username: 'roy', password: 'roy123', role: 'user', fullName: 'Roy', apps: ['pinewater', 'glamping'] }
@@ -2616,8 +2610,9 @@
                     // Sorting dilakukan di sisi JavaScript setelah data terkumpul
                     const q = modules.query(
                         modules.collection(window.firebaseDb, 'attendance'),
-                        modules.where('username', '==', username),
-                        modules.limit(200)
+                        modules.where('username', '==', username)
+                        // FIX: tanpa limit(200). Firestore tanpa orderBy mengurutkan berdasarkan ID dokumen
+                        // (username_tanggal), sehingga limit memotong record TERBARU, bukan terlama.
                     );
                     const snap = await modules.getDocs(q);
                     snap.forEach(doc => {
@@ -2918,8 +2913,9 @@
                     // Tanpa orderBy agar tidak butuh composite index di Firestore
                     const q = modules.query(
                         modules.collection(window.firebaseDb, 'attendance'),
-                        modules.where('username', '==', username),
-                        modules.limit(200)
+                        modules.where('username', '==', username)
+                        // FIX: tanpa limit(200). Firestore tanpa orderBy mengurutkan berdasarkan ID dokumen
+                        // (username_tanggal), sehingga limit memotong record TERBARU, bukan terlama.
                     );
                     const snap = await modules.getDocs(q);
                     console.log(`📥 Firebase returned ${snap.size} documents for ${username}`);
