@@ -1781,12 +1781,18 @@
             { username: 'iqbal', password: 'iqbal123', role: 'admin', fullName: 'Iqbal', apps: ['pinus', 'pinewater', 'bbm', 'cafe', 'glamping', 'absensi', 'inventory', 'marketplace'] },
             { username: 'jendra', password: 'jendra123', role: 'admin', fullName: 'Jendra', apps: ['cafe', 'absensi', 'inventory'] },
             { username: 'selow', password: 'selow123', role: 'admin', fullName: 'Selow', apps: ['pinus', 'pinewater', 'absensi', 'inventory'] },
+            { username: 'komandan', password: 'komandan123', role: 'admin', fullName: 'Komandan', apps: ['pinewater', 'bbm', 'absensi', 'inventory'] },
             { username: 'agus', password: 'agus123', role: 'user', fullName: 'Agus', apps: ['pinus', 'cafe', 'glamping', 'absensi', 'marketplace'] },
             { username: 'selfi', password: 'selfi123', role: 'user', fullName: 'Selfi', apps: ['pinus', 'cafe', 'glamping', 'absensi', 'marketplace'] },
+            { username: 'fadel', password: 'fadel123', role: 'user', fullName: 'Fadel', apps: ['cafe', 'absensi'] },
+            { username: 'farel', password: 'farel123', role: 'user', fullName: 'Farel', apps: ['cafe', 'absensi'] },
             { username: 'sadiq', password: 'sadiq123', role: 'user', fullName: 'Sadiq', apps: ['cafe', 'absensi'] },
+            { username: 'sirad', password: 'sirad123', role: 'user', fullName: 'Sirad', apps: ['pinus', 'pinewater', 'cafe', 'glamping', 'absensi', 'marketplace'] },
             { username: 'bate', password: 'bate123', role: 'user', fullName: 'Bate', apps: ['pinus', 'cafe', 'absensi'] },
+            { username: 'zulkifli', password: 'zulkifli123', role: 'user', fullName: 'Zulkifli', apps: ['pinus', 'pinewater', 'absensi'] },
             { username: 'ikki', password: 'ikki123', role: 'user', fullName: 'Ikki', apps: ['pinus', 'cafe', 'absensi'] },
             { username: 'chulo', password: 'chulo123', role: 'user', fullName: 'Chulo', apps: ['glamping'] },
+            { username: 'pian', password: 'pian123', role: 'user', fullName: 'Pian', apps: ['glamping'] },
             { username: 'imbang', password: 'imbang123', role: 'user', fullName: 'Imbang', apps: ['glamping'] },
             { username: 'babal', password: 'babal123', role: 'user', fullName: 'Babal', apps: ['glamping', 'pinewater'] },
             { username: 'roy', password: 'roy123', role: 'user', fullName: 'Roy', apps: ['pinewater', 'glamping'] }
@@ -2610,9 +2616,8 @@
                     // Sorting dilakukan di sisi JavaScript setelah data terkumpul
                     const q = modules.query(
                         modules.collection(window.firebaseDb, 'attendance'),
-                        modules.where('username', '==', username)
-                        // FIX: tanpa limit(200). Firestore tanpa orderBy mengurutkan berdasarkan ID dokumen
-                        // (username_tanggal), sehingga limit memotong record TERBARU, bukan terlama.
+                        modules.where('username', '==', username),
+                        modules.limit(200)
                     );
                     const snap = await modules.getDocs(q);
                     snap.forEach(doc => {
@@ -2913,9 +2918,8 @@
                     // Tanpa orderBy agar tidak butuh composite index di Firestore
                     const q = modules.query(
                         modules.collection(window.firebaseDb, 'attendance'),
-                        modules.where('username', '==', username)
-                        // FIX: tanpa limit(200). Firestore tanpa orderBy mengurutkan berdasarkan ID dokumen
-                        // (username_tanggal), sehingga limit memotong record TERBARU, bukan terlama.
+                        modules.where('username', '==', username),
+                        modules.limit(200)
                     );
                     const snap = await modules.getDocs(q);
                     console.log(`📥 Firebase returned ${snap.size} documents for ${username}`);
@@ -3162,6 +3166,9 @@
                     <button class="inv-tab" onclick="switchInvTab('kas')" id="invTab_kas">
                         <i class="fas fa-wallet"></i> Kas Harian
                     </button>
+                    <button class="inv-tab" onclick="switchInvTab('stat')" id="invTab_stat">
+                        <i class="fas fa-chart-line"></i> Statistik
+                    </button>
                 </div>
             </div>
 
@@ -3266,6 +3273,39 @@
                         <tbody id="kasTbody"></tbody>
                         <tfoot id="kasTfoot"></tfoot>
                     </table>
+                </div>
+            </div>
+
+            <!-- Tab: Statistik (Eksekutif) -->
+            <div id="invPanel_stat" class="inv-panel" style="display:none">
+                <div class="stat-range">
+                    <button class="stat-range-btn" onclick="setStatRange('7',this)">7 Hari</button>
+                    <button class="stat-range-btn" onclick="setStatRange('30',this)">30 Hari</button>
+                    <button class="stat-range-btn" onclick="setStatRange('month',this)">Bulan Ini</button>
+                    <button class="stat-range-btn active" onclick="setStatRange('all',this)">Semua</button>
+                </div>
+                <div class="stat-kpi-grid" id="statKpi"></div>
+                <div class="stat-card">
+                    <h4 class="stat-h"><i class="fas fa-chart-area" style="color:#6e9726"></i> Tren Penjualan</h4>
+                    <div class="stat-sub">Net penerimaan per hari</div>
+                    <div id="statTrend"></div>
+                </div>
+                <div class="stat-card">
+                    <h4 class="stat-h"><i class="fas fa-credit-card" style="color:#0f83a8"></i> Metode Pembayaran</h4>
+                    <div class="stat-sub">Komposisi penjualan</div>
+                    <div class="stat-donut-wrap">
+                        <div style="width:44%" id="statDonut"></div>
+                        <div style="flex:1" id="statDonutLeg"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h4 class="stat-h"><i class="fas fa-scale-balanced" style="color:#3a5010"></i> Pemasukan vs Pengeluaran</h4>
+                    <div class="stat-sub">Per minggu</div>
+                    <div id="statIE"></div>
+                    <div class="stat-legend">
+                        <span class="stat-lg"><span class="stat-sw" style="background:#3a9040"></span>Masuk</span>
+                        <span class="stat-lg"><span class="stat-sw" style="background:#cf5c4e"></span>Keluar</span>
+                    </div>
                 </div>
             </div>
 
@@ -3620,6 +3660,29 @@
     .kas-preset-btn.active { background:#6e9726; border-color:#6e9726; color:#fff; }
     .kas-filter-info { font-size:.72rem; color:#7d8b70; margin-top:8px; font-style:italic; }
     .kas-filter-info strong { color:#6e9726; font-style:normal; }
+
+    /* ===== Statistik (Eksekutif) ===== */
+    .stat-range { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+    .stat-range-btn { padding:6px 12px; border:1px solid #d4e0c0; border-radius:20px; background:#fff; color:#5a7030; font-size:.72rem; font-weight:600; cursor:pointer; transition:.15s; }
+    .stat-range-btn:hover { background:#f0f5e8; }
+    .stat-range-btn.active { background:#6e9726; border-color:#6e9726; color:#fff; }
+    .stat-kpi-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+    .stat-kpi { background:#fff; border:1px solid #d4e0c0; border-radius:14px; padding:12px; }
+    .stat-kpi-lbl { font-size:.6rem; text-transform:uppercase; letter-spacing:.04em; color:#7d8b70; font-weight:700; }
+    .stat-kpi-val { font-size:1.15rem; font-weight:800; color:#2b3a25; margin-top:3px; font-family:'Courier New',monospace; }
+    .stat-kpi-sub { font-size:.62rem; color:#7d8b70; margin-top:3px; }
+    .stat-card { background:#fff; border:1px solid #d4e0c0; border-radius:14px; padding:14px; margin-bottom:12px; }
+    .stat-h { font-size:.82rem; color:#3a5010; display:flex; align-items:center; gap:7px; margin-bottom:2px; }
+    .stat-sub { font-size:.66rem; color:#7d8b70; margin-bottom:10px; }
+    .stat-donut-wrap { display:flex; align-items:center; gap:14px; }
+    .stat-legend { display:flex; flex-wrap:wrap; gap:12px; margin-top:10px; }
+    .stat-lg { display:flex; align-items:center; gap:6px; font-size:.72rem; color:#7d8b70; }
+    .stat-lg b { color:#2b3a25; font-family:'Courier New',monospace; }
+    .stat-sw { width:11px; height:11px; border-radius:4px; flex-shrink:0; }
+    .stat-dleg { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:.74rem; color:#7d8b70; }
+    .stat-dleg b { color:#2b3a25; font-family:'Courier New',monospace; }
+    .stat-empty { text-align:center; padding:26px; color:#aaa; font-size:.78rem; }
+    .stat-kpi svg, .stat-card svg { display:block; width:100%; height:auto; overflow:visible; }
 
     @media(max-width:480px){
         .inv-form-row3 { grid-template-columns:1fr 1fr; }
@@ -4040,12 +4103,13 @@
     }
 
     function switchInvTab(tab){
-        ['bahan','hpp','kas'].forEach(t => {
+        ['bahan','hpp','kas','stat'].forEach(t => {
             document.getElementById('invTab_'+t).classList.toggle('active', t===tab);
             document.getElementById('invPanel_'+t).style.display = (t===tab) ? 'block' : 'none';
         });
         if(tab==='hpp') renderHPPTab();
         if(tab==='kas') renderKasTab();
+        if(tab==='stat') renderStatTab();
     }
 
     /* ============== TAB 1: MASTER BAHAN ============== */
@@ -4632,6 +4696,118 @@
             });
         }
     });
+
+    /* ============== TAB 4: STATISTIK (EKSEKUTIF) ============== */
+    const STAT_C = { tunai:'#3a9040', qris:'#0f83a8', lain:'#d98c0a', income:'#3a9040', expense:'#cf5c4e', accent:'#6e9726', accentD:'#3a5010', ink:'#2b3a25', muted:'#7d8b70', grid:'#eef2e8' };
+    let statRange = 'all';
+
+    function fRpShort(n){
+        n = Math.round(n||0); const a = Math.abs(n);
+        if(a>=1e9) return 'Rp '+(n/1e9).toFixed(1).replace('.',',')+'M';
+        if(a>=1e6) return 'Rp '+(n/1e6).toFixed(1).replace('.',',')+'jt';
+        if(a>=1e3) return 'Rp '+Math.round(n/1e3)+'rb';
+        return 'Rp '+n;
+    }
+    function statWeekKey(iso){ const d=new Date(iso+'T00:00:00'); const off=(d.getDay()+6)%7; d.setDate(d.getDate()-off); return d.toLocaleDateString('en-CA'); }
+    function statFiltered(){
+        if(statRange==='all') return [...hppKas];
+        const today=new Date(); let start;
+        if(statRange==='7'){ start=new Date(today); start.setDate(start.getDate()-6); }
+        else if(statRange==='30'){ start=new Date(today); start.setDate(start.getDate()-29); }
+        else if(statRange==='month'){ start=new Date(today.getFullYear(), today.getMonth(), 1); }
+        const s=start.toLocaleDateString('en-CA');
+        return hppKas.filter(k=>k.tanggal>=s);
+    }
+    function setStatRange(r,btn){
+        statRange=r;
+        document.querySelectorAll('.stat-range-btn').forEach(b=>b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        renderStatTab();
+    }
+
+    const SVGNS2='http://www.w3.org/2000/svg';
+    function sEl(t,a){const e=document.createElementNS(SVGNS2,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+    function sSvg(w,h){const s=sEl('svg',{viewBox:`0 0 ${w} ${h}`});s.setAttribute('width','100%');return s;}
+    function sTxt(x,y,str,o={}){const t=sEl('text',Object.assign({x,y,'font-size':o.fs||8,fill:o.fill||STAT_C.muted,'text-anchor':o.anchor||'start','font-weight':o.fw||400},{}));t.textContent=str;return t;}
+
+    function statLineArea(id,data,labels,color,h=140){
+        const box=document.getElementById(id); box.innerHTML='';
+        if(data.length===0){ box.innerHTML='<div class="stat-empty">Belum ada data penjualan</div>'; return; }
+        const w=420,pad={l:40,t:14,r:12,b:22};
+        const max=Math.max(...data,1)*1.15, iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+        const X=i=>pad.l+(data.length===1?iw/2:(i/(data.length-1))*iw);
+        const Y=v=>pad.t+ih-(v/max)*ih;
+        const s=sSvg(w,h);
+        for(let g=0;g<=3;g++){const yy=pad.t+ih-(g/3)*ih;s.appendChild(sEl('line',{x1:pad.l,y1:yy,x2:w-pad.r,y2:yy,stroke:STAT_C.grid,'stroke-width':1}));s.appendChild(sTxt(4,yy+3,fRpShort(max*g/3),{fs:7.5}));}
+        const gid='sg'+id;const defs=sEl('defs',{});const lg=sEl('linearGradient',{id:gid,x1:0,y1:0,x2:0,y2:1});
+        lg.appendChild(sEl('stop',{offset:'0%','stop-color':color,'stop-opacity':.28}));lg.appendChild(sEl('stop',{offset:'100%','stop-color':color,'stop-opacity':0}));defs.appendChild(lg);s.appendChild(defs);
+        let dL=`M ${X(0)} ${Y(data[0])}`,dA=`M ${X(0)} ${pad.t+ih} L ${X(0)} ${Y(data[0])}`;
+        data.forEach((v,i)=>{if(i){dL+=` L ${X(i)} ${Y(v)}`;dA+=` L ${X(i)} ${Y(v)}`;}});
+        dA+=` L ${X(data.length-1)} ${pad.t+ih} Z`;
+        s.appendChild(sEl('path',{d:dA,fill:`url(#${gid})`}));
+        s.appendChild(sEl('path',{d:dL,fill:'none',stroke:color,'stroke-width':2,'stroke-linecap':'round','stroke-linejoin':'round'}));
+        data.forEach((v,i)=>{const c=sEl('circle',{cx:X(i),cy:Y(v),r:(i===data.length-1)?3.5:2,fill:color});const tt=sEl('title',{});tt.textContent=`${labels[i]}: ${fRpShort(v)}`;c.appendChild(tt);s.appendChild(c);});
+        labels.forEach((l,i)=>{if(i%Math.ceil(labels.length/7||1)===0||i===labels.length-1){s.appendChild(sTxt(X(i),h-5,l,{fs:7.5,anchor:'middle'}));}});
+        s.appendChild(sTxt(X(data.length-1),Y(data[data.length-1])-8,fRpShort(data[data.length-1]),{fs:9,fw:700,fill:STAT_C.accentD,anchor:'end'}));
+        box.appendChild(s);
+    }
+
+    function statDonut(id,legId,obj,colors){
+        const box=document.getElementById(id),L=document.getElementById(legId);box.innerHTML='';L.innerHTML='';
+        const keys=Object.keys(obj),total=Object.values(obj).reduce((a,b)=>a+b,0);
+        if(total<=0){ box.innerHTML='<div class="stat-empty" style="padding:14px">—</div>'; L.innerHTML='<div class="stat-empty" style="padding:6px;text-align:left">Belum ada penjualan</div>'; return; }
+        const w=130,r=52,rin=32,cx=65,cy=65;const s=sSvg(w,w);let a0=-Math.PI/2;
+        keys.forEach((k,i)=>{const frac=obj[k]/total;const a1=a0+frac*2*Math.PI;const gap=frac>0.02?0.03:0;const b0=a0+gap,b1=a1-gap;
+            const x0=cx+r*Math.cos(b0),y0=cy+r*Math.sin(b0),x1=cx+r*Math.cos(b1),y1=cy+r*Math.sin(b1);
+            const xi1=cx+rin*Math.cos(b1),yi1=cy+rin*Math.sin(b1),xi0=cx+rin*Math.cos(b0),yi0=cy+rin*Math.sin(b0);
+            const large=(b1-b0)>Math.PI?1:0;
+            if(frac>0){const p=sEl('path',{d:`M ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1} L ${xi1} ${yi1} A ${rin} ${rin} 0 ${large} 0 ${xi0} ${yi0} Z`,fill:colors[i]});const tt=sEl('title',{});tt.textContent=`${k}: ${fRp(obj[k])} (${Math.round(frac*100)}%)`;p.appendChild(tt);s.appendChild(p);}
+            a0=a1;});
+        s.appendChild(sTxt(cx,cy-1,fRpShort(total),{fs:13,fw:800,fill:STAT_C.ink,anchor:'middle'}));
+        s.appendChild(sTxt(cx,cy+12,'Total',{fs:8,anchor:'middle'}));
+        box.appendChild(s);
+        keys.forEach((k,i)=>{const pct=Math.round(obj[k]/total*100);L.innerHTML+=`<div class="stat-dleg"><span style="display:flex;gap:7px;align-items:center"><span class="stat-sw" style="background:${colors[i]}"></span>${k}</span><b>${fRpShort(obj[k])} · ${pct}%</b></div>`;});
+    }
+
+    function statGroupedBars(id,data,h=150){
+        const box=document.getElementById(id);box.innerHTML='';
+        if(data.length===0){box.innerHTML='<div class="stat-empty">Belum ada data</div>';return;}
+        const w=420,pad={l:40,t:14,r:10,b:22};const max=Math.max(...data.flatMap(d=>[d.in,d.out]),1)*1.18;
+        const iw=w-pad.l-pad.r,ih=h-pad.t-pad.b;const gw=iw/data.length;const bw=Math.min(gw*0.3,26);
+        const s=sSvg(w,h);
+        for(let g=0;g<=3;g++){const yy=pad.t+ih-(g/3)*ih;s.appendChild(sEl('line',{x1:pad.l,y1:yy,x2:w-pad.r,y2:yy,stroke:STAT_C.grid,'stroke-width':1}));s.appendChild(sTxt(4,yy+3,fRpShort(max*g/3),{fs:7.5}));}
+        data.forEach((d,i)=>{const gx=pad.l+i*gw+gw/2;
+            [['in',STAT_C.income,-bw-1],['out',STAT_C.expense,1]].forEach(([k,col,off])=>{const bh=(d[k]/max)*ih;const x=gx+off;const y=pad.t+ih-bh;
+                s.appendChild(sEl('rect',{x,y,width:bw,height:Math.max(bh,0),rx:4,fill:col}));
+                if(d[k]>0)s.appendChild(sTxt(x+bw/2,y-3,fRpShort(d[k]),{fs:7,fw:700,fill:col,anchor:'middle'}));});
+            s.appendChild(sTxt(gx,h-6,d.w,{fs:7.5,anchor:'middle'}));});
+        box.appendChild(s);
+    }
+
+    function renderStatTab(){
+        const list=statFiltered();
+        // KPI
+        let jual=0,beli=0,keluar=0;
+        list.forEach(k=>{const c=kasCalc(k);jual+=c.jual;beli+=c.beli;keluar+=c.keluar;});
+        const net=jual-beli-keluar;
+        const margins=hppMenu.filter(m=>m.hargaJual>0).map(m=>calcMargin(m));
+        const avgMargin=margins.length?margins.reduce((a,b)=>a+b,0)/margins.length:0;
+        document.getElementById('statKpi').innerHTML=`
+            <div class="stat-kpi"><div class="stat-kpi-lbl">Penjualan Bruto</div><div class="stat-kpi-val text-green">${fRpShort(jual)}</div><div class="stat-kpi-sub">${list.length} hari tercatat</div></div>
+            <div class="stat-kpi"><div class="stat-kpi-lbl">Net Profit</div><div class="stat-kpi-val" style="color:${net>=0?'#3a9040':'#e05252'}">${fRpShort(net)}</div><div class="stat-kpi-sub">masuk − keluar</div></div>
+            <div class="stat-kpi"><div class="stat-kpi-lbl">Pengeluaran</div><div class="stat-kpi-val text-amber">${fRpShort(beli+keluar)}</div><div class="stat-kpi-sub">beli + lain</div></div>
+            <div class="stat-kpi"><div class="stat-kpi-lbl">Margin Menu Rata²</div><div class="stat-kpi-val" style="color:#3a5010">${fPct(avgMargin)}</div><div class="stat-kpi-sub">${margins.length} menu</div></div>`;
+        // Trend (last 14 days of range)
+        const sorted=[...list].sort((a,b)=>a.tanggal.localeCompare(b.tanggal)).slice(-14);
+        statLineArea('statTrend', sorted.map(k=>kasCalc(k).net), sorted.map(k=>k.tanggal.slice(8)+'/'+k.tanggal.slice(5,7)), STAT_C.accent);
+        // Donut metode
+        let t=0,q=0,l=0; list.forEach(k=>{t+=k.jualTunai||0;q+=k.jualQRIS||0;l+=k.jualLain||0;});
+        statDonut('statDonut','statDonutLeg',{Tunai:t,QRIS:q,Lainnya:l},[STAT_C.tunai,STAT_C.qris,STAT_C.lain]);
+        // Pemasukan vs pengeluaran per minggu
+        const wk={};list.forEach(k=>{const key=statWeekKey(k.tanggal);if(!wk[key])wk[key]={in:0,out:0};const c=kasCalc(k);wk[key].in+=c.jual;wk[key].out+=c.beli+c.keluar;});
+        const wkeys=Object.keys(wk).sort().slice(-6);
+        statGroupedBars('statIE', wkeys.map(key=>({w:key.slice(8)+'/'+key.slice(5,7), in:wk[key].in, out:wk[key].out})));
+    }
 
     console.log('✅ HPP Calculator module loaded!');
     </script>
