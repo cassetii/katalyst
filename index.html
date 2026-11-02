@@ -3279,15 +3279,15 @@
             <!-- Tab: Statistik (Eksekutif) -->
             <div id="invPanel_stat" class="inv-panel" style="display:none">
                 <div class="stat-range">
-                    <button class="stat-range-btn" onclick="setStatRange('7',this)">7 Hari</button>
-                    <button class="stat-range-btn" onclick="setStatRange('30',this)">30 Hari</button>
-                    <button class="stat-range-btn" onclick="setStatRange('month',this)">Bulan Ini</button>
+                    <button class="stat-range-btn" onclick="setStatRange('3',this)">3 Bulan</button>
+                    <button class="stat-range-btn" onclick="setStatRange('6',this)">6 Bulan</button>
+                    <button class="stat-range-btn" onclick="setStatRange('12',this)">12 Bulan</button>
                     <button class="stat-range-btn active" onclick="setStatRange('all',this)">Semua</button>
                 </div>
                 <div class="stat-kpi-grid" id="statKpi"></div>
                 <div class="stat-card">
                     <h4 class="stat-h"><i class="fas fa-chart-area" style="color:#6e9726"></i> Tren Penjualan</h4>
-                    <div class="stat-sub">Net penerimaan per hari</div>
+                    <div class="stat-sub">Net penerimaan per bulan</div>
                     <div id="statTrend"></div>
                 </div>
                 <div class="stat-card">
@@ -3300,7 +3300,7 @@
                 </div>
                 <div class="stat-card">
                     <h4 class="stat-h"><i class="fas fa-scale-balanced" style="color:#3a5010"></i> Pemasukan vs Pengeluaran</h4>
-                    <div class="stat-sub">Per minggu</div>
+                    <div class="stat-sub">Per bulan</div>
                     <div id="statIE"></div>
                     <div class="stat-legend">
                         <span class="stat-lg"><span class="stat-sw" style="background:#3a9040"></span>Masuk</span>
@@ -4708,13 +4708,12 @@
         if(a>=1e3) return 'Rp '+Math.round(n/1e3)+'rb';
         return 'Rp '+n;
     }
-    function statWeekKey(iso){ const d=new Date(iso+'T00:00:00'); const off=(d.getDay()+6)%7; d.setDate(d.getDate()-off); return d.toLocaleDateString('en-CA'); }
+    const STAT_MONTHS=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    function statMonthLabel(key){ const [y,m]=key.split('-'); return STAT_MONTHS[(+m)-1]+' '+y.slice(2); } // key = 'YYYY-MM'
     function statFiltered(){
         if(statRange==='all') return [...hppKas];
-        const today=new Date(); let start;
-        if(statRange==='7'){ start=new Date(today); start.setDate(start.getDate()-6); }
-        else if(statRange==='30'){ start=new Date(today); start.setDate(start.getDate()-29); }
-        else if(statRange==='month'){ start=new Date(today.getFullYear(), today.getMonth(), 1); }
+        const n=parseInt(statRange,10); // jumlah bulan
+        const d=new Date(); const start=new Date(d.getFullYear(), d.getMonth()-(n-1), 1);
         const s=start.toLocaleDateString('en-CA');
         return hppKas.filter(k=>k.tanggal>=s);
     }
@@ -4792,21 +4791,24 @@
         const net=jual-beli-keluar;
         const margins=hppMenu.filter(m=>m.hargaJual>0).map(m=>calcMargin(m));
         const avgMargin=margins.length?margins.reduce((a,b)=>a+b,0)/margins.length:0;
+        // Agregasi per bulan (key = 'YYYY-MM')
+        const byMonth={};
+        list.forEach(k=>{const key=k.tanggal.slice(0,7);if(!byMonth[key])byMonth[key]={net:0,in:0,out:0};const c=kasCalc(k);byMonth[key].net+=c.net;byMonth[key].in+=c.jual;byMonth[key].out+=c.beli+c.keluar;});
+        const mkeys=Object.keys(byMonth).sort();
         document.getElementById('statKpi').innerHTML=`
-            <div class="stat-kpi"><div class="stat-kpi-lbl">Penjualan Bruto</div><div class="stat-kpi-val text-green">${fRpShort(jual)}</div><div class="stat-kpi-sub">${list.length} hari tercatat</div></div>
+            <div class="stat-kpi"><div class="stat-kpi-lbl">Penjualan Bruto</div><div class="stat-kpi-val text-green">${fRpShort(jual)}</div><div class="stat-kpi-sub">${mkeys.length} bulan tercatat</div></div>
             <div class="stat-kpi"><div class="stat-kpi-lbl">Net Profit</div><div class="stat-kpi-val" style="color:${net>=0?'#3a9040':'#e05252'}">${fRpShort(net)}</div><div class="stat-kpi-sub">masuk − keluar</div></div>
             <div class="stat-kpi"><div class="stat-kpi-lbl">Pengeluaran</div><div class="stat-kpi-val text-amber">${fRpShort(beli+keluar)}</div><div class="stat-kpi-sub">beli + lain</div></div>
             <div class="stat-kpi"><div class="stat-kpi-lbl">Margin Menu Rata²</div><div class="stat-kpi-val" style="color:#3a5010">${fPct(avgMargin)}</div><div class="stat-kpi-sub">${margins.length} menu</div></div>`;
-        // Trend (last 14 days of range)
-        const sorted=[...list].sort((a,b)=>a.tanggal.localeCompare(b.tanggal)).slice(-14);
-        statLineArea('statTrend', sorted.map(k=>kasCalc(k).net), sorted.map(k=>k.tanggal.slice(8)+'/'+k.tanggal.slice(5,7)), STAT_C.accent);
-        // Donut metode
+        // Trend: net per bulan (maks 12 bulan terakhir)
+        const tkeys=mkeys.slice(-12);
+        statLineArea('statTrend', tkeys.map(k=>byMonth[k].net), tkeys.map(statMonthLabel), STAT_C.accent);
+        // Donut metode (total periode)
         let t=0,q=0,l=0; list.forEach(k=>{t+=k.jualTunai||0;q+=k.jualQRIS||0;l+=k.jualLain||0;});
         statDonut('statDonut','statDonutLeg',{Tunai:t,QRIS:q,Lainnya:l},[STAT_C.tunai,STAT_C.qris,STAT_C.lain]);
-        // Pemasukan vs pengeluaran per minggu
-        const wk={};list.forEach(k=>{const key=statWeekKey(k.tanggal);if(!wk[key])wk[key]={in:0,out:0};const c=kasCalc(k);wk[key].in+=c.jual;wk[key].out+=c.beli+c.keluar;});
-        const wkeys=Object.keys(wk).sort().slice(-6);
-        statGroupedBars('statIE', wkeys.map(key=>({w:key.slice(8)+'/'+key.slice(5,7), in:wk[key].in, out:wk[key].out})));
+        // Pemasukan vs pengeluaran per bulan (maks 6 bulan terakhir)
+        const iekeys=mkeys.slice(-6);
+        statGroupedBars('statIE', iekeys.map(key=>({w:statMonthLabel(key), in:byMonth[key].in, out:byMonth[key].out})));
     }
 
     console.log('✅ HPP Calculator module loaded!');
